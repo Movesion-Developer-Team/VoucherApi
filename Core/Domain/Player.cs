@@ -1,0 +1,24 @@
+﻿using System.Drawing;
+
+namespace Core.Domain
+{
+    public class Player : EntityBase
+    {
+        public string ShortName { get; set; }
+        public string? FullName { get; set; }
+        public string? PlayStoreLink { get; set; }
+        public string? AppStoreLink { get; set; }
+        public string? LinkDescription { get; set; }
+
+        public KnownColor Color { get; set; }
+        public Category? Category { get; set; }
+        public int CategoryId { get; set; }
+        public ICollection<Discount>? Discounts { get; set; }
+        public ICollection<Location>? Locations { get; set; }
+        public List<PlayerLocation> PlayerLocations { get; set; }
+        public ICollection<PlayerContact>? PlayerContacts { get; set; }
+        public ICollection<Agency>? Agencies { get; set; }
+        public List<AgencyPlayer> AgencyPlayers { get; set; }
+
+    }
+}
