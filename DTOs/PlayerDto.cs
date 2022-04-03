@@ -15,7 +15,7 @@ namespace DTOs
         public List<DiscountDto>? Discounts { get; set; } 
         public List<LocationDto>? Locations { get; set; }
         public List<PlayerContactDto>? PlayerContacts { get; set; }
-        public List<AgencyDto>? Agencies { get; set; }
+        public List<CompanyDto>? Companies { get; set; }
 
 
     }

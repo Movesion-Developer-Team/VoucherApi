@@ -42,19 +42,19 @@ namespace Persistence.EntityConfigurations
 
             builder.HasOne(p => p.Category)
                 .WithMany(c => c.Players);
-            builder.HasMany(p => p.Agencies)
+            builder.HasMany(p => p.Companies)
                 .WithMany(a => a.Players)
-                .UsingEntity<AgencyPlayer>(j =>
+                .UsingEntity<CompanyPlayer>(j =>
                 {
-                    j.HasOne(pt => pt.Agency)
-                        .WithMany(a => a.AgencyPlayers)
-                        .HasForeignKey(pt=>pt.AgencyId);
+                    j.HasOne(pt => pt.Company)
+                        .WithMany(a => a.CompanyPlayers)
+                        .HasForeignKey(pt=>pt.CompanyId);
                     j.HasOne(pt => pt.Player)
-                        .WithMany(p => p.AgencyPlayers)
+                        .WithMany(p => p.CompanyPlayers)
                         .HasForeignKey(pt => pt.PlayerId);
                     j.HasKey(x => new
                     {
-                        x.AgencyId,
+                        AgencyId = x.CompanyId,
                         x.PlayerId
                     });
                 });

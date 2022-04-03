@@ -8,9 +8,9 @@ namespace DTOs.MappingProfiles
         public CategoryProfile()
         {
             CreateMap<Category, CategoryDto>()
-                .ForMember(dto=>dto.Agencies, 
-                    opt=>opt.MapFrom(x=>x.AgencyCategories
-                        .Select(y=>y.Agency).ToList()))
+                .ForMember(dto=>dto.Companies, 
+                    opt=>opt.MapFrom(x=>x.CompanyCategories
+                        .Select(y=>y.Company).ToList()))
                 .ReverseMap();
         }
     }

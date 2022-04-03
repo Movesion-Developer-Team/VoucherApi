@@ -22,63 +22,6 @@ namespace Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Core.Domain.Agency", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ContactDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Agencies");
-                });
-
-            modelBuilder.Entity("Core.Domain.AgencyCategory", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AgencyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CategoryId", "AgencyId");
-
-                    b.HasIndex("AgencyId");
-
-                    b.ToTable("AgencyCategory");
-                });
-
-            modelBuilder.Entity("Core.Domain.AgencyPlayer", b =>
-                {
-                    b.Property<int>("AgencyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    b.HasKey("AgencyId", "PlayerId");
-
-                    b.HasIndex("PlayerId");
-
-                    b.ToTable("AgencyPlayer");
-                });
-
             modelBuilder.Entity("Core.Domain.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -98,6 +41,63 @@ namespace Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("Core.Domain.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ContactDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("Core.Domain.CompanyCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CategoryId", "CompanyId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("CompanyCategory");
+                });
+
+            modelBuilder.Entity("Core.Domain.CompanyPlayer", b =>
+                {
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CompanyId", "PlayerId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("CompanyPlayer");
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
@@ -127,7 +127,7 @@ namespace Persistence.Migrations
                     b.Property<string>("LinkTermsAndConditions")
                         .HasColumnType("text");
 
-                    b.Property<int>("NumberOfUsagePerAgency")
+                    b.Property<int>("NumberOfUsagePerCompany")
                         .HasColumnType("integer");
 
                     b.Property<int>("NumberOfUsagePerUser")
@@ -277,50 +277,6 @@ namespace Persistence.Migrations
                     b.ToTable("Reports");
                 });
 
-            modelBuilder.Entity("Core.Domain.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AgencyId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AgencyId");
-
-                    b.ToTable("Workers");
-                });
-
             modelBuilder.Entity("Core.Domain.Voucher", b =>
                 {
                     b.Property<int>("Id")
@@ -348,40 +304,40 @@ namespace Persistence.Migrations
                     b.ToTable("Vouchers");
                 });
 
-            modelBuilder.Entity("Core.Domain.AgencyCategory", b =>
+            modelBuilder.Entity("Core.Domain.CompanyCategory", b =>
                 {
-                    b.HasOne("Core.Domain.Agency", "Agency")
-                        .WithMany("AgencyCategories")
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Core.Domain.Category", "Category")
-                        .WithMany("AgencyCategories")
+                        .WithMany("CompanyCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Agency");
+                    b.HasOne("Core.Domain.Company", "Company")
+                        .WithMany("CompanyCategories")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("Core.Domain.AgencyPlayer", b =>
+            modelBuilder.Entity("Core.Domain.CompanyPlayer", b =>
                 {
-                    b.HasOne("Core.Domain.Agency", "Agency")
-                        .WithMany("AgencyPlayers")
-                        .HasForeignKey("AgencyId")
+                    b.HasOne("Core.Domain.Company", "Company")
+                        .WithMany("CompanyPlayers")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Core.Domain.Player", "Player")
-                        .WithMany("AgencyPlayers")
+                        .WithMany("CompanyPlayers")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Agency");
+                    b.Navigation("Company");
 
                     b.Navigation("Player");
                 });
@@ -460,17 +416,6 @@ namespace Persistence.Migrations
                     b.Navigation("Player");
                 });
 
-            modelBuilder.Entity("Core.Domain.User", b =>
-                {
-                    b.HasOne("Core.Domain.Agency", "Agency")
-                        .WithMany("Workers")
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agency");
-                });
-
             modelBuilder.Entity("Core.Domain.Voucher", b =>
                 {
                     b.HasOne("Core.Domain.Category", "Category")
@@ -490,22 +435,20 @@ namespace Persistence.Migrations
                     b.Navigation("Discount");
                 });
 
-            modelBuilder.Entity("Core.Domain.Agency", b =>
-                {
-                    b.Navigation("AgencyCategories");
-
-                    b.Navigation("AgencyPlayers");
-
-                    b.Navigation("Workers");
-                });
-
             modelBuilder.Entity("Core.Domain.Category", b =>
                 {
-                    b.Navigation("AgencyCategories");
+                    b.Navigation("CompanyCategories");
 
                     b.Navigation("Players");
 
                     b.Navigation("Vouchers");
+                });
+
+            modelBuilder.Entity("Core.Domain.Company", b =>
+                {
+                    b.Navigation("CompanyCategories");
+
+                    b.Navigation("CompanyPlayers");
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
@@ -520,7 +463,7 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.Player", b =>
                 {
-                    b.Navigation("AgencyPlayers");
+                    b.Navigation("CompanyPlayers");
 
                     b.Navigation("Discounts");
 

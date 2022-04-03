@@ -8,7 +8,7 @@ namespace Persistence
     {
 
 
-        public IAgencyRepository Agency { get; }
+        public ICompanyRepository Company { get; }
         public ICategoryRepository Category { get; }
         public IDiscountRepository Discount { get; }
         public ILocationRepository Location { get; }
@@ -22,7 +22,7 @@ namespace Persistence
         public UnitOfWork(VoucherContext voucherContext)
         {
             _voucherContext = voucherContext;
-            Agency = new AgencyRepository(voucherContext);
+            Company = new CompanyRepository(voucherContext);
             Category = new CategoryRepository(voucherContext);
             Discount = new DiscountRepository(voucherContext);
             Location = new LocationRepository(voucherContext);

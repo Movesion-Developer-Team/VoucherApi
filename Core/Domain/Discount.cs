@@ -12,7 +12,7 @@ namespace Core.Domain
 
         public readonly List<int>? UsageTimes = new List<int>();
         public float DiscountValue { get; set; }
-        public int NumberOfUsagePerAgency { get; set; }
+        public int NumberOfUsagePerCompany { get; set; }
         public int NumberOfUsagePerUser { get; set; }
         public int InitialPrice { get; set; }
         public int FinalPrice { get; set; }

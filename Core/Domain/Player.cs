@@ -17,8 +17,8 @@ namespace Core.Domain
         public ICollection<Location>? Locations { get; set; }
         public List<PlayerLocation> PlayerLocations { get; set; }
         public ICollection<PlayerContact>? PlayerContacts { get; set; }
-        public ICollection<Agency>? Agencies { get; set; }
-        public List<AgencyPlayer> AgencyPlayers { get; set; }
+        public ICollection<Company>? Companies { get; set; }
+        public List<CompanyPlayer> CompanyPlayers { get; set; }
 
     }
 }

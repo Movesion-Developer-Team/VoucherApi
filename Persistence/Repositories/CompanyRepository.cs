@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Repositories
 {
-    public class AgencyRepository : GenericRepository<Agency>, IAgencyRepository
+    public class CompanyRepository : GenericRepository<Company>, ICompanyRepository
     {
 
         VoucherContext VoucherContext => Context as VoucherContext;
-        public AgencyRepository(DbContext context) : base(context)
+        public CompanyRepository(DbContext context) : base(context)
         {
         }
 

@@ -1,12 +1,16 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using Core.Domain;
 using DTOs;
+using Enum;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using UserStoreLogic;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -18,28 +22,71 @@ namespace MobilityManagerApi.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
 
-        [HttpPost("register")]
-        public async Task<ActionResult<IdentityUser>> Register(IdentityUserDto request)
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<ActionResult<IdentityResult?>> Register([FromQuery]IdentityUserDto request)
         {
             var user = new IdentityUser
             {
-                UserName = request.UserName
+                UserName = request.UserName,
             };
+
             var newUser = await _userManager.CreateAsync(user, request.Password);
+            await _userManager.AddToRoleAsync(_userManager.FindByNameAsync(request.UserName).Result, Role.User.ToString());
+
             return Ok(newUser);
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ChangeRole(string name, BasicRole role)
+        {
+            
+
+            var currentUser = await _userManager.FindByNameAsync(name);
+            if (currentUser != null)
+            {
+                var currentRole = _userManager.GetRolesAsync(currentUser).Result[0];
+                if (currentRole == Role.SuperAdmin.ToString())
+                {
+                    return BadRequest("SuperAdmin is unchangeable");
+                }
+                if (role.ToString() != currentRole)
+                {
+                    await _userManager.RemoveFromRoleAsync(currentUser, currentRole);
+                    await _userManager.AddToRoleAsync(currentUser, role.ToString());
+                    return Ok($"Assigned to role {role.ToString()}");
+                }
+                else
+                {
+                    return BadRequest("User is already in role");
+                }
+                
+                
+            }
+            else
+            {
+                return NotFound("User Not Found");
+            }
+            
+            
+           
+            
+        }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(IdentityUserDto request)
+        public async Task<ActionResult<string>> Login([FromQuery]IdentityUserDto request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
+            
             if (user == null)
             {
                 return BadRequest("User not found");
@@ -50,24 +97,55 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest("Wrong password");
             }
 
-            var token = await _userManager.CreateSecurityTokenAsync(user);
+            
+            List<Claim> claims = new List<Claim>()
+            
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, string.Join(", ", 
+                    _userManager.GetRolesAsync(user).Result))
+            };
+            
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
 
-            var tokenString = token.ToString();
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
+            );
 
-            return Ok(tokenString);
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return Ok(jwt);
 
         }
 
-        [HttpGet("Get Current User"), Authorize]
-        public async Task<IActionResult> GetCurrentUser()
+        [Authorize]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
         {
+            var currentUser = HttpContext.User.Identity;
+            if (currentUser.IsAuthenticated)
+            {
+                var userIdentity = _userManager.FindByNameAsync(currentUser.Name).Result;
+                if (userIdentity == null)
+                {
+                    return BadRequest("User not found");
+                }
+                await _userManager.ChangePasswordAsync(userIdentity, currentPassword, newPassword);
+                return Ok("Password changed successfully");
+            }
+            else
+            {
+                return BadRequest("User not authenticated");
+            }
 
-            var identity = this.HttpContext.User.Identity;
-            return Ok();
         }
 
 
-    
-        
+
+
     }
 }

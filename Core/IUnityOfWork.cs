@@ -4,7 +4,7 @@ namespace Core
 {
     public interface IUnityOfWork : IDisposable
     {
-        IAgencyRepository Agency { get; }
+        ICompanyRepository Company { get; }
         ICategoryRepository Category { get; }
         IDiscountRepository Discount { get; }
         ILocationRepository Location { get; }

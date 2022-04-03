@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DTOs", "DTOs\DTOs.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobilityManagerApi", "MobilityManagerApi\MobilityManagerApi.csproj", "{2FD4BAB3-947E-4EE8-A189-B41D8B011044}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserStoreLogic", "UserStoreLogic\UserStoreLogic.csproj", "{B0E76D7C-0D04-41C7-B1E2-B8C796647E04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserStoreLogic", "UserStoreLogic\UserStoreLogic.csproj", "{B0E76D7C-0D04-41C7-B1E2-B8C796647E04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

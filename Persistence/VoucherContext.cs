@@ -11,7 +11,7 @@ namespace Persistence
     public class VoucherContext : DbContext
     {
         
-        public DbSet<Agency> Agencies { get; set; }
+        public DbSet<Company> Companies { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Discount> Discounts { get; set; }
         public DbSet<Location> Locations { get; set; }
@@ -25,7 +25,7 @@ namespace Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            new AgencyConfiguration().Configure(modelBuilder.Entity<Agency>());
+            new CompanyConfiguration().Configure(modelBuilder.Entity<Company>());
             new CategoryConfiguration().Configure(modelBuilder.Entity<Category>());
             new DiscountConfiguration().Configure(modelBuilder.Entity<Discount>());
             new LocationConfiguration().Configure(modelBuilder.Entity<Location>());

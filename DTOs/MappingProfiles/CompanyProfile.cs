@@ -3,12 +3,12 @@ using Core.Domain;
 
 namespace DTOs.MappingProfiles
 {
-    public class AgencyProfile : Profile
+    public class CompanyProfile : Profile
     {
 
-        public AgencyProfile()
+        public CompanyProfile()
         {
-            CreateMap<Agency, AgencyDto>()
+            CreateMap<Company, CompanyDto>()
                 .ReverseMap();
         }
 

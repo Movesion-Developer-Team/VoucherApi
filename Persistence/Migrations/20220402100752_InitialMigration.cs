@@ -11,20 +11,6 @@ namespace Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Agencies",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    ContactDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Agencies", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
@@ -36,6 +22,20 @@ namespace Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Companies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ContactDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Companies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -67,56 +67,6 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Workers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Username = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Surname = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    AgencyId = table.Column<int>(type: "integer", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Workers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Workers_Agencies_AgencyId",
-                        column: x => x.AgencyId,
-                        principalTable: "Agencies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AgencyCategory",
-                columns: table => new
-                {
-                    AgencyId = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AgencyCategory", x => new { x.CategoryId, x.AgencyId });
-                    table.ForeignKey(
-                        name: "FK_AgencyCategory_Agencies_AgencyId",
-                        column: x => x.AgencyId,
-                        principalTable: "Agencies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AgencyCategory_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Players",
                 columns: table => new
                 {
@@ -142,24 +92,49 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AgencyPlayer",
+                name: "CompanyCategory",
                 columns: table => new
                 {
-                    AgencyId = table.Column<int>(type: "integer", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CompanyCategory", x => new { x.CategoryId, x.CompanyId });
+                    table.ForeignKey(
+                        name: "FK_CompanyCategory_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CompanyCategory_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CompanyPlayer",
+                columns: table => new
+                {
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     PlayerId = table.Column<int>(type: "integer", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AgencyPlayer", x => new { x.AgencyId, x.PlayerId });
+                    table.PrimaryKey("PK_CompanyPlayer", x => new { x.CompanyId, x.PlayerId });
                     table.ForeignKey(
-                        name: "FK_AgencyPlayer_Agencies_AgencyId",
-                        column: x => x.AgencyId,
-                        principalTable: "Agencies",
+                        name: "FK_CompanyPlayer_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AgencyPlayer_Players_PlayerId",
+                        name: "FK_CompanyPlayer_Players_PlayerId",
                         column: x => x.PlayerId,
                         principalTable: "Players",
                         principalColumn: "Id",
@@ -177,7 +152,7 @@ namespace Persistence.Migrations
                     LinkTermsAndConditions = table.Column<string>(type: "text", nullable: true),
                     UnityOfMeasurement = table.Column<string>(type: "text", nullable: true),
                     DiscountValue = table.Column<float>(type: "real", nullable: false),
-                    NumberOfUsagePerAgency = table.Column<int>(type: "integer", nullable: false),
+                    NumberOfUsagePerCompany = table.Column<int>(type: "integer", nullable: false),
                     NumberOfUsagePerUser = table.Column<int>(type: "integer", nullable: false),
                     InitialPrice = table.Column<int>(type: "integer", nullable: false),
                     FinalPrice = table.Column<int>(type: "integer", nullable: false),
@@ -272,13 +247,13 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AgencyCategory_AgencyId",
-                table: "AgencyCategory",
-                column: "AgencyId");
+                name: "IX_CompanyCategory_CompanyId",
+                table: "CompanyCategory",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AgencyPlayer_PlayerId",
-                table: "AgencyPlayer",
+                name: "IX_CompanyPlayer_PlayerId",
+                table: "CompanyPlayer",
                 column: "PlayerId");
 
             migrationBuilder.CreateIndex(
@@ -310,20 +285,15 @@ namespace Persistence.Migrations
                 name: "IX_Vouchers_DiscountId",
                 table: "Vouchers",
                 column: "DiscountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workers_AgencyId",
-                table: "Workers",
-                column: "AgencyId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AgencyCategory");
+                name: "CompanyCategory");
 
             migrationBuilder.DropTable(
-                name: "AgencyPlayer");
+                name: "CompanyPlayer");
 
             migrationBuilder.DropTable(
                 name: "PlayerContacts");
@@ -338,16 +308,13 @@ namespace Persistence.Migrations
                 name: "Vouchers");
 
             migrationBuilder.DropTable(
-                name: "Workers");
+                name: "Companies");
 
             migrationBuilder.DropTable(
                 name: "Locations");
 
             migrationBuilder.DropTable(
                 name: "Discounts");
-
-            migrationBuilder.DropTable(
-                name: "Agencies");
 
             migrationBuilder.DropTable(
                 name: "Players");

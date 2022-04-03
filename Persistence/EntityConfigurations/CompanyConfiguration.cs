@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Persistence.EntityConfigurations
 {
-    public class AgencyConfiguration : IEntityTypeConfiguration<Agency>
+    public class CompanyConfiguration : IEntityTypeConfiguration<Company>
     {
-        public void Configure(EntityTypeBuilder<Agency> builder)
+        public void Configure(EntityTypeBuilder<Company> builder)
         {
             builder.Property(a => a.Name).HasMaxLength(100).IsRequired();
             builder.Property(a => a.ContactDate).IsRequired();
@@ -14,35 +14,35 @@ namespace Persistence.EntityConfigurations
         
 
             builder.HasMany(a => a.Categories)
-                .WithMany(c => c.Agencies)
-                .UsingEntity<AgencyCategory>(j =>
+                .WithMany(c => c.Companies)
+                .UsingEntity<CompanyCategory>(j =>
                     {
-                        j.HasOne(pt => pt.Agency)
-                            .WithMany(a => a.AgencyCategories)
-                            .HasForeignKey(pt => pt.AgencyId);
+                        j.HasOne(pt => pt.Company)
+                            .WithMany(a => a.CompanyCategories)
+                            .HasForeignKey(pt => pt.CompanyId);
                         j.HasOne(pt => pt.Category)
-                            .WithMany(c => c.AgencyCategories)
+                            .WithMany(c => c.CompanyCategories)
                             .HasForeignKey(pt => pt.CategoryId);
                         j.HasKey(pt => new
                         {
-                            pt.AgencyId,
+                            AgencyId = pt.CompanyId,
                             pt.CategoryId
                         });
                     });
 
             builder.HasMany(a => a.Players)
-                .WithMany(p => p.Agencies)
-                .UsingEntity<AgencyPlayer>(j =>
+                .WithMany(p => p.Companies)
+                .UsingEntity<CompanyPlayer>(j =>
                 {
-                    j.HasOne(pt => pt.Agency)
-                        .WithMany(a => a.AgencyPlayers)
-                        .HasForeignKey(pt => pt.AgencyId);
+                    j.HasOne(pt => pt.Company)
+                        .WithMany(a => a.CompanyPlayers)
+                        .HasForeignKey(pt => pt.CompanyId);
                     j.HasOne(pt => pt.Player)
-                        .WithMany(p => p.AgencyPlayers)
+                        .WithMany(p => p.CompanyPlayers)
                         .HasForeignKey(pt => pt.PlayerId);
                     j.HasKey(x => new
                     {
-                        x.AgencyId,
+                        AgencyId = x.CompanyId,
                         x.PlayerId
                     });
                 });
