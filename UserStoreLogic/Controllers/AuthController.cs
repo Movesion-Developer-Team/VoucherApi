@@ -19,14 +19,14 @@ namespace MobilityManagerApi.Controllers
     {
         
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
             _userManager = userManager;
-            _signInManager = signInManager;
+            //_signInManager = signInManager;
         }
 
 
@@ -66,7 +66,7 @@ namespace MobilityManagerApi.Controllers
                 {
                     await _userManager.RemoveFromRoleAsync(currentUser, currentRole);
                     await _userManager.AddToRoleAsync(currentUser, role.ToString());
-                    return Ok($"Assigned to role {role.ToString()}");
+                    return Ok($"Assigned to role {role}");
                 }
                 else
                 {
@@ -101,7 +101,7 @@ namespace MobilityManagerApi.Controllers
             }
 
             
-            List<Claim> claims = new List<Claim>()
+            List<Claim> claims = new()
             
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
