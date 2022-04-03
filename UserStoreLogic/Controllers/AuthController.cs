@@ -40,7 +40,10 @@ namespace MobilityManagerApi.Controllers
             };
 
             var newUser = await _userManager.CreateAsync(user, request.Password);
-            await _userManager.AddToRoleAsync(_userManager.FindByNameAsync(request.UserName).Result, Role.User.ToString());
+            if (newUser.Succeeded == true)
+            {
+                await _userManager.AddToRoleAsync(_userManager.FindByNameAsync(request.UserName).Result, Role.User.ToString());
+            }
 
             return Ok(newUser);
         }
