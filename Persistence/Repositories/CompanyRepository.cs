@@ -83,6 +83,17 @@ namespace Persistence.Repositories
 
             currentCompany.ContactDate = newDate;
         }
+
+        public Task AddWorkerToCompany(List<string> workerIds, int companyId)
+        {
+            var currentCompaniesWorkerList = VoucherContext.Companies
+                .Where(c => c.Id == companyId)
+                .Select(c => c.WorkerIds);
+
+
+            currentCompaniesWorkerList.Append(workerIds);
+            return Task.FromResult(currentCompaniesWorkerList);
+        }
         
     }
 }

@@ -73,7 +73,12 @@ namespace MobilityManagerApi.Controllers
             {
                 await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
             }
-            currentCompany.WorkerIds.Add(currentUser.Id);
+
+            var workersList = new List<string>();
+            workersList.Add(currentUser.Id);
+
+            await _unitOfWork.Company.AddWorkerToCompany(workersList, currentCompany.Id);
+            
             await _unitOfWork.Complete();
 
             return Ok(newUser);
