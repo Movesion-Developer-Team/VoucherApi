@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Persistence;
 using UserStoreLogic;
 
 namespace MobilityManagerApi.Controllers
@@ -19,13 +20,15 @@ namespace MobilityManagerApi.Controllers
     {
         
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly UnitOfWork _unitOfWork;
         //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager)
+        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, VoucherContext voucherContext)
         {
             _configuration = configuration;
             _userManager = userManager;
+            _unitOfWork = new UnitOfWork(voucherContext);
             //_signInManager = signInManager;
         }
 
@@ -34,16 +37,49 @@ namespace MobilityManagerApi.Controllers
         [Route("[action]")]
         public async Task<ActionResult<IdentityResult?>> Register([FromQuery]IdentityUserDto request)
         {
+            Company? currentCompany;
             var user = new IdentityUser
             {
                 UserName = request.UserName,
             };
 
+            if (request.CompanyId == null && request.CompanyName == null)
+            {
+                throw new ArgumentNullException(nameof(request), "Please provide either company name or id");
+            }
+
+            if (request.CompanyId != null)
+            {
+                currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
+                if (currentCompany == null)
+                {
+                    throw new NullReferenceException("Company not found");
+                } 
+            }
+            else
+            {
+                currentCompany = _unitOfWork.Company.FindAsync(c => c.Name == request.CompanyName).Result.First();
+                if (currentCompany == null)
+                {
+                    {
+                        throw new NullReferenceException("Company not found");
+                    }
+                }
+            }
+
             var newUser = await _userManager.CreateAsync(user, request.Password);
+            var currentUser = _userManager.FindByNameAsync(request.UserName).Result;
             if (newUser.Succeeded == true)
             {
-                await _userManager.AddToRoleAsync(_userManager.FindByNameAsync(request.UserName).Result, Role.User.ToString());
+                await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
             }
+
+            var workersList = new List<string>();
+            workersList.Add(currentUser.Id);
+
+            await _unitOfWork.Company.AddWorkerToCompany(workersList, currentCompany.Id);
+            
+            await _unitOfWork.Complete();
 
             return Ok(newUser);
         }
@@ -86,16 +122,16 @@ namespace MobilityManagerApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login([FromQuery]IdentityUserDto request)
+        public async Task<ActionResult<string>> Login([FromQuery]string username, string password)
         {
-            var user = await _userManager.FindByNameAsync(request.UserName);
+            var user = await _userManager.FindByNameAsync(username);
             
             if (user == null)
             {
                 return BadRequest("User not found");
             }
 
-            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Failed)
             {
                 return BadRequest("Wrong password");
             }
