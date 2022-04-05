@@ -1,11 +1,12 @@
 ﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Core.IRepositories
 {
     public interface IGenericRepository<TEntity> where TEntity : class
     {
         Task<TEntity?> GetAsync(int id);
-        IQueryable<TEntity> GetAll();
+        Task<IQueryable<TEntity>> GetAll();
         Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
         void Update(TEntity entity);
 

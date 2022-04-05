@@ -2,6 +2,7 @@
 using Core.Domain;
 using DTOs;
 using Enum;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
 using UserStoreLogic;
@@ -10,6 +11,7 @@ namespace MobilityManagerApi.Controllers
 {
     [ApiController]
     [Route("[]")]
+    [EnableCors("Default")]
     public class CompanyController : ControllerBase
     {
         
@@ -17,12 +19,22 @@ namespace MobilityManagerApi.Controllers
         private readonly UnitOfWork _unitOfWork;
         
 
+
+
         public CompanyController(IMapper mapper, VoucherContext vContext)
         {
 
             _mapper = mapper;
             _unitOfWork = new UnitOfWork(vContext);
 
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost("/[action]")]
+        public async Task<IActionResult> GetAllCompanies()
+        {
+           var allCompanies = await _unitOfWork.Company.GetAll();
+            return Ok(allCompanies);
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]

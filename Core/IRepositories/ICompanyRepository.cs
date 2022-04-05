@@ -9,7 +9,7 @@ namespace Core.IRepositories
         Task AssignToCategory(string companyName, string categoryName);
         Task ChangeCompanyName(int companyId, string companyNewName);
         Task ChangeCompanyContactDate(int companyId, DateTime newDate);
-        Task AddWorkerToCompany(List<string> workerIds, int companyId);
+        Task AddWorkerToCompany(string workerId, int companyId);
 
 
     }

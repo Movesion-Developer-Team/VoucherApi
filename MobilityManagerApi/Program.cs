@@ -61,6 +61,17 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddUserManager<UserManager<IdentityUser>>();
 
+builder.Services.AddCors(opt =>
+{
+    opt.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:49858/")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+    opt.DefaultPolicyName = "Default";
+});
+
 builder.Services.AddScoped<IUserStore<IdentityUser>, UserStore<IdentityUser, IdentityRole, UserDbContext>>();
 builder.Services.AddAutoMapper(typeof(CompanyDto).Assembly);
 
@@ -88,10 +99,12 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+app.Run("https://localhost:7098/");

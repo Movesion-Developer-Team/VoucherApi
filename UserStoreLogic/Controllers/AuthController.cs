@@ -1,21 +1,20 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Core.Domain;
 using DTOs;
 using Enum;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
-using UserStoreLogic;
 
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
+    [EnableCors("Default")]
     public class AuthController : ControllerBase
     {
         
@@ -74,10 +73,11 @@ namespace MobilityManagerApi.Controllers
                 await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
             }
 
-            var workersList = new List<string>();
-            workersList.Add(currentUser.Id);
+            
 
-            await _unitOfWork.Company.AddWorkerToCompany(workersList, currentCompany.Id);
+            _unitOfWork.Company.Update(currentCompany);
+
+            await _unitOfWork.Company.AddWorkerToCompany(currentUser.Id, currentCompany.Id);
             
             await _unitOfWork.Complete();
 
