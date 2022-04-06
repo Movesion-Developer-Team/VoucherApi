@@ -67,21 +67,24 @@ namespace MobilityManagerApi.Controllers
             }
 
             var newUser = await _userManager.CreateAsync(user, request.Password);
-            var currentUser = _userManager.FindByNameAsync(request.UserName).Result;
-            if (newUser.Succeeded == true)
+            if (newUser.Succeeded)
             {
+                var currentUser = _userManager.FindByNameAsync(request.UserName).Result;
                 await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
+                _unitOfWork.Company.Update(currentCompany);
+
+                await _unitOfWork.Company.AddWorkerToCompany(currentUser.Id, currentCompany.Id);
+
+                await _unitOfWork.Complete();
+
+                return Ok(newUser);
+            }
+            else
+            {
+                return Ok(newUser.Errors.First());
             }
 
-            
 
-            _unitOfWork.Company.Update(currentCompany);
-
-            await _unitOfWork.Company.AddWorkerToCompany(currentUser.Id, currentCompany.Id);
-            
-            await _unitOfWork.Complete();
-
-            return Ok(newUser);
         }
 
         [HttpPost]
