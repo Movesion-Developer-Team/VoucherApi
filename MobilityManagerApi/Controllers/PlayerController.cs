@@ -2,6 +2,7 @@
 using Core.Domain;
 using DTOs;
 using Enum;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
 using UserStoreLogic;
@@ -9,6 +10,7 @@ using UserStoreLogic;
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
+    [EnableCors]
     public class PlayerController : ControllerBase
     {
         private readonly IMapper _mapper;

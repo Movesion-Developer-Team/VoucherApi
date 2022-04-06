@@ -3,6 +3,7 @@ using AutoMapper;
 using Core.Domain;
 using DTOs;
 using Enum;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
 using Persistence;
@@ -11,6 +12,7 @@ using UserStoreLogic;
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
+    [EnableCors]
     public class CategoryController : ControllerBase
     {
         private readonly IMapper _mapper;
