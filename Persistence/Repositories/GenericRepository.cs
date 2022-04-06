@@ -29,8 +29,6 @@ namespace Persistence.Repositories
 
                 await DbSet.AddAsync(entity);
 
-                await Context.SaveChangesAsync();
-
             }
             else
             {
@@ -74,9 +72,10 @@ namespace Persistence.Repositories
             return await DbSet.FindAsync(id) ?? throw new NullReferenceException();
         }
 
-        public IQueryable<TEntity> GetAll()
+        public Task<IQueryable<TEntity>> GetAll()
         {
-            return DbSet ?? throw new NullReferenceException();
+            var dbSet = DbSet.AsQueryable() ?? throw new NullReferenceException();
+            return Task.FromResult(dbSet);
         }
 
         public async Task<bool> RemoveAsync(int id)

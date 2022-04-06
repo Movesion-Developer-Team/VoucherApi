@@ -6,9 +6,11 @@ namespace UserStoreLogic
 {
     public class UserDbContext : IdentityDbContext<IdentityUser>
     {
+        
         public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)
         {
             
         }
+
     }
 }

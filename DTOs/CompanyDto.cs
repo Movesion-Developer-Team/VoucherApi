@@ -6,7 +6,6 @@ namespace DTOs
     {
         
         public string Name { get; set; }
-        
         public DateTime ContactDate { get; set; }
         
 
