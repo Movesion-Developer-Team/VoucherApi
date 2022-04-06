@@ -4,15 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace UserStoreLogic
 {
-    public class AuthorizeRoles : AuthorizeAttribute
+    public class AuthorizeRolesAttribute : AuthorizeAttribute
     {
         
-        public AuthorizeRoles(params Role[] roles) :base()
+        public AuthorizeRolesAttribute(params Role[] roles) :base()
         {
-            foreach (var role in roles)
-            {
-                Roles = string.Join(',', role.ToString());
-            }
+            Roles = String.Join(',', roles);
 
             this.AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
         }

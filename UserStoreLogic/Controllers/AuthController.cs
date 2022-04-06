@@ -1,32 +1,34 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Core.Domain;
 using DTOs;
 using Enum;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using UserStoreLogic;
+using Persistence;
 
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
+    [EnableCors]
     public class AuthController : ControllerBase
     {
         
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UnitOfWork _unitOfWork;
+        //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, VoucherContext voucherContext)
         {
             _configuration = configuration;
             _userManager = userManager;
-            _signInManager = signInManager;
+            _unitOfWork = new UnitOfWork(voucherContext);
+            //_signInManager = signInManager;
         }
 
 
@@ -34,16 +36,50 @@ namespace MobilityManagerApi.Controllers
         [Route("[action]")]
         public async Task<ActionResult<IdentityResult?>> Register([FromQuery]IdentityUserDto request)
         {
+            Company? currentCompany;
             var user = new IdentityUser
             {
                 UserName = request.UserName,
             };
 
+            if (request.CompanyId == null && request.CompanyName == null)
+            {
+                throw new ArgumentNullException(nameof(request), "Please provide either company name or id");
+            }
+
+            if (request.CompanyId != null)
+            {
+                currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
+                if (currentCompany == null)
+                {
+                    throw new NullReferenceException("Company not found");
+                } 
+            }
+            else
+            {
+                currentCompany = _unitOfWork.Company.FindAsync(c => c.Name == request.CompanyName).Result.First();
+                if (currentCompany == null)
+                {
+                    {
+                        throw new NullReferenceException("Company not found");
+                    }
+                }
+            }
+
             var newUser = await _userManager.CreateAsync(user, request.Password);
+            var currentUser = _userManager.FindByNameAsync(request.UserName).Result;
             if (newUser.Succeeded == true)
             {
-                await _userManager.AddToRoleAsync(_userManager.FindByNameAsync(request.UserName).Result, Role.User.ToString());
+                await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
             }
+
+            
+
+            _unitOfWork.Company.Update(currentCompany);
+
+            await _unitOfWork.Company.AddWorkerToCompany(currentUser.Id, currentCompany.Id);
+            
+            await _unitOfWork.Complete();
 
             return Ok(newUser);
         }
@@ -66,7 +102,7 @@ namespace MobilityManagerApi.Controllers
                 {
                     await _userManager.RemoveFromRoleAsync(currentUser, currentRole);
                     await _userManager.AddToRoleAsync(currentUser, role.ToString());
-                    return Ok($"Assigned to role {role.ToString()}");
+                    return Ok($"Assigned to role {role}");
                 }
                 else
                 {
@@ -86,22 +122,22 @@ namespace MobilityManagerApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login([FromQuery]IdentityUserDto request)
+        public async Task<ActionResult<string>> Login([FromQuery]string username, string password)
         {
-            var user = await _userManager.FindByNameAsync(request.UserName);
+            var user = await _userManager.FindByNameAsync(username);
             
             if (user == null)
             {
                 return BadRequest("User not found");
             }
 
-            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Failed)
             {
                 return BadRequest("Wrong password");
             }
 
             
-            List<Claim> claims = new List<Claim>()
+            List<Claim> claims = new()
             
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),

@@ -8,10 +8,11 @@ namespace DTOs.MappingProfiles
         public CategoryProfile()
         {
             CreateMap<Category, CategoryDto>()
-                .ForMember(dto=>dto.Companies, 
-                    opt=>opt.MapFrom(x=>x.CompanyCategories
-                        .Select(y=>y.Company).ToList()))
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(d => d.Companies, opt => opt.Ignore())
+                .ForMember(d => d.CompanyCategories, opt => opt.Ignore())
+                .ForMember(d => d.Players, opt => opt.Ignore())
+                .ForMember(d => d.Vouchers, opt => opt.Ignore());
         }
     }
 }
