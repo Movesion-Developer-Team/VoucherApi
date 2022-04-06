@@ -63,12 +63,12 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 builder.Services.AddCors(opt =>
 {
-    opt.AddDefaultPolicy(builder =>
+    opt.AddPolicy("Default", config =>
     {
-        builder.WithOrigins("http://localhost:49858/")
+        config.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
-    });
+    }); 
     opt.DefaultPolicyName = "Default";
 });
 
@@ -99,7 +99,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-app.UseCors();
+app.UseCors(opt=>opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseAuthentication();
 

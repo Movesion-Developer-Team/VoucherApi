@@ -14,7 +14,7 @@ using Persistence;
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
-    [EnableCors("Default")]
+    [EnableCors]
     public class AuthController : ControllerBase
     {
         

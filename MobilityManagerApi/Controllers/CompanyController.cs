@@ -11,7 +11,7 @@ namespace MobilityManagerApi.Controllers
 {
     [ApiController]
     [Route("[]")]
-    [EnableCors("Default")]
+    [EnableCors]
     public class CompanyController : ControllerBase
     {
         
