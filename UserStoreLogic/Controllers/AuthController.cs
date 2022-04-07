@@ -1,4 +1,5 @@
 ﻿using Core.Domain;
+using DTOs;
 using Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -33,27 +34,28 @@ namespace MobilityManagerApi.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<IdentityResult?>> Register(string userName, string password, int companyId)
+        public async Task<ActionResult<IdentityResult?>> Register([FromBody] IdentityUserDto request)
         {
+            
             Company? currentCompany;
             var user = new IdentityUser
             {
-                UserName = userName,
+                UserName = request.UserName,
             };
 
 
 
-            currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == companyId).Result.First();
+            currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
             if (currentCompany == null)
             {
                 throw new NullReferenceException("Company not found");
             }
 
 
-            var newUser = await _userManager.CreateAsync(user, password);
+            var newUser = await _userManager.CreateAsync(user, request.Password);
             if (newUser.Succeeded)
             {
-                var currentUser = _userManager.FindByNameAsync(userName).Result;
+                var currentUser = _userManager.FindByNameAsync(request.UserName).Result;
                 await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
                 _unitOfWork.Company.Update(currentCompany);
 
