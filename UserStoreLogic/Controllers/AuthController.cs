@@ -109,17 +109,30 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> Login([FromQuery] string username, string password)
+        public class LoginBody
         {
-            var user = await _userManager.FindByNameAsync(username);
+            public string UserName;
+            public string Password;
+
+            public LoginBody(string userName, string password)
+            {
+                UserName = userName;
+                Password = password;
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<string>> Login([FromBody] LoginBody login)
+        {
+            
+            var user = await _userManager.FindByNameAsync(login.UserName);
 
             if (user == null)
             {
                 return BadRequest("User not found");
             }
 
-            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Failed)
+            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) == PasswordVerificationResult.Failed)
             {
                 return BadRequest("Wrong password");
             }
