@@ -141,9 +141,9 @@ namespace MobilityManagerApi.Controllers
             List<Claim> claims = new()
 
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, string.Join(", ",
+                new Claim("id", user.Id),
+                new Claim("name", user.UserName),
+                new Claim("role", string.Join(", ",
                     _userManager.GetRolesAsync(user).Result))
             };
 
