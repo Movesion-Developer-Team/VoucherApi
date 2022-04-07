@@ -111,8 +111,8 @@ namespace MobilityManagerApi.Controllers
 
         public class LoginBody
         {
-            public string UserName;
-            public string Password;
+            public string UserName { get; set; }
+            public string Password { get; set; }
 
             public LoginBody(string userName, string password)
             {
