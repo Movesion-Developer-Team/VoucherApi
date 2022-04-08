@@ -4,6 +4,7 @@ using System.Text;
 using Core.Domain;
 using DTOs;
 using Enum;
+using Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
@@ -116,17 +117,14 @@ namespace UserStoreLogic.Controllers
         {
             var authResponse = new AuthResponseDto();
 
-            if (login.UserName.Contains(" "))
-            {
-                login.UserName = login.UserName.Replace(" ", "");
-            }
+            login.UserName = StringExtensions.RemoveSpacesForLogin(login.UserName);
 
             var user = await _userManager.FindByNameAsync(login.UserName);
 
             if (user == null)
             {
                 authResponse.ErrorMessage = "User not found";
-                return Ok(authResponse);
+                return BadRequest(authResponse);
             }
 
             if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) ==

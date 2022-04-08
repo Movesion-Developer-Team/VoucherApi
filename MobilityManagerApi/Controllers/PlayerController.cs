@@ -57,13 +57,13 @@ namespace MobilityManagerApi.Controllers
             return Ok();
         }
 
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> Change()
-        {
+        //[AuthorizeRoles(Role.SuperAdmin)]
+        //[HttpPost]
+        //[Route("[action]")]
+        //public async Task<IActionResult> Change()
+        //{
 
-        }
+        //}
 
 
     }
