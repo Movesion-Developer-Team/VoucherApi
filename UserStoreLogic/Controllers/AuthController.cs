@@ -131,32 +131,31 @@ namespace UserStoreLogic.Controllers
                 PasswordVerificationResult.Failed)
             {
                 authResponse.ErrorMessage = "Wrong password";
-                
+                return BadRequest(authResponse);
             }
-            else
+
+            authResponse.IsAuthenticated = true;
+            List<Claim> claims = new()
+
             {
-                authResponse.IsAuthenticated = true;
-                List<Claim> claims = new()
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, string.Join(", ",
+                    _userManager.GetRolesAsync(user).Result))
+            };
 
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, string.Join(", ",
-                        _userManager.GetRolesAsync(user).Result))
-                };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
+            );
 
-                var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(1),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
-                );
-
-                authResponse.Token = new JwtSecurityTokenHandler().WriteToken(token);
-            }
-
+            authResponse.Token = new JwtSecurityTokenHandler().WriteToken(token);
             return Ok(authResponse);
+
+
         }
 
         [Authorize]
