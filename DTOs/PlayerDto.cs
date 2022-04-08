@@ -13,7 +13,9 @@ namespace DTOs
         public KnownColor Color { get; set; }
         public int CategoryId { get; set; }
 
-
-
+        public PlayerDto(string shortName)
+        {
+            ShortName = shortName;
+        }
     }
 }

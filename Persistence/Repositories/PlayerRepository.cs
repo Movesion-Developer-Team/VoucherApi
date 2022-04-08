@@ -1,4 +1,5 @@
-﻿using Core.Domain;
+﻿using System.Runtime.InteropServices;
+using Core.Domain;
 using Core.IRepositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,5 +11,6 @@ namespace Persistence.Repositories
         public PlayerRepository(DbContext context) : base(context)
         {
         }
+
     }
 }

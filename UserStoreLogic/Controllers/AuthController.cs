@@ -1,4 +1,7 @@
-﻿using Core.Domain;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Core.Domain;
 using DTOs;
 using Enum;
 using Microsoft.AspNetCore.Authorization;
@@ -7,12 +10,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using UserStoreLogic.DTOs;
 
-namespace MobilityManagerApi.Controllers
+namespace UserStoreLogic.Controllers
 {
     [ApiController]
     [EnableCors]
@@ -115,12 +115,18 @@ namespace MobilityManagerApi.Controllers
         public async Task<ActionResult<string>> Login([FromBody] LoginBodyDto login)
         {
             var authResponse = new AuthResponseDto();
-            
+
+            if (login.UserName.Contains(" "))
+            {
+                login.UserName = login.UserName.Replace(" ", "");
+            }
+
             var user = await _userManager.FindByNameAsync(login.UserName);
 
             if (user == null)
             {
-                return BadRequest("User not found");
+                authResponse.ErrorMessage = "User not found";
+                return Ok(authResponse);
             }
 
             if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) ==

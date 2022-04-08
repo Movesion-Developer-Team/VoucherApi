@@ -25,10 +25,10 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-        [AuthorizeRolesAttribute(Role.SuperAdmin)]
+        [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> CreatePlayer(PlayerDto playerDto)
+        public async Task<IActionResult> CreatePlayer([FromBody]PlayerDto playerDto)
         {
             var newPlayer = _mapper.Map<PlayerDto, Player>(playerDto);
             if (newPlayer == null)
@@ -41,7 +41,7 @@ namespace MobilityManagerApi.Controllers
             return Ok();
         }
 
-        [AuthorizeRolesAttribute(Role.SuperAdmin)]
+        [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> DeletePlayer(int playerId)
@@ -55,6 +55,14 @@ namespace MobilityManagerApi.Controllers
 
             await _unitOfWork.Complete();
             return Ok();
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Change()
+        {
+
         }
 
 

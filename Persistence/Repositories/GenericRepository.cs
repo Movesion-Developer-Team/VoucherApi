@@ -19,6 +19,7 @@ namespace Persistence.Repositories
 
         public void Update(TEntity entity)
         {
+            
             Context.Entry(entity).State = EntityState.Modified;
         }
 
@@ -87,7 +88,6 @@ namespace Persistence.Repositories
 
                 var currentEntityTask = await DbSet.FindAsync(id);
                 DbSet.Remove(currentEntityTask!);
-                await Context.SaveChangesAsync();
 
                 return true;
 
