@@ -1,6 +1,4 @@
-using System.Text;
 using DTOs;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using MobilityManagerApi;
 using Persistence;
 using Swashbuckle.AspNetCore.Filters;
+using System.Text;
 using UserStoreLogic;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,7 +67,7 @@ builder.Services.AddCors(opt =>
         config.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
-    }); 
+    });
     opt.DefaultPolicyName = "Default";
 });
 
@@ -90,8 +89,8 @@ using (var scope = app.Services.CreateScope())
     await dbInitializer.Initialize();
 }
 
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -99,7 +98,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-app.UseCors(opt=>opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseAuthentication();
 
