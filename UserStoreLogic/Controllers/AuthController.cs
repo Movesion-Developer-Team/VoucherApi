@@ -141,14 +141,14 @@ namespace MobilityManagerApi.Controllers
             List<Claim> claims = new()
 
             {
-                new Claim("id", user.Id),
-                new Claim("name", user.UserName),
-                new Claim("role", string.Join(", ",
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, string.Join(", ",
                     _userManager.GetRolesAsync(user).Result))
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
-
+            
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.Now.AddDays(1),
