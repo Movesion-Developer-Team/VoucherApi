@@ -10,6 +10,7 @@ using Persistence;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using UserStoreLogic.DTOs;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -109,21 +110,11 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-        public class LoginBody
-        {
-            public string UserName { get; set; }
-            public string Password { get; set; }
-
-            public LoginBody(string userName, string password)
-            {
-                UserName = userName;
-                Password = password;
-            }
-        }
 
         [HttpPost]
-        public async Task<ActionResult<string>> Login([FromBody] LoginBody login)
+        public async Task<ActionResult<string>> Login([FromBody] LoginBodyDto login)
         {
+            var authResponse = new AuthResponseDto();
             
             var user = await _userManager.FindByNameAsync(login.UserName);
 
@@ -132,33 +123,36 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest("User not found");
             }
 
-            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) == PasswordVerificationResult.Failed)
+            if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) ==
+                PasswordVerificationResult.Failed)
             {
-                return BadRequest("Wrong password");
+                authResponse.ErrorMessage = "Wrong password";
+                
+            }
+            else
+            {
+                authResponse.IsAuthenticated = true;
+                List<Claim> claims = new()
+
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Role, string.Join(", ",
+                        _userManager.GetRolesAsync(user).Result))
+                };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
+
+                var token = new JwtSecurityToken(
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(1),
+                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
+                );
+
+                authResponse.Token = new JwtSecurityTokenHandler().WriteToken(token);
             }
 
-
-            List<Claim> claims = new()
-
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, string.Join(", ",
-                    _userManager.GetRolesAsync(user).Result))
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
-            
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
-            );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return Ok(jwt);
-
+            return Ok(authResponse);
         }
 
         [Authorize]
@@ -182,8 +176,6 @@ namespace MobilityManagerApi.Controllers
             }
 
         }
-
-
 
 
     }
