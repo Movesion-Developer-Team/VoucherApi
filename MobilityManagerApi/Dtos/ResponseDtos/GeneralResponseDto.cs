@@ -1,4 +1,4 @@
-﻿namespace UserStoreLogic.DTOs
+﻿namespace MobilityManagerApi.Dtos.ResponseDtos
 {
     public class GeneralResponseDto
     {

@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using UserStoreLogic.DTOs;
+using UserStoreLogic.DTOs.BodyDtos;
+using UserStoreLogic.DTOs.ResponseDtos;
 
 namespace UserStoreLogic.Controllers
 {

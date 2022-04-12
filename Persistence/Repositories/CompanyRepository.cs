@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Repositories
 {
-    public class CompanyRepository : GenericRepository<Company>, ICompanyRepository
+    public class 
+        CompanyRepository : GenericRepository<Company>, ICompanyRepository
     {
 
         VoucherContext? VoucherContext => Context as VoucherContext;
@@ -13,7 +14,7 @@ namespace Persistence.Repositories
             
         }
 
-        public async Task AssignToCategory(int companyId, int categoryId)
+        public async Task AssignToCategory(int? companyId, int? categoryId)
         {
             var currentCompany = await VoucherContext!.Companies.FindAsync(companyId);
             if (currentCompany == null)
@@ -30,7 +31,7 @@ namespace Persistence.Repositories
             currentCompany.Categories.Add(currentCategory);
         }
 
-        public async Task AssignToCategory(int companyId, string categoryName)
+        public async Task AssignToCategory(int? companyId, string? categoryName)
         {
             var currentCompany = await VoucherContext!.Companies.FindAsync(companyId);
             if (currentCompany == null)
@@ -46,7 +47,7 @@ namespace Persistence.Repositories
             currentCompany.Categories.Add(currentCategory);
         }
 
-        public async Task AssignToCategory(string companyName, string categoryName)
+        public async Task AssignToCategory(string? companyName, string? categoryName)
         {
             var currentCompany = await VoucherContext!.Companies.FirstAsync(c => c.Name == companyName);
             if (currentCompany == null)

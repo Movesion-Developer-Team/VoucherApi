@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DTOs
 {
-    public class CompanyDto
+    public class CompanyDto : BaseDto
     {
         
         public string? Name { get; set; }

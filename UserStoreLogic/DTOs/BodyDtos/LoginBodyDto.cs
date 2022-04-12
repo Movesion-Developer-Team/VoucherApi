@@ -1,4 +1,4 @@
-﻿namespace UserStoreLogic.DTOs
+﻿namespace UserStoreLogic.DTOs.BodyDtos
 {
     public class LoginBodyDto
     {

@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata;
-
-namespace UserStoreLogic.DTOs
+﻿namespace UserStoreLogic.DTOs.ResponseDtos
 {
     public class AuthResponseDto
     {

@@ -4,6 +4,7 @@ using DTOs;
 using Enum;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using MobilityManagerApi.Dtos.BodyDtos;
 using Persistence;
 using UserStoreLogic;
 
@@ -44,10 +45,10 @@ namespace MobilityManagerApi.Controllers
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> DeletePlayer(int playerId)
+        public async Task<IActionResult> DeletePlayer([FromBody] BaseBody request)
         { 
             
-            var deleted = await _unitOfWork.Player.RemoveAsync(playerId);
+            var deleted = await _unitOfWork.Player.RemoveAsync(request.Id);
             if(!deleted)
             {
                 throw new NullReferenceException("Player not found");
