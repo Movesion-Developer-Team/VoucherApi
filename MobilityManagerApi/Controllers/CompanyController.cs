@@ -1,11 +1,15 @@
-﻿using AutoMapper;
+﻿using System.Reflection;
+using System.Reflection.Emit;
+using AutoMapper;
 using Core.Domain;
 using DTOs;
 using Enum;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Update;
 using Persistence;
 using UserStoreLogic;
+using UserStoreLogic.DTOs;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -70,7 +74,7 @@ namespace MobilityManagerApi.Controllers
             var deleted = await _unitOfWork.Company.RemoveAsync(id);
             if (!deleted)
             {
-                throw new NullReferenceException("Company not found");
+                throw new NullReferenceException("CompanyDto not found");
             }
             await _unitOfWork.Complete();
             return Ok(deleted);
@@ -122,7 +126,63 @@ namespace MobilityManagerApi.Controllers
             return Ok();
         }
 
-        
+        //[AuthorizeRoles(Role.SuperAdmin)]
+        //[HttpPost("/[action]")]
+        //public async Task<IActionResult> Change([FromBody] ChangeCompanyBody inputBody)
+        //{
+        //    Company company = new();
+        //    GeneralResponseDto response = new GeneralResponseDto();
+        //    try
+        //    {
+        //        company = _unitOfWork.Company.FindAsync(c => c.Id == inputBody.Id).Result.First();
+        //        _unitOfWork.Company.Update(company);
+        //    }
+        //    catch (NullReferenceException ex)
+        //    {
+        //        response.Message = ex.Message;
+        //    }
+            
+
+        //    if (response.Message != null)
+        //    {
+        //        return BadRequest(response);
+        //    }
+            
+
+
+        //    var listDtoProp = inputBody.CompanyDto.GetType().GetProperties();
+        //    foreach (var property in listDtoProp)
+        //    {
+        //        if (property.GetValue(inputBody.CompanyDto) != null)
+        //        {
+        //            //PropertyInfo companyProperty;
+        //            //try
+        //            //{
+        //            //    companyProperty = listCoreProp.First(prop => prop.Name == property.Name);
+
+        //            //}
+        //            //catch (ArgumentNullException)
+        //            //{
+        //            //    return BadRequest("Check mapper configuration for the current entity on backend");
+        //            //}
+        //            //catch (InvalidCastException exception)
+        //            //{
+        //            //    return BadRequest(exception.Message);
+        //            //}
+
+                    
+                        
+        //            _mapper.Map(inputBody.CompanyDto, company);
+
+        //        }
+
+        //    }
+
+        //    await _unitOfWork.Complete();
+        //    response.Message = "Changes applied";
+        //    response.Unit = company;
+        //    return Ok(response);
+        //}
 
     }
 }

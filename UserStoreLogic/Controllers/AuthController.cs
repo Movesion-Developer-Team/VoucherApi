@@ -50,7 +50,7 @@ namespace UserStoreLogic.Controllers
             currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
             if (currentCompany == null)
             {
-                throw new NullReferenceException("Company not found");
+                throw new NullReferenceException("CompanyDto not found");
             }
 
 
