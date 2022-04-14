@@ -69,9 +69,14 @@ namespace Persistence.Repositories
             if (await DbSet.Where(predicate).AnyAsync())
             {
                 return await DbSet.Where(predicate).Select(e => e).ToListAsync();
+                
             }
-
-            throw new NullReferenceException("No requested entities in database");
+            else
+            {
+                throw new Exception("No requested entities in database");
+            }
+            
+            
         }
 
         public async Task<TEntity?> GetAsync(int id)

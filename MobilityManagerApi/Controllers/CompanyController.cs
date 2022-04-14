@@ -105,6 +105,9 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
+
+
+
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateNewCompany([FromBody] CompanyDto modelDto)

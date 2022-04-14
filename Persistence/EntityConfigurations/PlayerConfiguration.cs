@@ -9,8 +9,7 @@ namespace Persistence.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Player> builder)
         {
-
-            builder.Property(p => p.CategoryId).IsRequired();
+            
             builder.Property(p => p.Color).HasDefaultValue(KnownColor.Yellow);
             builder.Property(p => p.FullName).IsRequired();
             builder.Property(p => p.ShortName).IsRequired();

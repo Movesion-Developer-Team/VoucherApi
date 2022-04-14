@@ -11,7 +11,7 @@ namespace DTOs
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
         public KnownColor Color { get; set; }
-        public int CategoryId { get; set; }
+        
 
     }
 }
