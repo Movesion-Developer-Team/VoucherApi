@@ -5,7 +5,7 @@ namespace DTOs
     public class PlayerDto
     {
 
-        public string ShortName { get; set; }
+        public string? ShortName { get; set; }
         public string? FullName { get; set; }
         public string? PlayStoreLink { get; set; }
         public string? AppStoreLink { get; set; }
@@ -13,9 +13,5 @@ namespace DTOs
         public KnownColor Color { get; set; }
         public int CategoryId { get; set; }
 
-        public PlayerDto(string shortName)
-        {
-            ShortName = shortName;
-        }
     }
 }

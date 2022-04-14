@@ -2,6 +2,7 @@
 using Core.Domain;
 using DTOs;
 using Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MobilityManagerApi.Dtos.BodyDtos;
@@ -14,7 +15,7 @@ namespace MobilityManagerApi.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [EnableCors]
-    public class CompanyController : ControllerBase
+    public class CompanyController : ControllerBase, IControllerBaseActions
     {
 
         private readonly IMapper _mapper;
@@ -51,11 +52,11 @@ namespace MobilityManagerApi.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpGet]
-        public async Task<IActionResult> FindById([FromBody]BaseBody request)
+        public async Task<IActionResult> FindById(int id)
         {
             try
             {
-                var company = await _unitOfWork.Company.FindAsync(c => c.Id == request.Id);
+                var company = await _unitOfWork.Company.FindAsync(c => c.Id == id);
                 _response.Unit = company.First();
                 return Ok(_response);
             }
@@ -69,17 +70,12 @@ namespace MobilityManagerApi.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpGet]
-        public async Task<IActionResult> FindByName([FromBody] BaseCompanyBody request)
+        public async Task<IActionResult> FindByName(string name)
         {
-            if (string.IsNullOrEmpty(request.CompanyDto.Name))
-            {
-                _response.Message = "Please, provide the company name";
-                return BadRequest(_response);
-            }
-
+            
             try
             {
-                var company = await _unitOfWork.Company.FindAsync(c => c.Name == request.CompanyDto.Name);
+                var company = await _unitOfWork.Company.FindAsync(c => c.Name == name);
                 _response.Unit = company.First();
                 return Ok(_response);
             }
@@ -93,14 +89,32 @@ namespace MobilityManagerApi.Controllers
             
         }
 
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> FindIdByName(string name)
+        {
+            try
+            {
+                _response.Unit = await _unitOfWork.Company.FindAsync(c => c.Name.Contains(name));
+                return Ok(_response);
+            }
+            catch (NullReferenceException ex)
+            {
+                _response.Message = ex.Message;
+                return BadRequest(_response);
+            }
+        }
+
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateNewCompany([FromBody] CompanyDto modelDto)
         {
             var newAgency = _mapper.Map<Company>(modelDto);
-            await _unitOfWork.Company.AddAsync(newAgency);
+            var id = await _unitOfWork.Company.AddAsync(newAgency);
             await _unitOfWork.Complete();
-            return Ok();
+            _response.Message = "New entity created";
+            _response.Unit = id;
+            return Ok(_response);
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]
@@ -194,42 +208,42 @@ namespace MobilityManagerApi.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
-        public async Task<IActionResult> Change([FromBody] BaseCompanyBody inputBody)
+        public async Task<IActionResult> Change([FromBody] BaseCompanyBody body)
         {
             Company company = new();
-            GeneralResponseDto response = new();
+            
             try
             {
-                company = _unitOfWork.Company.FindAsync(c => c.Id == inputBody.Id).Result.First();
+                company = _unitOfWork.Company.FindAsync(c => c.Id == body.Id).Result.First();
                 _unitOfWork.Company.Update(company);
             }
             catch (NullReferenceException ex)
             {
-                response.Message = ex.Message;
+                _response.Message = ex.Message;
             }
 
 
-            if (response.Message != null)
+            if (_response.Message != null)
             {
-                return BadRequest(response);
+                return BadRequest(_response);
             }
 
 
 
-            var listDtoProp = inputBody.CompanyDto.GetType().GetProperties();
+            var listDtoProp = body.CompanyDto.GetType().GetProperties();
             foreach (var property in listDtoProp)
             {
-                if (property.GetValue(inputBody.CompanyDto) != null)
+                if (property.GetValue(body.CompanyDto) != null)
                 {
-                    _mapper.Map(inputBody.CompanyDto, company);
+                    _mapper.Map(body.CompanyDto, company);
                 }
 
             }
 
             await _unitOfWork.Complete();
-            response.Message = "Changes applied";
-            response.Unit = company;
-            return Ok(response);
+            _response.Message = "Changes applied";
+            _response.Unit = company;
+            return Ok(_response);
         }
 
     }

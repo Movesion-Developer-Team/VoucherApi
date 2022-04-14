@@ -9,7 +9,8 @@ namespace DTOs.MappingProfiles
         {
             CreateMap<Location, LocationDto>()
                 .ReverseMap()
-                .ForMember(d=>d.Players, opt=>opt.Ignore());
+                .ForMember(d=>d.Players, opt=>opt.Ignore())
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
         }
     }

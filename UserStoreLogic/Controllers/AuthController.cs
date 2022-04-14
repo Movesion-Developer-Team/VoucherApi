@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
-using UserStoreLogic.DTOs;
 using UserStoreLogic.DTOs.BodyDtos;
 using UserStoreLogic.DTOs.ResponseDtos;
 
@@ -27,6 +26,7 @@ namespace UserStoreLogic.Controllers
         private readonly UnitOfWork _unitOfWork;
         //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly AuthResponseDto _response = new();
 
         public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, VoucherContext voucherContext)
         {
@@ -40,19 +40,22 @@ namespace UserStoreLogic.Controllers
         [HttpPost]
         public async Task<ActionResult<IdentityResult?>> Register([FromBody] IdentityUserDto request)
         {
-            
-            Company? currentCompany;
+            Company currentCompany;
             var user = new IdentityUser
             {
                 UserName = request.UserName,
             };
 
 
-
-            currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
-            if (currentCompany == null)
+            try
             {
-                throw new NullReferenceException("CompanyDto not found");
+                currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
+            }
+            
+            catch (NullReferenceException ex)
+            {
+                _response.Message = ex.Message;
+                return BadRequest(_response);
             }
 
 
@@ -71,12 +74,14 @@ namespace UserStoreLogic.Controllers
             }
             else
             {
-                return Ok(newUser.Errors.First());
+                _response.Message = newUser.Errors.First().Description;
+                return BadRequest(_response);
             }
 
 
         }
-
+        
+        [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
         public async Task<IActionResult> ChangeRole(string name, BasicRole role)
         {
@@ -113,7 +118,6 @@ namespace UserStoreLogic.Controllers
 
         }
 
-
         [HttpPost]
         public async Task<ActionResult<string>> Login([FromBody] LoginBodyDto login)
         {
@@ -125,14 +129,14 @@ namespace UserStoreLogic.Controllers
 
             if (user == null)
             {
-                authResponse.ErrorMessage = "User not found";
+                authResponse.Message = "User not found";
                 return BadRequest(authResponse);
             }
 
             if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) ==
                 PasswordVerificationResult.Failed)
             {
-                authResponse.ErrorMessage = "Wrong password";
+                authResponse.Message = "Wrong password";
                 return BadRequest(authResponse);
             }
 
@@ -165,19 +169,27 @@ namespace UserStoreLogic.Controllers
         public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
         {
             var currentUser = HttpContext.User.Identity;
+            if (currentUser == null)
+            {
+                _response.Message = "No user identified in current context";
+                return BadRequest(_response);
+            }
             if (currentUser.IsAuthenticated)
             {
                 var userIdentity = _userManager.FindByNameAsync(currentUser.Name).Result;
                 if (userIdentity == null)
                 {
-                    return BadRequest("User not found");
+                    _response.Message = "User not found";
+                    return BadRequest(_response);
                 }
                 await _userManager.ChangePasswordAsync(userIdentity, currentPassword, newPassword);
-                return Ok("Password changed successfully");
+                _response.Message = "Password changed successfully";
+                return Ok(_response);
             }
             else
             {
-                return BadRequest("User not authenticated");
+                _response.Message = "User not authenticated";
+                return BadRequest(_response);
             }
 
         }
