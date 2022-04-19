@@ -12,7 +12,8 @@ namespace DTOs.MappingProfiles
                 .ForMember(d => d.Companies, opt => opt.Ignore())
                 .ForMember(d => d.CompanyCategories, opt => opt.Ignore())
                 .ForMember(d => d.Players, opt => opt.Ignore())
-                .ForMember(d => d.Vouchers, opt => opt.Ignore());
+                .ForMember(d => d.Vouchers, opt => opt.Ignore())
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

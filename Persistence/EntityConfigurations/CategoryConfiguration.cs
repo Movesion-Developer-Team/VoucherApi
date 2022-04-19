@@ -13,8 +13,7 @@ namespace Persistence.EntityConfigurations
 
 
             builder.HasMany(ca => ca.Players)
-                .WithOne(p => p.Category)
-                .HasForeignKey(p => p.CategoryId);
+                .WithOne(p => p.Category);
             builder.HasMany(c => c.Vouchers)
                 .WithOne(v => v.Category)
                 .HasForeignKey(v => v.CategoryId);

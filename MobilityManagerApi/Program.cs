@@ -86,7 +86,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbInitializer = services.GetService<IDbInitializer>();
-    await dbInitializer.Initialize();
+    await dbInitializer!.Initialize();
 }
 
 // Configure the HTTP request pipeline.

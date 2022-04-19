@@ -8,7 +8,8 @@ namespace DTOs.MappingProfiles
         public ReportProfile()
         {
             CreateMap<Report, ReportDto>()
-                .ReverseMap();
+                .ReverseMap()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

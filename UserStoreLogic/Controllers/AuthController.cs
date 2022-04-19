@@ -1,18 +1,20 @@
-﻿using Core.Domain;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Core.Domain;
 using DTOs;
 using Enum;
+using Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using UserStoreLogic.DTOs;
+using UserStoreLogic.DTOs.BodyDtos;
+using UserStoreLogic.DTOs.ResponseDtos;
 
-namespace MobilityManagerApi.Controllers
+namespace UserStoreLogic.Controllers
 {
     [ApiController]
     [EnableCors]
@@ -24,6 +26,7 @@ namespace MobilityManagerApi.Controllers
         private readonly UnitOfWork _unitOfWork;
         //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly AuthResponseDto _response = new();
 
         public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, VoucherContext voucherContext)
         {
@@ -37,19 +40,22 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IdentityResult?>> Register([FromBody] IdentityUserDto request)
         {
-            
-            Company? currentCompany;
+            Company currentCompany;
             var user = new IdentityUser
             {
                 UserName = request.UserName,
             };
 
 
-
-            currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
-            if (currentCompany == null)
+            try
             {
-                throw new NullReferenceException("Company not found");
+                currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
+            }
+            
+            catch (NullReferenceException ex)
+            {
+                _response.Message = ex.Message;
+                return BadRequest(_response);
             }
 
 
@@ -68,12 +74,14 @@ namespace MobilityManagerApi.Controllers
             }
             else
             {
-                return Ok(newUser.Errors.First());
+                _response.Message = newUser.Errors.First().Description;
+                return BadRequest(_response);
             }
 
 
         }
-
+        
+        [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
         public async Task<IActionResult> ChangeRole(string name, BasicRole role)
         {
@@ -110,49 +118,50 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-
         [HttpPost]
         public async Task<ActionResult<string>> Login([FromBody] LoginBodyDto login)
         {
             var authResponse = new AuthResponseDto();
-            
+
+            login.UserName = StringExtensions.RemoveSpacesForLogin(login.UserName);
+
             var user = await _userManager.FindByNameAsync(login.UserName);
 
             if (user == null)
             {
-                return BadRequest("User not found");
+                authResponse.Message = "User not found";
+                return BadRequest(authResponse);
             }
 
             if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password) ==
                 PasswordVerificationResult.Failed)
             {
-                authResponse.ErrorMessage = "Wrong password";
-                
+                authResponse.Message = "Wrong password";
+                return BadRequest(authResponse);
             }
-            else
+
+            authResponse.IsAuthenticated = true;
+            List<Claim> claims = new()
+
             {
-                authResponse.IsAuthenticated = true;
-                List<Claim> claims = new()
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, string.Join(", ",
+                    _userManager.GetRolesAsync(user).Result))
+            };
 
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, string.Join(", ",
-                        _userManager.GetRolesAsync(user).Result))
-                };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AuthSettings:Token")));
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
+            );
 
-                var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(1),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512)
-                );
-
-                authResponse.Token = new JwtSecurityTokenHandler().WriteToken(token);
-            }
-
+            authResponse.Token = new JwtSecurityTokenHandler().WriteToken(token);
             return Ok(authResponse);
+
+
         }
 
         [Authorize]
@@ -160,19 +169,27 @@ namespace MobilityManagerApi.Controllers
         public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
         {
             var currentUser = HttpContext.User.Identity;
+            if (currentUser == null)
+            {
+                _response.Message = "No user identified in current context";
+                return BadRequest(_response);
+            }
             if (currentUser.IsAuthenticated)
             {
                 var userIdentity = _userManager.FindByNameAsync(currentUser.Name).Result;
                 if (userIdentity == null)
                 {
-                    return BadRequest("User not found");
+                    _response.Message = "User not found";
+                    return BadRequest(_response);
                 }
                 await _userManager.ChangePasswordAsync(userIdentity, currentPassword, newPassword);
-                return Ok("Password changed successfully");
+                _response.Message = "Password changed successfully";
+                return Ok(_response);
             }
             else
             {
-                return BadRequest("User not authenticated");
+                _response.Message = "User not authenticated";
+                return BadRequest(_response);
             }
 
         }

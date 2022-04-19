@@ -19,7 +19,8 @@ namespace DTOs.MappingProfiles
                 .ForPath(s => s.ValidityPeriod.EndDate, opt => opt
                     .MapFrom(s => s.EndDate)) 
                 .ForMember(d=>d.UsageTimes, opt=>opt
-                    .Ignore());
+                    .Ignore())
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }
