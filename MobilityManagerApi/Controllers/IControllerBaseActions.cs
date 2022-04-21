@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MobilityManagerApi.Dtos.BodyDtos;
 
 namespace MobilityManagerApi.Controllers
 {

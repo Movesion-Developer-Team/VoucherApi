@@ -1,6 +1,4 @@
-﻿using DTOs;
-
-namespace MobilityManagerApi.Dtos.BodyDtos
+﻿namespace DTOs.BodyDtos
 {
     public class BaseCategoryBody : BaseBody
     {

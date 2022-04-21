@@ -1,8 +1,8 @@
 ﻿namespace MobilityManagerApi.Dtos.ResponseDtos
 {
-    public class GeneralResponseDto
+    public class GeneralResponseDto<TResponseUnit>
     {
         public string? Message { get; set; }
-        public object? Unit { get; set; }
+        public TResponseUnit? Unit { get; set; }
     }
 }

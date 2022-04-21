@@ -10,6 +10,5 @@ namespace DTOs
         public string? Address { get; set; }
         public int? NumberOfEmployees { get; set; }
 
-
     }
 }

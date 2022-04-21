@@ -6,17 +6,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Persistence.Repositories
 {
-    public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
+    public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : EntityBase
     {
         protected readonly DbContext Context;
-        protected readonly DbSet<TEntity> DbSet;
 
 
         public GenericRepository(DbContext context)
         {
             Context = context;
-            DbSet = context.Set<TEntity>();
-
         }
 
         public void Update(TEntity entity)
@@ -27,13 +24,13 @@ namespace Persistence.Repositories
 
         public async Task<int> AddAsync(TEntity entity)
         {
-            if (DbSet.Contains(entity) == false)
+
+            if (Context.Set<TEntity>().Contains(entity) == false)
             {
 
-                var entry = await DbSet.AddAsync(entity);
+                var entry = await Context.Set<TEntity>().AddAsync(entity);
                 await Context.SaveChangesAsync();
                 var idName = typeof(Company).GetProperties().First(p=>p.Name == "Id").Name;
-                //var id = entry.CurrentValues.Properties.First(p => p.Name == idName);
                 var id = entry.CurrentValues.GetValue<int>(idName);
 
                 return id;
@@ -49,7 +46,7 @@ namespace Persistence.Repositories
         {
             try
             {
-                DbSet.AddRange(entities);
+                Context.Set<TEntity>().AddRange(entities);
                 await Context.SaveChangesAsync();
                 return true;
             }
@@ -61,19 +58,19 @@ namespace Persistence.Repositories
 
         public async Task<bool> ExistsAsync(int id)
         {
-            return await DbSet.FindAsync(id) != null;
+            return await Context.Set<TEntity>().FindAsync(id) != null;
         }
 
-        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        public IQueryable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
         {
-            if (await DbSet.Where(predicate).AnyAsync())
+            if (Context.Set<TEntity>().Where(predicate).Any())
             {
-                return await DbSet.Where(predicate).Select(e => e).ToListAsync();
+                return Context.Set<TEntity>().Where(predicate).Select(e => e);
                 
             }
             else
             {
-                throw new Exception("No requested entities in database");
+                throw new NullReferenceException("No requested entities in database");
             }
             
             
@@ -81,13 +78,13 @@ namespace Persistence.Repositories
 
         public async Task<TEntity?> GetAsync(int id)
         {
-            return await DbSet.FindAsync(id) ?? throw new NullReferenceException();
+            return await Context.Set<TEntity>().FindAsync(id) ?? throw new NullReferenceException();
         }
 
         public Task<IQueryable<TEntity>> GetAll()
         {
-            var dbSet = DbSet.AsQueryable() ?? throw new NullReferenceException("No requested entities in database");
-            return Task.FromResult(dbSet);
+            var entities = Context.Set<TEntity>().AsQueryable() ?? throw new NullReferenceException("No requested entities in database");
+            return Task.FromResult(entities);
         }
 
         public async Task<bool> RemoveAsync(int id)
@@ -97,8 +94,8 @@ namespace Persistence.Repositories
 
                 if (!ExistsAsync(id).Result) return false;
 
-                var currentEntityTask = await DbSet.FindAsync(id);
-                DbSet.Remove(currentEntityTask!);
+                var currentEntityTask = await Context.Set<TEntity>().FindAsync(id);
+                Context.Set<TEntity>().Remove(currentEntityTask!);
 
                 return true;
 
@@ -108,6 +105,7 @@ namespace Persistence.Repositories
                 return false;
             }
         }
+
 
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using UserStoreLogic.DTOs.BodyDtos;
@@ -49,7 +50,7 @@ namespace UserStoreLogic.Controllers
 
             try
             {
-                currentCompany = _unitOfWork.Company.FindAsync(c => c.Id == request.CompanyId).Result.First();
+                currentCompany = await _unitOfWork.Company.Find(c => c.Id == request.CompanyId).FirstAsync();
             }
             
             catch (NullReferenceException ex)

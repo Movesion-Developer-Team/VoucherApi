@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Reflection;
+using AutoMapper;
 using Core.Domain;
 
 namespace DTOs.MappingProfiles
@@ -17,6 +18,11 @@ namespace DTOs.MappingProfiles
                 .ForMember(p => p.PlayerContacts, opt => opt.Ignore())
                 .ForMember(p => p.PlayerLocations, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+            CreateProjection<Player, PlayerDto>();
+
         }
+
+       
     }
 }

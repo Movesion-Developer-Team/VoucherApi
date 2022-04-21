@@ -15,7 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobilityManagerApi", "Mobil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserStoreLogic", "UserStoreLogic\UserStoreLogic.csproj", "{B0E76D7C-0D04-41C7-B1E2-B8C796647E04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions", "Extensions\Extensions.csproj", "{E4D3A200-A54C-4815-9795-4F07576F0B84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Extensions.csproj", "{E4D3A200-A54C-4815-9795-4F07576F0B84}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E577FEBA-09A4-41B0-8477-B77817936AFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobilityManagerApi.Tests", "MobilityManagerApi.Tests\MobilityManagerApi.Tests.csproj", "{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,9 +55,16 @@ Global
 		{E4D3A200-A54C-4815-9795-4F07576F0B84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4D3A200-A54C-4815-9795-4F07576F0B84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4D3A200-A54C-4815-9795-4F07576F0B84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8E6C33C7-1487-49FF-95A4-60DAD9A7396B} = {E577FEBA-09A4-41B0-8477-B77817936AFD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3AD46155-7CD8-402E-9BAA-E08255F0D09E}

@@ -7,7 +7,7 @@ namespace Core.IRepositories
     {
         Task<TEntity?> GetAsync(int id);
         Task<IQueryable<TEntity>> GetAll();
-        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
+        IQueryable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
         void Update(TEntity entity);
 
 

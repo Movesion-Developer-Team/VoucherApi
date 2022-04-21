@@ -1,4 +1,4 @@
-﻿namespace MobilityManagerApi.Dtos.BodyDtos
+﻿namespace DTOs.BodyDtos
 {
     public class AddCategoryBody
     {
