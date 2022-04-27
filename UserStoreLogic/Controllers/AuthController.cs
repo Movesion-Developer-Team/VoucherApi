@@ -63,11 +63,17 @@ namespace UserStoreLogic.Controllers
             var newUser = await _userManager.CreateAsync(user, request.Password);
             if (newUser.Succeeded)
             {
-                var currentUser = _userManager.FindByNameAsync(request.UserName).Result;
-                await _userManager.AddToRoleAsync(currentUser, Role.User.ToString());
+                var currentIdentityUser = _userManager.FindByNameAsync(request.UserName).Result;
+                await _userManager.AddToRoleAsync(currentIdentityUser, Role.User.ToString());
                 _unitOfWork.Company.Update(currentCompany);
 
-                await _unitOfWork.Company.AddWorkerToCompany(currentUser.Id, currentCompany.Id);
+                var currentUser = new User()
+                {
+                    IdentityUserId = currentIdentityUser.Id,
+                    CompanyId = request.CompanyId
+                };
+
+                await _unitOfWork.Company.AddWorkerToCompany(currentUser, currentCompany.Id);
 
                 await _unitOfWork.Complete();
 

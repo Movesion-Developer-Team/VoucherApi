@@ -1,15 +1,13 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Core.Domain;
-using DTOs;
 using DTOs.BodyDtos;
+using DTOs.ResponseDtos;
 using Enum;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MobilityManagerApi.Dtos.ResponseDtos;
 using Persistence;
 using UserStoreLogic;
 
@@ -30,139 +28,27 @@ namespace MobilityManagerApi.Controllers
             _unitOfWork = new UnitOfWork(vContext);
         }
 
-
-
-        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
-        [HttpGet]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseCompanyBody>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseCompanyBody>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = new GeneralResponseDto<IQueryable<BaseCategoryBody>>();
-            try
-            {
-                var categories = await _unitOfWork.Category.GetAll();
-                response.Unit = categories.ProjectTo<BaseCategoryBody>(_mapper.ConfigurationProvider);
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
-        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
-        [HttpGet]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseCompanyBody>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseCompanyBody>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> FindById([FromBody] BaseBody request)
-        {
-            var response = new GeneralResponseDto<BaseCategoryBody>();
-            try
-            {
-                var categories = _unitOfWork.Category.Find(c => c.Id == request.Id);
-                response.Unit = await categories.ProjectTo<BaseCategoryBody>(_mapper.ConfigurationProvider).FirstAsync();
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
-        [ProducesResponseType(typeof(GeneralResponseDto<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<bool>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete(BaseBody request)
+        [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status400BadRequest)]
+
+        public async Task<IActionResult> CreateNewCategory([FromQuery] CreateNewCategoryBodyDto category)
         {
-            var response = new GeneralResponseDto<bool>
-            {
-                Unit = await _unitOfWork.Category.RemoveAsync(request.Id)
-            };
-            if (!response.Unit)
-            {
-                response.Message = "Category not found";
-                return BadRequest(response);
-            }
-            await _unitOfWork.Complete();
-            response.Message = "Deleted";
-            return Ok(response);
-        }
-
-        [Authorize]
-        [HttpPost]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseCategoryBody>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseCategoryBody>>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> FindIdByName(string name)
-        {
-            var response = new GeneralResponseDto<IQueryable<BaseCategoryBody>>();
-
-            try
-            {
-                var categories = _unitOfWork.Category.Find(c => c.Name.Contains(name));
-                response.Unit = await Task.Run(() =>
-                    categories.ProjectTo<BaseCategoryBody>(_mapper.ConfigurationProvider));
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpGet]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseCategoryBody>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseCategoryBody>>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> FindByName([FromBody] BaseCategoryBody request)
-        {
-            var response = new GeneralResponseDto<IQueryable<BaseCategoryBody>>();
-            if (string.IsNullOrEmpty(request.CategoryDto.Name))
-            {
-                response.Message = "Please, provide the category name";
-                return BadRequest(response);
-            }
-
-            try
-            {
-                var categories = _unitOfWork.Category.Find(c => c.Name == request.CategoryDto.Name);
-                response.Unit = await Task.Run(() =>
-                    categories.ProjectTo<BaseCategoryBody>(_mapper.ConfigurationProvider));
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpPost]
-        [ProducesResponseType(typeof(GeneralResponseDto<int>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<int>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> CreateNewCategory([FromQuery] CategoryDto category)
-        {
-            var response = new GeneralResponseDto<int>();
+            var response = new CreateNewEntityResponseDto();
             if (category.Name.IsNullOrEmpty())
             {
                 response.Message = "Please, provide category name";
+                return BadRequest(response);
+
             }
-            var newCategory = _mapper.Map<CategoryDto, Category>(category);
+            var newCategory = _mapper.Map<CreateNewCategoryBodyDto, Category>(category);
             if (newCategory == null)
             {
                 response.Message = "Server side error: Object is not mapped, check mapping profile";
                 return BadRequest(response);
             }
-            response.Unit = await _unitOfWork.Category.AddAsync(newCategory);
+            response.Id = await _unitOfWork.Category.AddAsync(newCategory);
             await _unitOfWork.Complete();
             response.Message = "New entity created";
             return Ok(response);
@@ -171,12 +57,12 @@ namespace MobilityManagerApi.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseCategoryBody>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseCategoryBody>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Change([FromBody] BaseCategoryBody body)
+        [ProducesResponseType(typeof(CategoryMainResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CategoryMainResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Change([FromBody] CategoryBodyDto body)
         {
             Category category = new();
-            var response = new GeneralResponseDto<BaseCategoryBody>();
+            var response = new CategoryMainResponseDto();
 
             try
             {
@@ -196,21 +82,111 @@ namespace MobilityManagerApi.Controllers
 
 
 
-            var listDtoProp = body.CategoryDto.GetType().GetProperties();
+            var listDtoProp = body.GetType().GetProperties();
             foreach (var property in listDtoProp)
             {
-                if (property.GetValue(body.CategoryDto) != null)
+                if (property.GetValue(body) != null)
                 {
-                    _mapper.Map(body.CategoryDto, category);
+                    _mapper.Map(body, category);
                 }
 
             }
 
             await _unitOfWork.Complete();
-            response.Message = "Changes applied";
+            var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(body);
+            response.Message = idValue != null ? "Warning: changes applied, but new Id is not assigned, because it is forbidden on server side"
+                : "Changes applied";
             response.Unit = body;
             return Ok(response);
         }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllCategoriesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllCategoriesResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAll()
+        {
+            var response = new GetAllCategoriesResponseDto();
+            try
+            {
+                var categories = await _unitOfWork.Category.GetAll();
+                response.Unit = categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider);
+                return Ok(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(CategoryMainResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CategoryMainResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> FindById(int id)
+        {
+            var response = new CategoryMainResponseDto();
+            try
+            {
+                var categories = _unitOfWork.Category.Find(c => c.Id == id);
+                response.Unit = await categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                return Ok(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(CategoryFindByNameResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CategoryFindByNameResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> FindByName(string name)
+        {
+            var response = new CategoryFindByNameResponseDto();
+            try
+            {
+                var categories = _unitOfWork.Category.Find(c => c.Name == name);
+                response.Unit = await Task.Run(() =>
+                    categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider));
+                return Ok(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete(BaseBody request)
+        {
+            var response = new DeleteResponseDto()
+            {
+                Unit = await _unitOfWork.Category.RemoveAsync(request.Id)
+            };
+            if (!response.Unit)
+            {
+                response.Message = "Category not found";
+                return BadRequest(response);
+            }
+            await _unitOfWork.Complete();
+            response.Message = "Deleted";
+            return Ok(response);
+        }
+
+
+        
+
+
+        
 
     }
 }

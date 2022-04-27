@@ -1,6 +1,6 @@
 ﻿namespace Core.Domain
 {
-    public class ValidityPeriod
+    public class ValidityPeriod : EntityBase
     {
         public DateTime StartDate { get; private set; }
         public DateTime EndDate { get; private set; }

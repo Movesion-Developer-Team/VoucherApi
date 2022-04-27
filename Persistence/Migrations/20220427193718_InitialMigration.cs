@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -32,6 +31,8 @@ namespace Persistence.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Address = table.Column<string>(type: "text", nullable: true),
+                    NumberOfEmployees = table.Column<int>(type: "integer", nullable: true),
                     ContactDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -78,8 +79,8 @@ namespace Persistence.Migrations
                     PlayStoreLink = table.Column<string>(type: "text", nullable: true),
                     AppStoreLink = table.Column<string>(type: "text", nullable: true),
                     LinkDescription = table.Column<string>(type: "text", nullable: true),
-                    Color = table.Column<int>(type: "integer", nullable: false, defaultValue: 166),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                    CategoryId = table.Column<int>(type: "integer", nullable: true),
+                    Color = table.Column<int>(type: "integer", nullable: false, defaultValue: 166)
                 },
                 constraints: table =>
                 {
@@ -88,29 +89,23 @@ namespace Persistence.Migrations
                         name: "FK_Players_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "CompanyCategory",
+                name: "User",
                 columns: table => new
                 {
-                    CompanyId = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IdentityUserId = table.Column<string>(type: "text", nullable: true),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CompanyCategory", x => new { x.CategoryId, x.CompanyId });
+                    table.PrimaryKey("PK_User", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CompanyCategory_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CompanyCategory_Companies_CompanyId",
+                        name: "FK_User_Companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
@@ -123,7 +118,7 @@ namespace Persistence.Migrations
                 {
                     CompanyId = table.Column<int>(type: "integer", nullable: false),
                     PlayerId = table.Column<int>(type: "integer", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -159,7 +154,8 @@ namespace Persistence.Migrations
                     FinalPrice = table.Column<int>(type: "integer", nullable: false),
                     DiscountType = table.Column<int>(type: "integer", nullable: false),
                     ValidityPeriod_StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ValidityPeriod_EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    ValidityPeriod_EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ValidityPeriod_Id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -201,7 +197,7 @@ namespace Persistence.Migrations
                 {
                     PlayerId = table.Column<int>(type: "integer", nullable: false),
                     LocationId = table.Column<int>(type: "integer", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -248,11 +244,6 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CompanyCategory_CompanyId",
-                table: "CompanyCategory",
-                column: "CompanyId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_CompanyPlayer_PlayerId",
                 table: "CompanyPlayer",
                 column: "PlayerId");
@@ -278,6 +269,11 @@ namespace Persistence.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_User_CompanyId",
+                table: "User",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vouchers_CategoryId",
                 table: "Vouchers",
                 column: "CategoryId");
@@ -291,9 +287,6 @@ namespace Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CompanyCategory");
-
-            migrationBuilder.DropTable(
                 name: "CompanyPlayer");
 
             migrationBuilder.DropTable(
@@ -306,13 +299,16 @@ namespace Persistence.Migrations
                 name: "Reports");
 
             migrationBuilder.DropTable(
+                name: "User");
+
+            migrationBuilder.DropTable(
                 name: "Vouchers");
 
             migrationBuilder.DropTable(
-                name: "Companies");
+                name: "Locations");
 
             migrationBuilder.DropTable(
-                name: "Locations");
+                name: "Companies");
 
             migrationBuilder.DropTable(
                 name: "Discounts");

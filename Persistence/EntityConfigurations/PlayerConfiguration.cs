@@ -40,7 +40,8 @@ namespace Persistence.EntityConfigurations
                 .HasForeignKey(pc => pc.PlayerId);
 
             builder.HasOne(p => p.Category)
-                .WithMany(c => c.Players);
+                .WithMany(c => c.Players)
+                .HasForeignKey(p => p.CategoryId);
             builder.HasMany(p => p.Companies)
                 .WithMany(a => a.Players)
                 .UsingEntity<CompanyPlayer>(j =>

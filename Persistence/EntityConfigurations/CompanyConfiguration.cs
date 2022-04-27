@@ -11,25 +11,6 @@ namespace Persistence.EntityConfigurations
             builder.Property(a => a.Name).HasMaxLength(100).IsRequired();
             builder.Property(a => a.ContactDate).IsRequired();
 
-        
-
-            builder.HasMany(a => a.Categories)
-                .WithMany(c => c.Companies)
-                .UsingEntity<CompanyCategory>(j =>
-                    {
-                        j.HasOne(pt => pt.Company)
-                            .WithMany(a => a.CompanyCategories)
-                            .HasForeignKey(pt => pt.CompanyId);
-                        j.HasOne(pt => pt.Category)
-                            .WithMany(c => c.CompanyCategories)
-                            .HasForeignKey(pt => pt.CategoryId);
-                        j.HasKey(pt => new
-                        {
-                            AgencyId = pt.CompanyId,
-                            pt.CategoryId
-                        });
-                    });
-
             builder.HasMany(a => a.Players)
                 .WithMany(p => p.Companies)
                 .UsingEntity<CompanyPlayer>(j =>
@@ -46,7 +27,9 @@ namespace Persistence.EntityConfigurations
                         x.PlayerId
                     });
                 });
-
+            builder.HasMany(c => c.Workers)
+                .WithOne(w => w.Company)
+                .HasForeignKey(w => w.CompanyId);
         }
     }
 }

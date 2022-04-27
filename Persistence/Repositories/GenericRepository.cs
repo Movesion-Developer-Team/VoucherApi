@@ -22,7 +22,7 @@ namespace Persistence.Repositories
             Context.Entry(entity).State = EntityState.Modified;
         }
 
-        public async Task<int> AddAsync(TEntity entity)
+        public async Task<int?> AddAsync(TEntity entity)
         {
 
             if (Context.Set<TEntity>().Contains(entity) == false)
@@ -31,7 +31,7 @@ namespace Persistence.Repositories
                 var entry = await Context.Set<TEntity>().AddAsync(entity);
                 await Context.SaveChangesAsync();
                 var idName = typeof(Company).GetProperties().First(p=>p.Name == "Id").Name;
-                var id = entry.CurrentValues.GetValue<int>(idName);
+                var id = entry.CurrentValues.GetValue<int?>(idName);
 
                 return id;
 
@@ -83,7 +83,11 @@ namespace Persistence.Repositories
 
         public Task<IQueryable<TEntity>> GetAll()
         {
-            var entities = Context.Set<TEntity>().AsQueryable() ?? throw new NullReferenceException("No requested entities in database");
+            var entities = Context.Set<TEntity>().AsQueryable();
+            if (!entities.Any())
+            {
+                throw new NullReferenceException("No entities in Db");
+            }
             return Task.FromResult(entities);
         }
 

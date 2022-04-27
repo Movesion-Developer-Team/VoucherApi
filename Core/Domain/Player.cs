@@ -9,7 +9,7 @@ namespace Core.Domain
         public string? PlayStoreLink { get; set; }
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
-
+        public int? CategoryId { get; set; }
         public KnownColor Color { get; set; }
         public Category? Category { get; set; }
         public ICollection<Discount>? Discounts { get; set; }

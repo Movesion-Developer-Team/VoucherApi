@@ -1,6 +1,6 @@
-﻿namespace DTOs
+﻿namespace DTOs.BodyDtos
 {
-    public class VoucherDto
+    public class VoucherBodyDto : BaseBody
     {
         public string? Name { get; set; }
         public int CategoryId { get; set; }

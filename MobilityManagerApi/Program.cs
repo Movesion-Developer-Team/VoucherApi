@@ -10,6 +10,7 @@ using MobilityManagerApi;
 using Persistence;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using DTOs.BodyDtos;
 using UserStoreLogic;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,7 +73,7 @@ builder.Services.AddCors(opt =>
 });
 
 builder.Services.AddScoped<IUserStore<IdentityUser>, UserStore<IdentityUser, IdentityRole, UserDbContext>>();
-builder.Services.AddAutoMapper(typeof(CompanyDto).Assembly);
+builder.Services.AddAutoMapper(typeof(CompanyBodyDto).Assembly);
 
 
 var connectionString = builder.Configuration.GetValue<string>("ConnectionStrings:PostgreSqlConnectionString");

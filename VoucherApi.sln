@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Ex
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E577FEBA-09A4-41B0-8477-B77817936AFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobilityManagerApi.Tests", "MobilityManagerApi.Tests\MobilityManagerApi.Tests.csproj", "{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobilityManagerApi.Tests", "MobilityManagerApi.Tests\MobilityManagerApi.Tests.csproj", "{8E6C33C7-1487-49FF-95A4-60DAD9A7396B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

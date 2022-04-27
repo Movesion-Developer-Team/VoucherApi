@@ -2,11 +2,12 @@
 using AutoMapper.QueryableExtensions;
 using Core.Domain;
 using DTOs.BodyDtos;
+using DTOs.ResponseDtos;
 using Enum;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MobilityManagerApi.Dtos.ResponseDtos;
+using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using UserStoreLogic;
 
@@ -22,105 +23,57 @@ namespace MobilityManagerApi.Controllers
         private readonly UnitOfWork _unitOfWork;
 
 
-
-
         public VoucherController(IMapper mapper, VoucherContext vContext)
         {
             _mapper = mapper;
             _unitOfWork = new UnitOfWork(vContext);
         }
 
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpGet]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseVoucherBody>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseVoucherBody>>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> GetAll()
-        {
-            var response = new GeneralResponseDto<IQueryable<BaseVoucherBody>>();
-            try
-            {
-                var vouchers = await _unitOfWork.Voucher.GetAll();
-                response.Unit = vouchers.ProjectTo<BaseVoucherBody>(_mapper.ConfigurationProvider);
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpGet]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseVoucherBody>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseVoucherBody>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> FindById([FromBody] BaseBody request)
-        {
-            var response = new GeneralResponseDto<BaseVoucherBody>();
-            try
-            {
-                var vouchers = _unitOfWork.Voucher.Find(c => c.Id == request.Id);
-                response.Unit = await vouchers.ProjectTo<BaseVoucherBody>(_mapper.ConfigurationProvider).FirstAsync();
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
-        [AuthorizeRoles(Role.SuperAdmin)]
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
-        [ProducesResponseType(typeof(GeneralResponseDto<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<bool>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> Delete(BaseBody request)
+        [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateNewVoucher([FromBody] CreateNewVoucherBodyDto modelDto)
         {
-            var response = new GeneralResponseDto<bool>
+
+            var response = new CreateNewEntityResponseDto();
+
+            if (modelDto.Name.IsNullOrEmpty())
             {
-                Unit = await _unitOfWork.Voucher.RemoveAsync(request.Id)
-            };
-            if (!response.Unit)
-            {
-                response.Message = "Voucher not found";
+                response.Message = "Please, provide voucher name";
                 return BadRequest(response);
             }
+
+            var newVoucher = _mapper.Map<Voucher>(modelDto);
+            if (newVoucher == null)
+            {
+                response.Message = "Server side error: Object is not mapped, check mapping profile";
+                return BadRequest(response);
+            }
+            int? id;
+            try
+            {
+                id = await _unitOfWork.Voucher.AddAsync(newVoucher);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+
             await _unitOfWork.Complete();
-            response.Message = "Deleted";
+            response.Message = "New entity created";
+            response.Id = id;
             return Ok(response);
         }
 
-        [HttpGet]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseVoucherBody>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<IQueryable<BaseVoucherBody>>), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> FindIdByName(string name)
-        {
-            var response = new GeneralResponseDto<IQueryable<BaseVoucherBody>>();
-            try
-            {
-                var vouchers = _unitOfWork.Voucher.Find(c => c.Name.Contains(name));
-                response.Unit = await Task.Run(()=>vouchers.ProjectTo<BaseVoucherBody>(_mapper.ConfigurationProvider));
-                return Ok(response);
-            }
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
         [HttpPost]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseVoucherBody>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GeneralResponseDto<BaseVoucherBody>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Change([FromBody] BaseVoucherBody body)
+        [ProducesResponseType(typeof(VoucherMainResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(VoucherMainResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Change([FromBody] VoucherBodyDto body)
         {
             Voucher voucher = new();
-            var response = new GeneralResponseDto<BaseVoucherBody>();
+            var response = new VoucherMainResponseDto();
 
             try
             {
@@ -140,20 +93,83 @@ namespace MobilityManagerApi.Controllers
 
 
 
-            var listDtoProp = body.VoucherDto.GetType().GetProperties();
+            var listDtoProp = body.GetType().GetProperties();
             foreach (var property in listDtoProp)
             {
-                if (property.GetValue(body.VoucherDto) != null)
+                if (property.GetValue(body) != null)
                 {
-                    _mapper.Map(body.VoucherDto, voucher);
+                    _mapper.Map(body, voucher);
                 }
 
             }
 
             await _unitOfWork.Complete();
-            response.Message = "Changes applied";
+            var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(body);
+            response.Message = idValue != null ? "Warning: changes applied, but new Id is not assigned, because it is forbidden on server side"
+                : "Changes applied";
             response.Unit = body;
             return Ok(response);
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete(BaseBody request)
+        {
+            var response = new DeleteResponseDto()
+            {
+                Unit = await _unitOfWork.Voucher.RemoveAsync(request.Id)
+            };
+            if (!response.Unit)
+            {
+                response.Message = "Voucher not found";
+                return BadRequest(response);
+            }
+            await _unitOfWork.Complete();
+            response.Message = "Deleted";
+            return Ok(response);
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllVouchersResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllVouchersResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAll()
+        {
+            var response = new GetAllVouchersResponseDto();
+            try
+            {
+                var vouchers = await _unitOfWork.Voucher.GetAll();
+                response.Unit = vouchers.ProjectTo<VoucherBodyDto>(_mapper.ConfigurationProvider);
+                return Ok(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(VoucherMainResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(VoucherMainResponseDto), StatusCodes.Status400BadRequest)]
+
+        public async Task<IActionResult> FindById(int id)
+        {
+            var response = new VoucherMainResponseDto();
+            try
+            {
+                var vouchers = _unitOfWork.Voucher.Find(c => c.Id == id);
+                response.Unit = await vouchers.ProjectTo<VoucherBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                return Ok(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
         }
     }
 

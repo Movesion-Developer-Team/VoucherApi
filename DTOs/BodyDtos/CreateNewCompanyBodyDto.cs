@@ -1,14 +1,9 @@
-﻿using DTOs.MappingProfiles;
-using Microsoft.AspNetCore.Mvc;
-
-namespace DTOs
+﻿namespace DTOs.BodyDtos
 {
-    public class CompanyDto : BaseDto
+    public class CreateNewCompanyBodyDto
     {
-        
         public string? Name { get; set; }
         public string? Address { get; set; }
         public int? NumberOfEmployees { get; set; }
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Core.Domain;
 using Core.IRepositories;
+using DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Repositories
@@ -14,56 +15,7 @@ namespace Persistence.Repositories
             
         }
 
-        public async Task AssignToCategory(int? companyId, int? categoryId)
-        {
-            var currentCompany = await VoucherContext!.Companies.FindAsync(companyId);
-            if (currentCompany == null)
-            {
-                throw new NullReferenceException("Company not found");
-            }
-
-            var currentCategory = await VoucherContext.Categories.FindAsync(categoryId);
-            if (currentCategory == null)
-            {
-                throw new NullReferenceException("Category not found");
-            }
-
-            currentCompany.Categories.Add(currentCategory);
-        }
-
-        public async Task AssignToCategory(int? companyId, string? categoryName)
-        {
-            var currentCompany = await VoucherContext!.Companies.FindAsync(companyId);
-            if (currentCompany == null)
-            {
-                throw new NullReferenceException("Company not found");
-            }
-
-            var currentCategory = await VoucherContext!.Categories.FirstAsync(c => c.Name == categoryName);
-            if (currentCategory == null)
-            {
-                throw new NullReferenceException("Category not found");
-            }
-            currentCompany.Categories.Add(currentCategory);
-        }
-
-        public async Task AssignToCategory(string? companyName, string? categoryName)
-        {
-            var currentCompany = await VoucherContext!.Companies.FirstAsync(c => c.Name == companyName);
-            if (currentCompany == null)
-            {
-                throw new NullReferenceException("Company not found");
-            }
-
-            var currentCategory = await VoucherContext!.Categories.FirstAsync(c => c.Name == categoryName);
-            if (currentCategory == null)
-            {
-                throw new NullReferenceException("Category not found");
-            }
-            currentCompany.Categories.Add(currentCategory);
-        }
-
-        public async Task ChangeCompanyName(int companyId, string companyNewName)
+        public async Task ChangeCompanyName(int? companyId, string companyNewName)
         {
             var currentCompany = await VoucherContext.Companies.FindAsync(companyId);
             if (currentCompany == null)
@@ -74,7 +26,7 @@ namespace Persistence.Repositories
             currentCompany.Name = companyNewName;
         }
 
-        public async Task ChangeCompanyContactDate(int companyId, DateTime newDate)
+        public async Task ChangeCompanyContactDate(int? companyId, DateTime newDate)
         {
             var currentCompany = await VoucherContext.Companies.FindAsync(companyId);
             if (currentCompany == null)
@@ -85,15 +37,16 @@ namespace Persistence.Repositories
             currentCompany.ContactDate = newDate;
         }
 
-        public Task AddWorkerToCompany(string workerId, int companyId)
+        public Task AddWorkerToCompany(User user, int? companyId)
         {
             var currentCompany = VoucherContext.Companies.First(c => c.Id == companyId);
             Update(currentCompany);
-            if (currentCompany.WorkerIds == null)
+            if (currentCompany.Workers == null)
             {
-                currentCompany.WorkerIds = new List<string>();
+                currentCompany.Workers = new List<User>();
             }
-            void Action() => currentCompany.WorkerIds.Add(workerId);
+
+            void Action() => currentCompany.Workers.Add(user);
 
             return Task.Run((Action) Action);
         }

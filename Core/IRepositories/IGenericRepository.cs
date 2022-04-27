@@ -11,7 +11,7 @@ namespace Core.IRepositories
         void Update(TEntity entity);
 
 
-        Task<int> AddAsync(TEntity entity);
+        Task<int?> AddAsync(TEntity entity);
         Task<bool> AddRangeAsync(IEnumerable<TEntity> entities);
         Task<bool> RemoveAsync(int id);
         Task<bool> ExistsAsync(int id);
