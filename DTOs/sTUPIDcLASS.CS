@@ -1,6 +1,6 @@
 ﻿namespace DTOs
 {
-    public class sTUPIDcLASS
+    public class StupidClass
     {
     }
 }
