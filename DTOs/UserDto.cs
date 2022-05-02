@@ -4,5 +4,7 @@
     {
         public string? WorkerId { get; set; }
         public int CompanyId { get; set; }
+
+        public int NewInt { get; set; }
     }
 }
