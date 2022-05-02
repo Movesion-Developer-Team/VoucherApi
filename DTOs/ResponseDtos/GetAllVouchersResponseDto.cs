@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class GetAllVouchersResponseDto : BaseResponse
     {
-        public IQueryable<VoucherBodyDto>? Unit { get; set; }
+        public IQueryable<VoucherBodyDto>? Vouchers { get; set; }
     }
 }

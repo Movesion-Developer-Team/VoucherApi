@@ -10,7 +10,7 @@ namespace Persistence.EntityConfigurations
         public void Configure(EntityTypeBuilder<Player> builder)
         {
             
-            builder.Property(p => p.Color).HasDefaultValue(KnownColor.Yellow);
+            builder.Property(p => p.Color).HasDefaultValue("Yellow");
             builder.Property(p => p.FullName).IsRequired();
             builder.Property(p => p.ShortName).IsRequired();
 
@@ -39,9 +39,25 @@ namespace Persistence.EntityConfigurations
                 .WithOne(pc => pc.Player)
                 .HasForeignKey(pc => pc.PlayerId);
 
-            builder.HasOne(p => p.Category)
+            builder.HasMany(p => p.Categories)
                 .WithMany(c => c.Players)
-                .HasForeignKey(p => p.CategoryId);
+                .UsingEntity<PlayerCategories>(j =>
+                {
+                    j.HasOne(pc => pc.Player)
+                        .WithMany(p => p.PlayerCategories)
+                        .HasForeignKey(pc => pc.PlayerId);
+                    j.HasOne(pc => pc.Category)
+                        .WithMany(c => c.PlayerCategories)
+                        .HasForeignKey(pc => pc.CategoryId);
+
+                    j.HasKey(pc => new
+                    {
+                        pc.PlayerId,
+                        pc.CategoryId
+                    });
+                });
+
+
             builder.HasMany(p => p.Companies)
                 .WithMany(a => a.Players)
                 .UsingEntity<CompanyPlayer>(j =>

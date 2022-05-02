@@ -18,6 +18,7 @@ namespace Persistence.EntityConfigurations
             builder.Property(d => d.DiscountType)
                 .HasConversion<int>()
                 .IsRequired();
+            builder.HasIndex(d => d.Code).IsUnique();
             builder.Property(d => d.NumberOfUsagePerCompany).IsRequired();
             builder.Property(d => d.NumberOfUsagePerUser).IsRequired();
 

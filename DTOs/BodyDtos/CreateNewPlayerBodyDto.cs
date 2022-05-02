@@ -10,6 +10,6 @@ namespace DTOs.BodyDtos
         public string? PlayStoreLink { get; set; }
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
-        public KnownColor Color { get; set; }
+        public string? Color { get; set; }
     }
 }

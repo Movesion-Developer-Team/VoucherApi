@@ -9,7 +9,7 @@ namespace Persistence.Repositories
         public VoucherContext VoucherContext => Context as VoucherContext;
         public DiscountRepository(DbContext context) : base(context)
         {
-
+            
         }
     }
 }

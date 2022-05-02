@@ -8,5 +8,6 @@ namespace Core.Domain
         public string? Description { get; set; }
         public ICollection<Player>? Players { get; set; }
         public ICollection<Voucher>? Vouchers { get; set; }
+        public List<PlayerCategories>? PlayerCategories { get; set; }
     }
 }

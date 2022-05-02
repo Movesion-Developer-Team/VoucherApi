@@ -32,8 +32,9 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status400BadRequest)]
+        
 
-        public async Task<IActionResult> CreateNewCategory([FromQuery] CreateNewCategoryBodyDto category)
+        public async Task<IActionResult> CreateNewCategory([FromBody] CreateNewCategoryBodyDto category)
         {
             var response = new CreateNewEntityResponseDto();
             if (category.Name.IsNullOrEmpty())
@@ -96,7 +97,7 @@ namespace MobilityManagerApi.Controllers
             var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(body);
             response.Message = idValue != null ? "Warning: changes applied, but new Id is not assigned, because it is forbidden on server side"
                 : "Changes applied";
-            response.Unit = body;
+            response.Category = body;
             return Ok(response);
         }
 
@@ -110,7 +111,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var categories = await _unitOfWork.Category.GetAll();
-                response.Unit = categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider);
+                response.Categories = categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider);
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -130,7 +131,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var categories = _unitOfWork.Category.Find(c => c.Id == id);
-                response.Unit = await categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                response.Category = await categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -150,7 +151,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var categories = _unitOfWork.Category.Find(c => c.Name == name);
-                response.Unit = await Task.Run(() =>
+                response.Categories = await Task.Run(() =>
                     categories.ProjectTo<CategoryBodyDto>(_mapper.ConfigurationProvider));
                 return Ok(response);
             }
@@ -163,16 +164,16 @@ namespace MobilityManagerApi.Controllers
 
 
         [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpPost]
+        [HttpDelete]
         [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete(BaseBody request)
+        public async Task<IActionResult> Delete([FromQuery] int id)
         {
             var response = new DeleteResponseDto()
             {
-                Unit = await _unitOfWork.Category.RemoveAsync(request.Id)
+                IsDeleted = await _unitOfWork.Category.RemoveAsync(id)
             };
-            if (!response.Unit)
+            if (!response.IsDeleted)
             {
                 response.Message = "Category not found";
                 return BadRequest(response);

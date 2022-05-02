@@ -88,16 +88,13 @@ namespace MobilityManagerApi.Tests
         {
             
             var id = 2;
-            var baseBody = new BaseBody()
-            {
-                Id = id
-            };
-            var deleteFunctionTrueValue = ((((await _categoryController.Delete(baseBody) as ObjectResult)!)
+            
+            var deleteFunctionTrueValue = ((((await _categoryController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
-                .Unit;
-            var deleteFunctionFalseValue = ((((await _categoryController.Delete(baseBody) as ObjectResult)!)
+                .IsDeleted;
+            var deleteFunctionFalseValue = ((((await _categoryController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
-                .Unit;
+                .IsDeleted;
 
             Assert.Multiple(() =>
             {
@@ -113,7 +110,7 @@ namespace MobilityManagerApi.Tests
         [Order(3)]
         public async Task GetAllTest()
         {
-            await _categoryController.Delete(new BaseBody() { Id = 1 });
+            await _categoryController.Delete(1);
             var categories = await _categoryController.GetAll() as ObjectResult;
             if (categories.StatusCode != StatusCodes.Status400BadRequest)
             {
@@ -157,8 +154,8 @@ namespace MobilityManagerApi.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(resultsByDifferentConditions[0].Unit.Name == _categoryDto.Name);
-                Assert.IsTrue(resultsByDifferentConditions[1].Unit == null);
+                Assert.IsTrue(resultsByDifferentConditions[0].Category.Name == _categoryDto.Name);
+                Assert.IsTrue(resultsByDifferentConditions[1].Category == null);
                 Assert.IsTrue(resultsByDifferentConditions[1].Message != null);
             });
 
@@ -178,7 +175,7 @@ namespace MobilityManagerApi.Tests
 
             var result = ((((await _categoryController.Change(methodBody) as ObjectResult)!)
                     .Value as CategoryMainResponseDto)!)
-                .Unit;
+                .Category;
 
             Assert.Multiple(() =>
             {
@@ -198,7 +195,7 @@ namespace MobilityManagerApi.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(expectedValue.Unit.First().Name.Contains(_categoryDto.Name));
+                Assert.IsTrue(expectedValue.Categories.First().Name.Contains(_categoryDto.Name));
                 Assert.IsTrue(objectBadResult.GetType() == typeof(BadRequestObjectResult));
                 Assert.IsTrue(expectedBadValue.Message != null);
             });

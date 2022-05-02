@@ -26,7 +26,7 @@ namespace MobilityManagerApi.Tests
                 CategoryId = 1,
                 AppStoreLink = "https://lifeonthemars.int",
                 LinkDescription = "Coming soon...",
-                Color = KnownColor.Blue
+                Color = "Green"
             };
             
 
@@ -81,16 +81,13 @@ namespace MobilityManagerApi.Tests
         {
 
             var id = 2;
-            var baseBody = new BaseBody()
-            {
-                Id = id
-            };
-            var deleteFunctionTrueValue = ((((await _playerController.Delete(baseBody) as ObjectResult)!)
+            
+            var deleteFunctionTrueValue = ((((await _playerController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
-                .Unit;
-            var deleteFunctionFalseValue = ((((await _playerController.Delete(baseBody) as ObjectResult)!)
+                .IsDeleted;
+            var deleteFunctionFalseValue = ((((await _playerController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
-                .Unit;
+                .IsDeleted;
 
             Assert.Multiple(() =>
             {
@@ -106,7 +103,7 @@ namespace MobilityManagerApi.Tests
         [Order(3)]
         public async Task GetAllTest()
         {
-            await _playerController.Delete(new BaseBody() { Id = 1 });
+            await _playerController.Delete(1);
             var companies = await _playerController.GetAll() as ObjectResult;
             if (companies.StatusCode != StatusCodes.Status400BadRequest)
             {
@@ -150,8 +147,8 @@ namespace MobilityManagerApi.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(resultsByDifferentConditions[0].Unit.ShortName == _playerDto.ShortName);
-                Assert.IsTrue(resultsByDifferentConditions[1].Unit == null);
+                Assert.IsTrue(resultsByDifferentConditions[0].Player.ShortName == _playerDto.ShortName);
+                Assert.IsTrue(resultsByDifferentConditions[1].Player == null);
                 Assert.IsTrue(resultsByDifferentConditions[1].Message != null);
             });
 
@@ -171,7 +168,7 @@ namespace MobilityManagerApi.Tests
 
             var result = ((((await _playerController.Change(methodBody) as ObjectResult)!)
                     .Value as PlayerMainResponseDto)!)
-                .Unit;
+                .Player;
 
             Assert.Multiple(() =>
             {
@@ -192,7 +189,7 @@ namespace MobilityManagerApi.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(expectedValue.Unit.First().ShortName.Contains(_playerDto.ShortName));
+                Assert.IsTrue(expectedValue.Players.First().ShortName.Contains(_playerDto.ShortName));
                 Assert.IsTrue(objectBadResult.GetType() == typeof(BadRequestObjectResult));
                 Assert.IsTrue(expectedBadValue.Message != null);
             });

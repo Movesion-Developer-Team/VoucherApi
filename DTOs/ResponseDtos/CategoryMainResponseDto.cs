@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class CategoryMainResponseDto : BaseResponse
     {
-        public CategoryBodyDto? Unit { get; set; }
+        public CategoryBodyDto? Category { get; set; }
     }
 }

@@ -12,8 +12,23 @@ namespace Persistence.EntityConfigurations
             builder.Property(c => c.Name).HasMaxLength(100).IsRequired();
 
 
-            builder.HasMany(ca => ca.Players)
-                .WithOne(p => p.Category);
+            builder.HasMany(c => c.Players)
+                .WithMany(p => p.Categories)
+                .UsingEntity<PlayerCategories>(j =>
+                {
+                    j.HasOne(pc => pc.Player)
+                        .WithMany(p => p.PlayerCategories)
+                        .HasForeignKey(pc => pc.PlayerId);
+                    j.HasOne(pc => pc.Category)
+                        .WithMany(c => c.PlayerCategories)
+                        .HasForeignKey(pc => pc.CategoryId);
+
+                    j.HasKey(pc => new
+                    {
+                        pc.PlayerId,
+                        pc.CategoryId
+                    });
+                });
 
             builder.HasMany(c => c.Vouchers)
                 .WithOne(v => v.Category)

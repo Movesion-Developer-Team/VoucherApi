@@ -31,6 +31,7 @@ namespace MobilityManagerApi.Tests
         protected CategoryController _categoryController;
 
         protected PlayerController _playerController;
+        protected DiscountController _discountController;
 
 
 
@@ -57,6 +58,9 @@ namespace MobilityManagerApi.Tests
                 _context as VoucherContext);
 
             _playerController = new(
+                _mapper,
+                _context as VoucherContext);
+            _discountController = new(
                 _mapper,
                 _context as VoucherContext);
         }

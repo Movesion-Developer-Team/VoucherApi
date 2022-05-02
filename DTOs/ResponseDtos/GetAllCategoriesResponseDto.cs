@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class GetAllCategoriesResponseDto : BaseResponse
     {
-        public IQueryable<CategoryBodyDto>? Unit { get; set; }
+        public IQueryable<CategoryBodyDto>? Categories { get; set; }
     }
 }

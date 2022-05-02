@@ -107,27 +107,7 @@ namespace MobilityManagerApi.Controllers
             var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(body);
             response.Message = idValue != null ? "Warning: changes applied, but new Id is not assigned, because it is forbidden on server side"
                 : "Changes applied";
-            response.Unit = body;
-            return Ok(response);
-        }
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpDelete]
-        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete([FromBody] BaseBody request)
-        {
-            var response = new DeleteResponseDto()
-            {
-                Unit = await _unitOfWork.Player.RemoveAsync(request.Id)
-            };
-            if (!response.Unit)
-            {
-                response.Message = "Player not found";
-                return BadRequest(response);
-            }
-            await _unitOfWork.Complete();
-            response.Message = "Deleted";
+            response.Player = body;
             return Ok(response);
         }
 
@@ -142,7 +122,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var players = await _unitOfWork.Player.GetAll();
-                response.Unit = players.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider);
+                response.Players = players.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider);
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -163,7 +143,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var player = _unitOfWork.Player.Find(c => c.Id == id);
-                response.Unit = await player.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                response.Player = await player.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -183,7 +163,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var players = _unitOfWork.Player.Find(c => c.ShortName == shortName);
-                response.Unit = await Task.Run(() => players.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider));
+                response.Players = await Task.Run(() => players.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider));
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -192,7 +172,27 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
-        
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpDelete]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete([FromQuery] int id)
+        {
+            var response = new DeleteResponseDto()
+            {
+                IsDeleted = await _unitOfWork.Player.RemoveAsync(id)
+            };
+            if (!response.IsDeleted)
+            {
+                response.Message = "Player not found";
+                return BadRequest(response);
+            }
+            await _unitOfWork.Complete();
+            response.Message = "Deleted";
+            return Ok(response);
+        }
+
     }
 }
 

@@ -17,7 +17,11 @@ namespace MobilityManagerApi.Tests
         
 
         private CreateNewCompanyBodyDto _companyDto;
+        private CreateNewPlayerBodyDto _playerDto;
+        private CreateNewCategoryBodyDto _categoryDto;
         private int? _companyId;
+        private int? _playerId;
+        public int? _categoryId;
 
         [OneTimeSetUp]
         public async Task TestSetup()
@@ -28,9 +32,29 @@ namespace MobilityManagerApi.Tests
                 Address = "Moon",
                 NumberOfEmployees = 7
             };
-            
+            _categoryDto = new CreateNewCategoryBodyDto
+            {
+                Name = "TestCategory",
+                Description = "TestCategory description"
+            };
+            _categoryId = ((await _categoryController.CreateNewCategory(_categoryDto) as ObjectResult)
+                    .Value as CreateNewEntityResponseDto)
+                .Id;
+            _playerDto = new CreateNewPlayerBodyDto
+            {
+                ShortName = "TestPlayer",
+                FullName = "TestPlayer long name",
+                CategoryId = _categoryId,
+                PlayStoreLink = null,
+                AppStoreLink = null,
+                LinkDescription = null,
+                Color = null
+            };
             _companyId = ((await _companyController.CreateNewCompany(_companyDto) as ObjectResult)
                 .Value as CreateNewEntityResponseDto)
+                .Id;
+            _playerId = ((await _playerController.CreateNewPlayer(_playerDto) as ObjectResult)
+                    .Value as CreateNewEntityResponseDto)
                 .Id;
         }
 
@@ -38,6 +62,8 @@ namespace MobilityManagerApi.Tests
         public async Task TearDown()
         {
             _companyDto = null;
+            await _playerController.Delete((int)_playerId);
+            await _categoryController.Delete((int) _categoryId);
             await _context.DisposeAsync();
         }
 
@@ -83,16 +109,13 @@ namespace MobilityManagerApi.Tests
         {
            
             var id = 2;
-            var baseBody = new BaseBody()
-            {
-                Id = id
-            };
-            var deleteFunctionTrueValue = ((((await _companyController.Delete(baseBody) as ObjectResult)!)
+            
+            var deleteFunctionTrueValue = ((((await _companyController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
-                .Unit;
-            var deleteFunctionFalseValue = ((((await _companyController.Delete(baseBody) as ObjectResult)!)
+                .IsDeleted;
+            var deleteFunctionFalseValue = ((((await _companyController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
-                .Unit;
+                .IsDeleted;
 
             Assert.Multiple(() =>
             {
@@ -108,7 +131,7 @@ namespace MobilityManagerApi.Tests
         [Order(3)]
         public async Task GetAllTest()
         {
-            await _companyController.Delete(new BaseBody() {Id = 1});
+            await _companyController.Delete(1);
             var companies = await _companyController.GetAll() as ObjectResult;
             if (companies.StatusCode != StatusCodes.Status400BadRequest)
             {
@@ -152,8 +175,8 @@ namespace MobilityManagerApi.Tests
             
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(resultsByDifferentConditions[0].Unit.Name == _companyDto.Name);
-                Assert.IsTrue(resultsByDifferentConditions[1].Unit == null);
+                Assert.IsTrue(resultsByDifferentConditions[0].Company.Name == _companyDto.Name);
+                Assert.IsTrue(resultsByDifferentConditions[1].Company == null);
                 Assert.IsTrue(resultsByDifferentConditions[1].Message != null);
             });
             
@@ -172,7 +195,7 @@ namespace MobilityManagerApi.Tests
 
             var result = ((((await _companyController.Change(methodBody) as ObjectResult)!)
                     .Value as CompanyMainResponseDto)!)
-                .Unit;
+                .Company;
 
             Assert.Multiple(() =>
             {
@@ -193,7 +216,7 @@ namespace MobilityManagerApi.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(expectedValue.Unit.First().Name.Contains(_companyDto.Name));
+                Assert.IsTrue(expectedValue.Companies.First().Name.Contains(_companyDto.Name));
                 Assert.IsTrue(objectBadResult.GetType() == typeof(BadRequestObjectResult));
                 Assert.IsTrue(expectedBadValue.Message != null);
             });
@@ -201,6 +224,39 @@ namespace MobilityManagerApi.Tests
 
         }
 
+        [Test]
+        [Author((nameof(Authors.Arif)))]
+        public async Task AddPlayerToCompanyTest()
+        {
+            var body = new AddPlayerToCompanyBodyDto
+            {
+                PlayerId = _playerId,
+                CompanyId = _companyId
+            };
+            var okResult = await _companyController.AddPlayerToCompany(body) as ObjectResult;
+            body.PlayerId = _playerId+1;
+            var badResult = await _companyController.AddPlayerToCompany(body) as ObjectResult;
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(okResult.StatusCode, StatusCodes.Status200OK);
+                Assert.AreEqual(badResult.StatusCode, StatusCodes.Status400BadRequest);
+            });
+            
+        }
+
+        [Test]
+        [Author((nameof(Authors.Arif)))]
+        public async Task GetAllPlayersTest()
+        {
+
+            var okResult = await _companyController.GetAllPlayers((int)_companyId) as ObjectResult;
+            var players = (okResult.Value as GetAllPlayersForCurrentCompanyResponseDto).Players;
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(okResult.StatusCode, StatusCodes.Status200OK);
+                Assert.IsTrue(players != null);
+            });
+        }
 
     }
 }

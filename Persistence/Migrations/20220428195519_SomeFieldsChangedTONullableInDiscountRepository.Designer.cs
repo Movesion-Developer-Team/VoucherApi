@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,10 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    partial class VoucherContextModelSnapshot : ModelSnapshot
+    [Migration("20220428195519_SomeFieldsChangedTONullableInDiscountRepository")]
+    partial class SomeFieldsChangedTONullableInDiscountRepository
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,9 +133,6 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
-
                     b.HasIndex("PlayerId");
 
                     b.ToTable("Discounts");
@@ -175,10 +174,13 @@ namespace Persistence.Migrations
                     b.Property<string>("AppStoreLink")
                         .HasColumnType("text");
 
-                    b.Property<string>("Color")
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Color")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Yellow");
+                        .HasColumnType("integer")
+                        .HasDefaultValue(166);
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -196,25 +198,9 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Players");
-                });
-
-            modelBuilder.Entity("Core.Domain.PlayerCategories", b =>
-                {
-                    b.Property<int?>("PlayerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Id")
-                        .HasColumnType("integer");
-
-                    b.HasKey("PlayerId", "CategoryId");
-
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("PlayerCategories");
+                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerContact", b =>
@@ -386,23 +372,13 @@ namespace Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Core.Domain.PlayerCategories", b =>
+            modelBuilder.Entity("Core.Domain.Player", b =>
                 {
                     b.HasOne("Core.Domain.Category", "Category")
-                        .WithMany("PlayerCategories")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Player", "Player")
-                        .WithMany("PlayerCategories")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Players")
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
-
-                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerContact", b =>
@@ -467,7 +443,7 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.Category", b =>
                 {
-                    b.Navigation("PlayerCategories");
+                    b.Navigation("Players");
 
                     b.Navigation("Vouchers");
                 });
@@ -494,8 +470,6 @@ namespace Persistence.Migrations
                     b.Navigation("CompanyPlayers");
 
                     b.Navigation("Discounts");
-
-                    b.Navigation("PlayerCategories");
 
                     b.Navigation("PlayerContacts");
 

@@ -107,27 +107,7 @@ namespace MobilityManagerApi.Controllers
             var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(body);
             response.Message = idValue != null ? "Warning: changes applied, but new Id is not assigned, because it is forbidden on server side"
                 : "Changes applied";
-            response.Unit = body;
-            return Ok(response);
-        }
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpPost]
-        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete(BaseBody request)
-        {
-            var response = new DeleteResponseDto()
-            {
-                Unit = await _unitOfWork.Voucher.RemoveAsync(request.Id)
-            };
-            if (!response.Unit)
-            {
-                response.Message = "Voucher not found";
-                return BadRequest(response);
-            }
-            await _unitOfWork.Complete();
-            response.Message = "Deleted";
+            response.Voucher = body;
             return Ok(response);
         }
 
@@ -141,7 +121,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var vouchers = await _unitOfWork.Voucher.GetAll();
-                response.Unit = vouchers.ProjectTo<VoucherBodyDto>(_mapper.ConfigurationProvider);
+                response.Vouchers = vouchers.ProjectTo<VoucherBodyDto>(_mapper.ConfigurationProvider);
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -162,7 +142,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var vouchers = _unitOfWork.Voucher.Find(c => c.Id == id);
-                response.Unit = await vouchers.ProjectTo<VoucherBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                response.Voucher = await vouchers.ProjectTo<VoucherBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -170,6 +150,26 @@ namespace MobilityManagerApi.Controllers
                 response.Message = ex.Message;
                 return BadRequest(response);
             }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpDelete]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete([FromQuery] int id)
+        {
+            var response = new DeleteResponseDto()
+            {
+                IsDeleted = await _unitOfWork.Voucher.RemoveAsync(id)
+            };
+            if (!response.IsDeleted)
+            {
+                response.Message = "Voucher not found";
+                return BadRequest(response);
+            }
+            await _unitOfWork.Complete();
+            response.Message = "Deleted";
+            return Ok(response);
         }
     }
 

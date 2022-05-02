@@ -114,28 +114,33 @@ namespace MobilityManagerApi.Controllers
 
             await _unitOfWork.Complete();
             
-            response.Unit = _mapper.Map<Company, CompanyBodyDto>(company);
+            response.Company = _mapper.Map<Company, CompanyBodyDto>(company);
             return Ok(response);
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
-        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete(BaseBody request)
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddPlayerToCompany([FromBody] AddPlayerToCompanyBodyDto body)
         {
-            var response = new DeleteResponseDto
+            var response = new BaseResponse();
+            if (body.CompanyId == null || body.PlayerId == null)
             {
-                Unit = await _unitOfWork.Company.RemoveAsync(request.Id)
-            };
-            if (!response.Unit)
+                return BadRequest("Please, provide all required parameters");
+            }
+
+            try
             {
-                response.Message = "Company not found";
+                await _unitOfWork.Company.AddPlayerToCompany((int)body.PlayerId, (int)body.CompanyId);
+                response.Message = "Player added to the Company";
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
                 return BadRequest(response);
             }
-            await _unitOfWork.Complete();
-            response.Message = "Deleted";
-            return Ok(response);
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]
@@ -150,7 +155,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var companies = await _unitOfWork.Company.GetAll();
-                response.Unit = companies.ProjectTo<CompanyBodyDto>(_mapper.ConfigurationProvider);
+                response.Companies = companies.ProjectTo<CompanyBodyDto>(_mapper.ConfigurationProvider);
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -171,7 +176,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var companies = _unitOfWork.Company.Find(c => c.Id == id);
-                response.Unit = await companies.ProjectTo<CompanyBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                response.Company = await companies.ProjectTo<CompanyBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -193,7 +198,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var companies = _unitOfWork.Company.Find(c => c.Name == name);
-                response.Unit = await Task.Run(() => companies.ProjectTo<CompanyBodyDto>(_mapper.ConfigurationProvider));
+                response.Companies = await Task.Run(() => companies.ProjectTo<CompanyBodyDto>(_mapper.ConfigurationProvider));
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -203,16 +208,46 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllPlayers([FromQuery] int companyId)
+        {
+            var response = new GetAllPlayersForCurrentCompanyResponseDto();
+            try
+            {
+                var company = await _unitOfWork.Company.Find(c => c.Id == companyId).FirstAsync();
+                response.Players = company.Players.ToList();
+                response.Message = "Success";
+                return Ok(response);
+            }
+            catch(NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
 
-
-        
-
-
-        
-
-
-
-        
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpDelete]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete([FromQuery] int id)
+        {
+            var response = new DeleteResponseDto
+            {
+                IsDeleted = await _unitOfWork.Company.RemoveAsync(id)
+            };
+            if (!response.IsDeleted)
+            {
+                response.Message = "Company not found";
+                return BadRequest(response);
+            }
+            await _unitOfWork.Complete();
+            response.Message = "Deleted";
+            return Ok(response);
+        }
 
     }
 }

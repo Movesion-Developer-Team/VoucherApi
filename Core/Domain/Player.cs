@@ -9,12 +9,12 @@ namespace Core.Domain
         public string? PlayStoreLink { get; set; }
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
-        public int? CategoryId { get; set; }
-        public KnownColor Color { get; set; }
-        public Category? Category { get; set; }
+        public string? Color { get; set; }
+        public ICollection<Category>? Categories { get; set; }
         public ICollection<Discount>? Discounts { get; set; }
         public ICollection<Location>? Locations { get; set; }
         public List<PlayerLocation>? PlayerLocations { get; set; }
+        public List<PlayerCategories>? PlayerCategories { get; set; }
         public ICollection<PlayerContact>? PlayerContacts { get; set; }
         public ICollection<Company>? Companies { get; set; }
         public List<CompanyPlayer>? CompanyPlayers { get; set; }

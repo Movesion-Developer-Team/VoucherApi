@@ -8,7 +8,6 @@ namespace Core.IRepositories
         Task ChangeCompanyName(int? companyId, string companyNewName);
         Task ChangeCompanyContactDate(int? companyId, DateTime newDate);
         Task AddWorkerToCompany(User user, int? companyId);
-
-
+        Task AddPlayerToCompany(int playerId, int companyId);
     }
 }

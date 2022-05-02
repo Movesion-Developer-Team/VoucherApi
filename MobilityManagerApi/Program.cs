@@ -13,7 +13,11 @@ using System.Text;
 using DTOs.BodyDtos;
 using UserStoreLogic;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = "wwwroot"
+});
 
 // Add services to the container.
 
@@ -94,12 +98,18 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.InjectStylesheet("/swagger-ui/theme-monokai.css");
+    });
 }
+
 
 app.UseHttpsRedirection();
 
 app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 
@@ -108,3 +118,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run("https://localhost:7098/");
+Console.WriteLine();

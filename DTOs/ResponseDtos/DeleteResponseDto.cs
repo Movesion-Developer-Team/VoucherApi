@@ -2,6 +2,6 @@
 {
     public class DeleteResponseDto : BaseResponse
     {
-        public bool Unit { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

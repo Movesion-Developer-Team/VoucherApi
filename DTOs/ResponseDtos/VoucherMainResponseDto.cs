@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class VoucherMainResponseDto : BaseResponse
     {
-        public VoucherBodyDto? Unit { get; set; }
+        public VoucherBodyDto? Voucher { get; set; }
     }
 }

@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class CompanyFindByNameResponseDto : BaseResponse
     {
-        public IQueryable<CompanyBodyDto>? Unit { get; set; }
+        public IQueryable<CompanyBodyDto>? Companies { get; set; }
     }
 }
