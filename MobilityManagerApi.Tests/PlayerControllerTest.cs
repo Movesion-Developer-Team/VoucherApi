@@ -104,8 +104,8 @@ namespace MobilityManagerApi.Tests
         public async Task GetAllTest()
         {
             await _playerController.Delete(1);
-            var companies = await _playerController.GetAll() as ObjectResult;
-            if (companies.StatusCode != StatusCodes.Status400BadRequest)
+            var players = await _playerController.GetAll() as ObjectResult;
+            if (players.StatusCode != StatusCodes.Status400BadRequest)
             {
                 Assert.Fail("Method should return BadRequest, when there is no entities in DB");
             }
@@ -113,13 +113,13 @@ namespace MobilityManagerApi.Tests
 
             await _playerController.CreateNewPlayer(_playerDto);
 
-            companies = await _playerController.GetAll() as ObjectResult;
-            if (companies.StatusCode != StatusCodes.Status200OK)
+            players = await _playerController.GetAll() as ObjectResult;
+            if (players.StatusCode != StatusCodes.Status200OK)
             {
                 Assert.Fail("Method did not return 200 response");
             }
 
-            Assert.IsInstanceOf(typeof(GetAllPlayersResponseDto), companies.Value);
+            Assert.IsInstanceOf(typeof(GetAllPlayersResponseDto), players.Value);
 
         }
 

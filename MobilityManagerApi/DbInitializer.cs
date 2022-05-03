@@ -1,9 +1,7 @@
 ﻿using Core.Domain;
 using Enum;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Persistence;
 using Persistence.Repositories;
 using UserStoreLogic;
@@ -88,20 +86,18 @@ namespace MobilityManagerApi
                 Name = "Taxi",
                 Description = "This is Taxi category"
                 }
-        };
-
-            foreach (var category in categories)
+            };
+            if (!await _voucherContext.Categories.AnyAsync())
             {
-                
-                try
+                foreach (var category in categories)
                 {
-                    await _categoryRepository.Find(c => c.Name == category.Name).FirstAsync();
-                }
-                catch (NullReferenceException)
-                {
+
                     await _categoryRepository.AddAsync(category);
                 }
             }
+            
+
+
 
             await _voucherContext.SaveChangesAsync();
 
