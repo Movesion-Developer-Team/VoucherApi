@@ -10,6 +10,7 @@ using Enum;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32.SafeHandles;
 using Persistence;
 using UserStoreLogic;
 
@@ -29,41 +30,60 @@ namespace MobilityManagerApi.Controllers
             _unitOfWork = new UnitOfWork(vContext);
         }
 
+        
+
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-
-        public async Task<IActionResult> UploadCsv([FromBody] UploadCsvBodyDto body)
+        [ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CsvToDiscountCodes()
         {
-            var response = new BaseResponse();
+            var response = new CsvToDiscountCodesResponseDto();
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = false
             };
+            
             try
             {
-                using var reader = new StreamReader(body.FilePath);
-                using var csv = new CsvReader(reader, config);
-                var recordsDto = csv.GetRecords<UploadCsvToDiscountDto>();
-                recordsDto.AsParallel().ForAll(d=>d.PlayerId = body.PlayerId);
-                recordsDto.AsParallel().ForAll(d => d.DiscountType = body.DiscountType);
+                var formCollection = await Request.ReadFormAsync();
+                var file = formCollection.Files.First();
+                if (file.Length > 0)
+                {
+                    var stream = new FileStream(new SafeFileHandle(), FileAccess.Write);
+                    await file.CopyToAsync(stream);
+                    var reader = new StreamReader(stream);
+                    var csv = new CsvReader(reader, config);
 
-                var records =
-                    _mapper.ProjectTo<Discount>(recordsDto.ToList().AsQueryable());
-                await _unitOfWork.Discount.AddRangeAsync(records);
-                await _unitOfWork.Complete();
-                response.Message = "Discounts are saved in Db";
-                return Ok(response);
+                    response.UnassignedCollectionId = await
+                        _unitOfWork.UnassignedDiscountCodeCollections.AddAsync(new UnassignedDiscountCodeCollection());
+
+                    var codes = _mapper.ProjectTo<DiscountCode>(csv.GetRecords<CsvCodeDto>().AsQueryable());
+
+                    await codes.ForEachAsync((code) => code.UnassignedCollectionId = response.UnassignedCollectionId);
+
+                    await _unitOfWork.DiscountCode.AddRangeAsync(codes);
+                    
+                    response.Message = "Discounts are saved in Db without assignment to the player!";
+
+                    return Ok(response);
+                }
+
+                response.Message = "Please provide a file";
+                return BadRequest();
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
+                response.Message = $"Internal Server error: {ex.Message}";
                 return BadRequest(response);
             }
-            
         }
 
-        
+        //[AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> AssignCodesCollection 
+
     }
 }

@@ -5,7 +5,8 @@ namespace Core.Domain
     public class Discount : EntityBase
     {
 
-        public string? Code { get; set; }
+        public DiscountCode? DiscountCode { get; set; }
+        public int? DiscountCodeId { get; set; }
         public int? PlayerId { get; set; }
         public string? LinkTermsAndConditions { get; set; }
         public string? UnityOfMeasurement { get; set; }
@@ -22,9 +23,6 @@ namespace Core.Domain
         public Player Player { get; set; }
         public ValidityPeriod ValidityPeriod { get; set; }
         public ICollection<Voucher> Vouchers { get; set; }
-
-
-
 
     }
 }

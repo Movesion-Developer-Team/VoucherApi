@@ -1,18 +1,16 @@
 ﻿using Core.Domain;
 using Core.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 
 namespace Persistence.Repositories
 {
-    public class 
-        CompanyRepository : GenericRepository<Company>, ICompanyRepository
+    public class CompanyRepository : GenericRepository<Company>, ICompanyRepository
     {
 
         VoucherContext? VoucherContext => Context as VoucherContext;
         public CompanyRepository(DbContext context) : base(context)
         {
-            
+
         }
 
         public async Task ChangeCompanyName(int? companyId, string companyNewName)
@@ -48,7 +46,7 @@ namespace Persistence.Repositories
 
             void Action() => currentCompany.Workers.Add(user);
 
-            await Task.Run((Action) Action);
+            await Task.Run((Action)Action);
         }
 
         public async Task AddPlayerToCompany(int playerId, int companyId)
@@ -70,6 +68,6 @@ namespace Persistence.Repositories
 
             await Task.Run((Action)Action);
         }
-        
+
     }
 }

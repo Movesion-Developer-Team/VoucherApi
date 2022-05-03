@@ -18,12 +18,17 @@ namespace Persistence.EntityConfigurations
             builder.Property(d => d.DiscountType)
                 .HasConversion<int>()
                 .IsRequired();
-            builder.HasIndex(d => d.Code).IsUnique();
+
+
             builder.Property(d => d.NumberOfUsagePerCompany).IsRequired();
             builder.Property(d => d.NumberOfUsagePerUser).IsRequired();
 
+            builder.HasOne(d => d.DiscountCode)
+                .WithOne(dc => dc.Discount);
+
             builder.HasOne(d => d.Player)
                 .WithMany(p => p.Discounts);
+
             builder.HasMany(d => d.Vouchers)
                 .WithOne(v => v.Discount)
                 .HasForeignKey(v => v.DiscountId);

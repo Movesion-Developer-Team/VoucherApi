@@ -56,6 +56,24 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Players",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ShortName = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: false),
+                    PlayStoreLink = table.Column<string>(type: "text", nullable: true),
+                    AppStoreLink = table.Column<string>(type: "text", nullable: true),
+                    LinkDescription = table.Column<string>(type: "text", nullable: true),
+                    Color = table.Column<string>(type: "text", nullable: true, defaultValue: "Yellow")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Players", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Reports",
                 columns: table => new
                 {
@@ -69,27 +87,15 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Players",
+                name: "UnassignedDiscountCodeCollections",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ShortName = table.Column<string>(type: "text", nullable: false),
-                    FullName = table.Column<string>(type: "text", nullable: false),
-                    PlayStoreLink = table.Column<string>(type: "text", nullable: true),
-                    AppStoreLink = table.Column<string>(type: "text", nullable: true),
-                    LinkDescription = table.Column<string>(type: "text", nullable: true),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true),
-                    Color = table.Column<int>(type: "integer", nullable: false, defaultValue: 166)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Players", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Players_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id");
+                    table.PrimaryKey("PK_UnassignedDiscountCodeCollections", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -138,30 +144,24 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Discounts",
+                name: "PlayerCategories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<string>(type: "text", nullable: false),
                     PlayerId = table.Column<int>(type: "integer", nullable: false),
-                    LinkTermsAndConditions = table.Column<string>(type: "text", nullable: true),
-                    UnityOfMeasurement = table.Column<string>(type: "text", nullable: true),
-                    DiscountValue = table.Column<float>(type: "real", nullable: false),
-                    NumberOfUsagePerCompany = table.Column<int>(type: "integer", nullable: false),
-                    NumberOfUsagePerUser = table.Column<int>(type: "integer", nullable: false),
-                    InitialPrice = table.Column<int>(type: "integer", nullable: false),
-                    FinalPrice = table.Column<int>(type: "integer", nullable: false),
-                    DiscountType = table.Column<int>(type: "integer", nullable: false),
-                    ValidityPeriod_StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ValidityPeriod_EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ValidityPeriod_Id = table.Column<int>(type: "integer", nullable: true)
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Discounts", x => x.Id);
+                    table.PrimaryKey("PK_PlayerCategories", x => new { x.PlayerId, x.CategoryId });
                     table.ForeignKey(
-                        name: "FK_Discounts_Players_PlayerId",
+                        name: "FK_PlayerCategories_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PlayerCategories_Players_PlayerId",
                         column: x => x.PlayerId,
                         principalTable: "Players",
                         principalColumn: "Id",
@@ -217,6 +217,62 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DiscountCode",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "text", nullable: true),
+                    UnassignedCollectionId = table.Column<int>(type: "integer", nullable: true),
+                    UnassignedDiscountCodeCollectionsId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiscountCode", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DiscountCode_UnassignedDiscountCodeCollections_UnassignedDi~",
+                        column: x => x.UnassignedDiscountCodeCollectionsId,
+                        principalTable: "UnassignedDiscountCodeCollections",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Discounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DiscountCodeId = table.Column<int>(type: "integer", nullable: true),
+                    PlayerId = table.Column<int>(type: "integer", nullable: false),
+                    LinkTermsAndConditions = table.Column<string>(type: "text", nullable: true),
+                    UnityOfMeasurement = table.Column<string>(type: "text", nullable: true),
+                    DiscountValue = table.Column<float>(type: "real", nullable: true),
+                    NumberOfUsagePerCompany = table.Column<int>(type: "integer", nullable: false),
+                    NumberOfUsagePerUser = table.Column<int>(type: "integer", nullable: false),
+                    InitialPrice = table.Column<int>(type: "integer", nullable: true),
+                    FinalPrice = table.Column<int>(type: "integer", nullable: true),
+                    DiscountType = table.Column<int>(type: "integer", nullable: false),
+                    ValidityPeriod_StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ValidityPeriod_EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ValidityPeriod_Id = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Discounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Discounts_DiscountCode_DiscountCodeId",
+                        column: x => x.DiscountCodeId,
+                        principalTable: "DiscountCode",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Discounts_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Vouchers",
                 columns: table => new
                 {
@@ -249,9 +305,25 @@ namespace Persistence.Migrations
                 column: "PlayerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DiscountCode_UnassignedDiscountCodeCollectionsId",
+                table: "DiscountCode",
+                column: "UnassignedDiscountCodeCollectionsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Discounts_DiscountCodeId",
+                table: "Discounts",
+                column: "DiscountCodeId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Discounts_PlayerId",
                 table: "Discounts",
                 column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerCategories_CategoryId",
+                table: "PlayerCategories",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PlayerContacts_PlayerId",
@@ -262,11 +334,6 @@ namespace Persistence.Migrations
                 name: "IX_PlayerLocation_LocationId",
                 table: "PlayerLocation",
                 column: "LocationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Players_CategoryId",
-                table: "Players",
-                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_CompanyId",
@@ -290,6 +357,9 @@ namespace Persistence.Migrations
                 name: "CompanyPlayer");
 
             migrationBuilder.DropTable(
+                name: "PlayerCategories");
+
+            migrationBuilder.DropTable(
                 name: "PlayerContacts");
 
             migrationBuilder.DropTable(
@@ -311,13 +381,19 @@ namespace Persistence.Migrations
                 name: "Companies");
 
             migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
                 name: "Discounts");
+
+            migrationBuilder.DropTable(
+                name: "DiscountCode");
 
             migrationBuilder.DropTable(
                 name: "Players");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "UnassignedDiscountCodeCollections");
         }
     }
 }
