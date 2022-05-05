@@ -215,6 +215,8 @@ namespace UserStoreLogic.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpGet]
+        [ProducesResponseType(typeof(GetAllUsersResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllUsersResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllUsers()
         {
             var response = new GetAllUsersResponseDto();
