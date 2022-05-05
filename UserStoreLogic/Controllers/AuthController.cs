@@ -1,9 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Core.Domain;
 using DTOs;
 using DTOs.BodyDtos;
+using DTOs.ResponseDtos;
 using Enum;
 using Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -29,15 +32,17 @@ namespace UserStoreLogic.Controllers
         private readonly UnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly UserDbContext _userDbContext;
+        private readonly IMapper _mapper;
         
 
         public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager,
-            VoucherContext voucherContext, UserDbContext context)
+            VoucherContext voucherContext, UserDbContext context, IMapper mapper)
         {
             _configuration = configuration;
             _userManager = userManager;
             _unitOfWork = new UnitOfWork(voucherContext);
             _userDbContext = context;
+            _mapper = mapper;
         }
 
 
@@ -208,12 +213,25 @@ namespace UserStoreLogic.Controllers
 
         }
 
-        //[AuthorizeRoles(Role.SuperAdmin)]
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllUsers()
-        //{
-        //    _userDbContext.Users.AsQueryable()
-        //}
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var response = new GetAllUsersResponseDto();
+            var usersTask = () => _userDbContext.Users.AsQueryable();
+            try
+            {
+                var identityUsersQuery = await Task.Run(usersTask);
+                response.Users = _mapper.ProjectTo<UserDto>(identityUsersQuery);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
 
         [Authorize]
         [HttpPost]
@@ -245,6 +263,8 @@ namespace UserStoreLogic.Controllers
             }
 
         }
+
+
 
 
 
