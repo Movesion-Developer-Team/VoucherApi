@@ -184,15 +184,6 @@ namespace MobilityManagerApi.Controllers
         }
 
 
-        //[AuthorizeRoles(Role.SuperAdmin)]
-        //[HttpDelete]
-        //[ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> AssignCategoryToPlayer()
-        //{
-
-        //}
-
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpDelete]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status200OK)]

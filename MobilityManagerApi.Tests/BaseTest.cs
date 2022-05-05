@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using DTOs;
+using DTOs.ResponseDtos;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MobilityManagerApi.Controllers;
 using NUnit.Framework;
@@ -19,6 +21,8 @@ namespace MobilityManagerApi.Tests
         {
             Arif = 1
         }
+
+        protected Func<IActionResult, int?> GetIdFromResponse = (result) => ((result as ObjectResult)?.Value as CreateNewEntityResponseDto)?.Id;
 
         protected DbContextOptionsBuilder<VoucherContext> DbOptions;
 

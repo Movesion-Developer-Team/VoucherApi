@@ -214,7 +214,28 @@ namespace MobilityManagerApi.Tests
                 Assert.IsTrue(expectedBadValue.Message != null);
             });
 
-
         }
+
+        [Test]
+        [Author(nameof(Authors.Arif))]
+        public async Task AssignCategoryToPlayerTest()
+        {
+
+            var categoryId = GetIdFromResponse(await _categoryController.CreateNewCategory(_categoryDto));
+            var playerId = GetIdFromResponse(await _playerController.CreateNewPlayer(_playerDto));
+            var assignmentBody = new AssignCategoryToPlayerBodyDto
+            {
+                CategoryId = categoryId,
+                PlayerId = playerId
+            };
+
+            await _playerController.AssignCategoryToPlayer(assignmentBody);
+            var changedPlayer =  await _context.Set<Player>().FindAsync(playerId);
+            Assert.Multiple(() =>
+            {
+                Assert.IsTrue(changedPlayer?.Categories != null && changedPlayer.Categories.Any(c=>c.Name == _categoryDto.Name));
+            });
+        }
+
     }
 }

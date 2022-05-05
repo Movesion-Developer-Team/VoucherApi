@@ -197,6 +197,42 @@ namespace MobilityManagerApi.Controllers
             return Ok(response);
         }
 
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignCategoryToPlayer([FromBody] AssignCategoryToPlayerBodyDto body)
+        {
+            var response = new BaseResponse();
+            if (body.PlayerId == null)
+            {
+                response.Message = "Please provide Player Id";
+            }
+
+            if (body.CategoryId == null)
+            {
+                response.Message = "Please provide Category Id";
+            }
+
+            try
+            {
+                await _unitOfWork.Player.AssignCategoryToPlayer((int) body.PlayerId, (int) body.CategoryId);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = $"Server internal error: {ex.Message}";
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Server internal error: {ex.Message}";
+                return BadRequest(response);
+            }
+
+        }
+
     }
 }
 

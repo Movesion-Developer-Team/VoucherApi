@@ -1,4 +1,5 @@
-﻿using Core.Domain;
+﻿using System.Runtime.CompilerServices;
+using Core.Domain;
 using Core.IRepositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,5 +30,6 @@ namespace Persistence.Repositories
              }
 
         }
+
     }
 }
