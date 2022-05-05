@@ -37,7 +37,13 @@ namespace DTOs.MappingProfiles
             CreateMap<CreateNewPlayerBodyDto, PlayerBodyDto>()
                 .ForMember(pb => pb.Id, opt => opt.Ignore())
                 .ReverseMap();
+
+            CreateMap<Player, PlayerWithCategoriesBodyDto>()
+                .ForMember(pc => pc.Player, opt => opt.MapFrom(p => p))
+                .ForMember(pc => pc.Categories, opt => opt.MapFrom(p => p.Categories));
+
         }
+
 
        
     }

@@ -10,6 +10,7 @@ namespace Persistence.EntityConfigurations
         {
             builder.Property(a => a.Name).HasMaxLength(100).IsRequired();
             builder.Property(a => a.ContactDate).IsRequired();
+            
 
             builder.HasMany(a => a.Players)
                 .WithMany(p => p.Companies)

@@ -11,7 +11,6 @@ namespace Persistence.EntityConfigurations
         {
             
             builder.Property(p => p.Color).HasDefaultValue("Yellow");
-            builder.Property(p => p.FullName).IsRequired();
             builder.Property(p => p.ShortName).IsRequired();
 
             builder.HasMany(p => p.Discounts)

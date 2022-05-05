@@ -15,6 +15,8 @@ namespace Persistence
         public IPlayerRepository Player { get; }
         public IReportRepository Report { get; }
         public IVoucherRepository Voucher { get; }
+        public IDiscountCodeRepository DiscountCode { get; }
+        public IUnassignedDiscountCodeCollectionsRepository UnassignedDiscountCodeCollections { get; }
 
         private readonly VoucherContext _voucherContext;
 
@@ -29,6 +31,8 @@ namespace Persistence
             Player = new PlayerRepository(voucherContext);
             Report = new ReportRepository(voucherContext);
             Voucher = new VoucherRepository(voucherContext);
+            DiscountCode = new DiscountCodeRepository(voucherContext);
+            UnassignedDiscountCodeCollections = new UnassignedDiscountCodeCollectionsRepository(voucherContext);
         }
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Domain;
 using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
 using Microsoft.AspNetCore.Http;
@@ -13,22 +14,35 @@ namespace MobilityManagerApi.Tests
 {
     internal class PlayerControllerTest : BaseTest
     {
-        public CreateNewPlayerBodyDto _playerDto;
+        private CreateNewPlayerBodyDto _playerDto;
+        private CreateNewCategoryBodyDto _categoryDto;
         private int? _playerId;
+        private int? _categoryId;
 
         [OneTimeSetUp]
         public async Task TestSetup()
         {
+            
+            _categoryDto = new CreateNewCategoryBodyDto
+            {
+                Name = "TestCategory",
+                Description = null
+            };
+
+            _categoryId =
+                ((await _categoryController.CreateNewCategory(_categoryDto) as ObjectResult).Value as
+                    CreateNewEntityResponseDto).Id;
+
             _playerDto = new CreateNewPlayerBodyDto()
             {
                 ShortName = "SpaceX",
                 FullName = "SpaceX",
-                CategoryId = 1,
                 AppStoreLink = "https://lifeonthemars.int",
                 LinkDescription = "Coming soon...",
-                Color = "Green"
+                Color = "Green",
+                CategoryId = _categoryId
+
             };
-            
 
             _playerId = ((await _playerController.CreateNewPlayer(_playerDto) as ObjectResult)
                     .Value as CreateNewEntityResponseDto)
@@ -40,6 +54,7 @@ namespace MobilityManagerApi.Tests
         public async Task TearDown()
         {
             _playerDto = null;
+            await _categoryController.Delete((int) _categoryId);
             await _context.DisposeAsync();
         }
 
@@ -70,8 +85,13 @@ namespace MobilityManagerApi.Tests
                 Assert.Fail("ObjectResult does not contain entity id");
             }
 
-
-            Assert.IsInstanceOf(typeof(Int32), resultedObject.Id);
+            
+            Assert.Multiple(() =>
+            {
+                Assert.IsInstanceOf(typeof(Int32), resultedObject.Id);
+                
+            });
+            
         }
 
         [Test]

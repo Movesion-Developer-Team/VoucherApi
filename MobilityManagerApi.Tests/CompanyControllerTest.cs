@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DTOs.ResponseDtos;
+using System.Text.Json;
 
 namespace MobilityManagerApi.Tests
 {
     [TestFixture(TestOf = typeof(CompanyController))]
     public class CompanyControllerTest : BaseTest
     {
-        
+
 
         private CreateNewCompanyBodyDto _companyDto;
         private CreateNewPlayerBodyDto _playerDto;
@@ -26,7 +27,7 @@ namespace MobilityManagerApi.Tests
         [OneTimeSetUp]
         public async Task TestSetup()
         {
-            _companyDto = new CreateNewCompanyBodyDto() 
+            _companyDto = new CreateNewCompanyBodyDto()
             {
                 Name = "Hello",
                 Address = "Moon",
@@ -63,7 +64,7 @@ namespace MobilityManagerApi.Tests
         {
             _companyDto = null;
             await _playerController.Delete((int)_playerId);
-            await _categoryController.Delete((int) _categoryId);
+            await _categoryController.Delete((int)_categoryId);
             await _context.DisposeAsync();
         }
 
@@ -94,7 +95,7 @@ namespace MobilityManagerApi.Tests
                 Assert.Fail("ObjectResult does not contain entity id");
             }
 
-            Assert.Multiple(()=>
+            Assert.Multiple(() =>
             {
                 Assert.IsInstanceOf(typeof(Int32), resultedObject.Id);
                 Assert.AreEqual(2, resultedObject.Id);
@@ -107,9 +108,9 @@ namespace MobilityManagerApi.Tests
         [Order(2)]
         public async Task DeleteTest()
         {
-           
+
             var id = 2;
-            
+
             var deleteFunctionTrueValue = ((((await _companyController.Delete(id) as ObjectResult)!)
                     .Value as DeleteResponseDto)!)
                 .IsDeleted;
@@ -170,16 +171,16 @@ namespace MobilityManagerApi.Tests
                 objectResult = await _companyController.FindById((int)id) as ObjectResult;
                 expectedValue = objectResult.Value as CompanyMainResponseDto;
                 resultsByDifferentConditions.Add(expectedValue);
-                
+
             }
-            
+
             Assert.Multiple(() =>
             {
                 Assert.IsTrue(resultsByDifferentConditions[0].Company.Name == _companyDto.Name);
                 Assert.IsTrue(resultsByDifferentConditions[1].Company == null);
                 Assert.IsTrue(resultsByDifferentConditions[1].Message != null);
             });
-            
+
 
         }
 
@@ -234,14 +235,14 @@ namespace MobilityManagerApi.Tests
                 CompanyId = _companyId
             };
             var okResult = await _companyController.AddPlayerToCompany(body) as ObjectResult;
-            body.PlayerId = _playerId+1;
+            body.PlayerId = _playerId + 1;
             var badResult = await _companyController.AddPlayerToCompany(body) as ObjectResult;
             Assert.Multiple(() =>
             {
                 Assert.AreEqual(okResult.StatusCode, StatusCodes.Status200OK);
                 Assert.AreEqual(badResult.StatusCode, StatusCodes.Status400BadRequest);
             });
-            
+
         }
 
         [Test]
@@ -249,12 +250,55 @@ namespace MobilityManagerApi.Tests
         public async Task GetAllPlayersTest()
         {
 
-            var okResult = await _companyController.GetAllPlayers((int)_companyId) as ObjectResult;
+            var okResult = await _companyController.GetAllPlayersForOneCompany((int)_companyId) as ObjectResult;
             var players = (okResult.Value as GetAllPlayersForCurrentCompanyResponseDto).Players;
             Assert.Multiple(() =>
             {
                 Assert.AreEqual(okResult.StatusCode, StatusCodes.Status200OK);
                 Assert.IsTrue(players != null);
+            });
+        }
+
+        [Test]
+        [Author((nameof(Authors.Arif)))]
+        public async Task GetAllCompaniesWithPlayersTest()
+        {
+            var getIdFromResponse = (IActionResult result) =>
+                ((result as ObjectResult).Value as CreateNewEntityResponseDto).Id;
+            var categoryBody = new CreateNewCategoryBodyDto
+            {
+                Name = "TestCategory",
+                Description = "TestPlayer"
+            };
+            var categoryId = getIdFromResponse(await _categoryController.CreateNewCategory(categoryBody));
+            var playerBody = new CreateNewPlayerBodyDto
+            {
+                ShortName = "TestPlayer",
+                FullName = "TestPlayer",
+                CategoryId = categoryId,
+                PlayStoreLink = null,
+                AppStoreLink = null,
+                LinkDescription = null,
+                Color = null
+            };
+            var playerId = getIdFromResponse(await _playerController.CreateNewPlayer(playerBody));
+            var companyId = getIdFromResponse(await _companyController.CreateNewCompany(new CreateNewCompanyBodyDto
+            {
+                Name = "TestCompany",
+                Address = "TestAddress",
+                NumberOfEmployees = 123
+            }));
+            _companyController.AddPlayerToCompany(new AddPlayerToCompanyBodyDto()
+                {CompanyId = companyId, PlayerId = playerId});
+
+            var okResult = _companyController.GetAllCompaniesWithPlayers() as ObjectResult;
+            var companies = (okResult.Value as GetAllCompaniesWithPlayersResponseDto);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+                Assert.IsTrue(companies.Companies.Any(c=>c.Players.Any()));
+                string jsonCompanies = JsonSerializer.Serialize(companies);
+                TestContext.Out.WriteLine(jsonCompanies);
             });
         }
 

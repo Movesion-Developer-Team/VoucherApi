@@ -9,7 +9,7 @@ namespace DTOs.MappingProfiles
     {
         public DiscountProfile()
         {
-            CreateMap<UploadCsvToDiscountDto, Discount>();
+            CreateMap<CsvCodeDto, DiscountCode>();
         }
     }
 }

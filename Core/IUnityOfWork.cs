@@ -11,6 +11,8 @@ namespace Core
         IPlayerRepository Player { get; }
         IReportRepository Report { get; }
         IVoucherRepository Voucher { get; }
+        IDiscountCodeRepository DiscountCode { get; }
+        IUnassignedDiscountCodeCollectionsRepository UnassignedDiscountCodeCollections { get; }
 
         Task Complete();
 

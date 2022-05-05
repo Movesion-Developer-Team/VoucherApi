@@ -35,20 +35,24 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateNewPlayer([FromBody] CreateNewPlayerBodyDto playerDto)
+        public async Task<IActionResult> CreateNewPlayer([FromBody] CreateNewPlayerBodyDto body)
         {
             var response = new CreateNewEntityResponseDto();
-            if (playerDto.ShortName.IsNullOrEmpty())
+            if (body.ShortName.IsNullOrEmpty())
             {
                 response.Message = "Please, provide player shortName";
                 return BadRequest(response);
             }
-            var newPlayer = _mapper.Map<Player>(playerDto);
+            var newPlayer = _mapper.Map<Player>(body);
             if (newPlayer == null)
             {
                 response.Message = "Server side error: Object is not mapped, check mapping profile";
                 return BadRequest(response);
             }
+
+            var category = await _unitOfWork.Category.Find(c => c.Id == body.CategoryId).FirstAsync();
+            newPlayer.Categories = new List<Category>();
+            newPlayer.Categories.Add(category);
             int? id;
             try
             {

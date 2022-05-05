@@ -1,4 +1,3 @@
-using DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -100,7 +99,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.InjectStylesheet("/swagger-ui/theme-monokai.css");
+        c.InjectStylesheet("/swagger-ui/theme-muted.css");
     });
 }
 

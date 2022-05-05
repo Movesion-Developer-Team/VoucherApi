@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    [Migration("20220502075408_PlayerWithCategoryNowHaveManyToManyRelationship")]
-    partial class PlayerWithCategoryNowHaveManyToManyRelationship
+    [Migration("20220504103020_NumberOfUsagesAreNowNotRequiredInDiscountLogics")]
+    partial class NumberOfUsagesAreNowNotRequiredInDiscountLogics
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -98,8 +98,8 @@ namespace Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
-                    b.Property<string>("Code")
-                        .HasColumnType("text");
+                    b.Property<int?>("DiscountCodeId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("DiscountType")
                         .HasColumnType("integer");
@@ -117,11 +117,9 @@ namespace Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<int?>("NumberOfUsagePerCompany")
-                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<int?>("NumberOfUsagePerUser")
-                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<int?>("PlayerId")
@@ -133,12 +131,36 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
+                    b.HasIndex("DiscountCodeId")
                         .IsUnique();
 
                     b.HasIndex("PlayerId");
 
                     b.ToTable("Discounts");
+                });
+
+            modelBuilder.Entity("Core.Domain.DiscountCode", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UnassignedCollectionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UnassignedDiscountCodeCollectionsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnassignedDiscountCodeCollectionsId");
+
+                    b.ToTable("DiscountCode");
                 });
 
             modelBuilder.Entity("Core.Domain.Location", b =>
@@ -285,6 +307,19 @@ namespace Persistence.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("Core.Domain.UnassignedDiscountCodeCollection", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnassignedDiscountCodeCollection");
+                });
+
             modelBuilder.Entity("Core.Domain.User", b =>
                 {
                     b.Property<int?>("Id")
@@ -354,6 +389,10 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
                 {
+                    b.HasOne("Core.Domain.DiscountCode", "DiscountCode")
+                        .WithOne("Discount")
+                        .HasForeignKey("Core.Domain.Discount", "DiscountCodeId");
+
                     b.HasOne("Core.Domain.Player", "Player")
                         .WithMany("Discounts")
                         .HasForeignKey("PlayerId")
@@ -382,10 +421,21 @@ namespace Persistence.Migrations
                                 .HasForeignKey("DiscountId");
                         });
 
+                    b.Navigation("DiscountCode");
+
                     b.Navigation("Player");
 
                     b.Navigation("ValidityPeriod")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Core.Domain.DiscountCode", b =>
+                {
+                    b.HasOne("Core.Domain.UnassignedDiscountCodeCollection", "UnassignedDiscountCodeCollections")
+                        .WithMany("DiscountCodes")
+                        .HasForeignKey("UnassignedDiscountCodeCollectionsId");
+
+                    b.Navigation("UnassignedDiscountCodeCollections");
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerCategories", b =>
@@ -486,6 +536,11 @@ namespace Persistence.Migrations
                     b.Navigation("Vouchers");
                 });
 
+            modelBuilder.Entity("Core.Domain.DiscountCode", b =>
+                {
+                    b.Navigation("Discount");
+                });
+
             modelBuilder.Entity("Core.Domain.Location", b =>
                 {
                     b.Navigation("PlayerLocations");
@@ -502,6 +557,11 @@ namespace Persistence.Migrations
                     b.Navigation("PlayerContacts");
 
                     b.Navigation("PlayerLocations");
+                });
+
+            modelBuilder.Entity("Core.Domain.UnassignedDiscountCodeCollection", b =>
+                {
+                    b.Navigation("DiscountCodes");
                 });
 #pragma warning restore 612, 618
         }

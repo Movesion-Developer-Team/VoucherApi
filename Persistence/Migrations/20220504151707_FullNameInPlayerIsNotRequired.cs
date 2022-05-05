@@ -4,33 +4,30 @@
 
 namespace Persistence.Migrations
 {
-    public partial class PlayerColorChangedToNullableString : Migration
+    public partial class FullNameInPlayerIsNotRequired : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "Color",
+                name: "FullName",
                 table: "Players",
                 type: "text",
                 nullable: true,
-                defaultValue: "Yellow",
-                oldClrType: typeof(int),
-                oldType: "integer",
-                oldDefaultValue: 166);
+                oldClrType: typeof(string),
+                oldType: "text");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "Color",
+            migrationBuilder.AlterColumn<string>(
+                name: "FullName",
                 table: "Players",
-                type: "integer",
+                type: "text",
                 nullable: false,
-                defaultValue: 166,
+                defaultValue: "",
                 oldClrType: typeof(string),
                 oldType: "text",
-                oldNullable: true,
-                oldDefaultValue: "Yellow");
+                oldNullable: true);
         }
     }
 }

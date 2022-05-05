@@ -4,10 +4,11 @@ namespace Core.IRepositories
 {
     public interface ICompanyRepository : IGenericRepository<Company>
     {
-        
+
         Task ChangeCompanyName(int? companyId, string companyNewName);
         Task ChangeCompanyContactDate(int? companyId, DateTime newDate);
         Task AddWorkerToCompany(User user, int? companyId);
         Task AddPlayerToCompany(int playerId, int companyId);
+        IQueryable<Company> GetAllCompaniesWithPlayers();
     }
 }
