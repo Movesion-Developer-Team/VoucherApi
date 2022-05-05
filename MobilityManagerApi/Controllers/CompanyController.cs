@@ -28,8 +28,8 @@ namespace MobilityManagerApi.Controllers
         public CompanyController(IMapper mapper, VoucherContext vContext)
         {
 
-            _mapper = mapper;
-            _unitOfWork = new UnitOfWork(vContext);
+                _mapper = mapper;
+                _unitOfWork = new UnitOfWork(vContext);
 
         }
 
