@@ -12,5 +12,28 @@ namespace Persistence.Repositories
         {
         }
 
+        public async Task AssignCategoryToPlayer(int playerId, int categoryId)
+        {
+            var player = await VoucherContext.Players
+                .Where(p=>p.Id == playerId)
+                .Include(p=>p.Categories)
+                .FirstAsync();
+
+            if (player == null)
+            {
+                throw new ArgumentNullException(nameof(player));
+            }
+
+            var category = await VoucherContext.Categories.FindAsync(categoryId);
+            if (category == null)
+            {
+                throw new ArgumentNullException(nameof(category));
+            }
+            Update(player);
+
+            player.Categories ??= new List<Category>();
+            player.Categories.Add(category);
+            await VoucherContext.SaveChangesAsync();
+        }
     }
 }

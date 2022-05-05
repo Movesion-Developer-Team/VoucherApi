@@ -263,14 +263,13 @@ namespace MobilityManagerApi.Tests
         [Author((nameof(Authors.Arif)))]
         public async Task GetAllCompaniesWithPlayersTest()
         {
-            var getIdFromResponse = (IActionResult result) =>
-                ((result as ObjectResult).Value as CreateNewEntityResponseDto).Id;
+            
             var categoryBody = new CreateNewCategoryBodyDto
             {
                 Name = "TestCategory",
                 Description = "TestPlayer"
             };
-            var categoryId = getIdFromResponse(await _categoryController.CreateNewCategory(categoryBody));
+            var categoryId = GetIdFromResponse(await _categoryController.CreateNewCategory(categoryBody));
             var playerBody = new CreateNewPlayerBodyDto
             {
                 ShortName = "TestPlayer",
@@ -281,8 +280,8 @@ namespace MobilityManagerApi.Tests
                 LinkDescription = null,
                 Color = null
             };
-            var playerId = getIdFromResponse(await _playerController.CreateNewPlayer(playerBody));
-            var companyId = getIdFromResponse(await _companyController.CreateNewCompany(new CreateNewCompanyBodyDto
+            var playerId = GetIdFromResponse(await _playerController.CreateNewPlayer(playerBody));
+            var companyId = GetIdFromResponse(await _companyController.CreateNewCompany(new CreateNewCompanyBodyDto
             {
                 Name = "TestCompany",
                 Address = "TestAddress",
