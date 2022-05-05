@@ -99,7 +99,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.InjectStylesheet("/swagger-ui/theme-monokai.css");
+        c.InjectStylesheet("/swagger-ui/theme-muted.css");
     });
 }
 

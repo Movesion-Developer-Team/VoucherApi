@@ -34,6 +34,10 @@ namespace DTOs.MappingProfiles
                 .ForMember(cb => cb.Id, opt => opt.Ignore())
                 .ReverseMap();
 
+            CreateMap<Company, CompanyWithPlayersBodyDto>()
+                .ForMember(cp => cp.Company, opt => opt.MapFrom(c => c))
+                .ForMember(cp => cp.Players, opt => opt.MapFrom(c => c.Players));
+
         }
 
     }

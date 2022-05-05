@@ -79,11 +79,40 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
-        //[AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> AssignCodesCollection 
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignCodesCollectionToPlayer([FromBody] AssignCodesCollectionToPlayerBodyDto body)
+        {
+            var response = new BaseResponse();
+            var collection = await _unitOfWork.UnassignedDiscountCodeCollections
+                .Find(ud => ud.Id == body.UnassignedCollectionId).FirstAsync();
+
+            if (collection.DiscountCodes == null)
+            {
+                response.Message = "Collection does not contain any discount codes";
+                return BadRequest(response);
+            }
+            foreach (var c in collection.DiscountCodes)
+
+            {
+                await _unitOfWork.Discount.AddAsync(new Discount
+                {
+                    DiscountCodeId = c.Id,
+                    PlayerId = body.PlayerId,
+                    DiscountType = body.DiscountType,
+                    ValidityPeriod = new ValidityPeriod
+                    {
+                        StartDate = body.StartDate,
+                        EndDate = body.EndDate
+                    }
+                });
+                await _unitOfWork.Complete();
+            }
+            response.Message = "Discount codes assigned to a Playesr";
+            return Ok(response);
+        }
 
     }
 }

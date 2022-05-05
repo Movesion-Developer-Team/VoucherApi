@@ -64,9 +64,19 @@ namespace Persistence.Repositories
 
             Update(company);
             company.Players ??= new List<Player>();
-            void Action() => company.Players.Add(player);
+            Action PlayersAction = () => company.Players.Add(player);
 
-            await Task.Run((Action)Action);
+            await Task.Run(PlayersAction);
+        }
+
+        public IQueryable<Company> GetAllCompaniesWithPlayers()
+        {
+            var a = VoucherContext.Companies.Select(c => c)
+                    .Include(c => c.Players)
+                    .ThenInclude(p => p.Categories)
+                    .AsQueryable();
+
+            return a;
         }
 
     }

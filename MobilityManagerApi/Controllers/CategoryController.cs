@@ -184,10 +184,45 @@ namespace MobilityManagerApi.Controllers
         }
 
 
-        
+        //[AuthorizeRoles(Role.SuperAdmin)]
+        //[HttpDelete]
+        //[ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> AssignCategoryToPlayer()
+        //{
+
+        //}
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpDelete]
+        [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllCategoriesForPlayer([FromBody] GetAllCategoriesForPlayerBodyDto body)
+        {
+            var response = new GetAllCategoriesForPlayerResponseDto();
+            try
+            {
+
+                var player = await _unitOfWork.Category.GetAllCategoriesForPlayer(body.PlayerId);
+                if (player.Categories == null || !player.Categories.Any())
+                {
+                    response.Message = "No categories assigned to the player";
+                    return BadRequest(response);
+                }
+
+                var categoriesQuery = player.Categories.AsQueryable();
+                response.Categories = _mapper.ProjectTo<CategoryBodyDto>(categoriesQuery);
+                return Ok(response);
+            }
+            catch(NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+
+        }
 
 
-        
 
     }
 }

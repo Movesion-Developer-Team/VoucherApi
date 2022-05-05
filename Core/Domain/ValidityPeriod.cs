@@ -2,12 +2,7 @@
 {
     public class ValidityPeriod : EntityBase
     {
-        public DateTime StartDate { get; private set; }
-        public DateTime EndDate { get; private set; }
-        public ValidityPeriod(DateTime startDate, DateTime endDate)
-        {
-            StartDate = startDate;
-            EndDate = endDate;
-        }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
     }
 }

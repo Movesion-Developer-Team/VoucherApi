@@ -46,7 +46,6 @@ namespace MobilityManagerApi.Tests
             {
                 ShortName = "Share",
                 FullName = "CarShare",
-                CategoryId = categoryId,
                 PlayStoreLink = null,
                 AppStoreLink = null,
                 LinkDescription = null,

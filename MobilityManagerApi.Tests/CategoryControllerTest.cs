@@ -13,23 +13,40 @@ namespace MobilityManagerApi.Tests
 {
     internal class CategoryControllerTest : BaseTest
     {
-        private CreateNewCategoryBodyDto _categoryDto;
+        private CreateNewCategoryBodyDto? _categoryDto;
+        private CreateNewPlayerBodyDto? _playerDto;
         private int? _categoryId;
+        private int? _playerId;
 
         [OneTimeSetUp]
         public async Task TestSetUp()
         {
            
 
-            _categoryDto = new CreateNewCategoryBodyDto()
+            _categoryDto = new ()
             {
                 Name = "Planet Colonization",
                 Description =
                     "This Planet will be colonized, because humans are not able to take care about their planet. "
             };
+            
 
-            _categoryId = ((await _categoryController.CreateNewCategory(_categoryDto) as ObjectResult)
-                    .Value as CreateNewEntityResponseDto)
+            _categoryId = ((((await _categoryController.CreateNewCategory(_categoryDto) as ObjectResult)!)
+                    .Value as CreateNewEntityResponseDto)!)
+                .Id;
+
+            _playerDto = new()
+            {
+                ShortName = "TestPlayer",
+                FullName = "TestPlayer",
+                CategoryId = _categoryId,
+                PlayStoreLink = null,
+                AppStoreLink = null,
+                LinkDescription = null,
+                Color = "black"
+            };
+            _playerId = ((((await _playerController.CreateNewPlayer(_playerDto) as ObjectResult)!)
+                    .Value as CreateNewEntityResponseDto)!)
                 .Id;
         }
 
@@ -37,6 +54,7 @@ namespace MobilityManagerApi.Tests
         public async Task TearDown()
         {
             _categoryDto = null;
+            _playerDto = null;
             await _context.DisposeAsync();
         }
 
@@ -200,6 +218,55 @@ namespace MobilityManagerApi.Tests
                 Assert.IsTrue(expectedBadValue.Message != null);
             });
 
+        }
+
+        [Test]
+        [Author(nameof(Authors.Arif))]
+        public async Task GetAllCategoriesForPlayerTest()
+        {
+            var categoryDto = new CreateNewCategoryBodyDto()
+            {
+                Name = "Planet Colonization",
+                Description =
+                    "This Planet will be colonized, because humans are not able to take care about their planet. "
+            };
+
+
+            var categoryId = ((((await _categoryController.CreateNewCategory(_categoryDto) as ObjectResult)!)
+                    .Value as CreateNewEntityResponseDto)!)
+                .Id;
+
+            var playerDto = new CreateNewPlayerBodyDto()
+            {
+                ShortName = "TestPlayer",
+                FullName = "TestPlayer",
+                CategoryId = _categoryId,
+                PlayStoreLink = null,
+                AppStoreLink = null,
+                LinkDescription = null,
+                Color = "black"
+            };
+            var playerId = ((((await _playerController.CreateNewPlayer(playerDto) as ObjectResult)!)
+                    .Value as CreateNewEntityResponseDto)!)
+                .Id;
+
+            var body = new GetAllCategoriesForPlayerBodyDto
+            {
+                PlayerId = (int)playerId
+            };
+
+
+
+
+            var result = await _categoryController.GetAllCategoriesForPlayer(body) as ObjectResult;
+
+            var categories = (result.Value as GetAllCategoriesForPlayerResponseDto).Categories;
+            
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(result.StatusCode, StatusCodes.Status200OK);
+                Assert.AreEqual((int?)categories.First().Id, _categoryId);
+            });
         }
     }
 }

@@ -212,7 +212,7 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllPlayers([FromQuery] int companyId)
+        public async Task<IActionResult> GetAllPlayersForOneCompany([FromQuery] int companyId)
         {
             var response = new GetAllPlayersForCurrentCompanyResponseDto();
             try
@@ -249,5 +249,25 @@ namespace MobilityManagerApi.Controllers
             return Ok(response);
         }
 
-    }
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllCompaniesWithPlayersResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllCompaniesWithPlayersResponseDto), StatusCodes.Status400BadRequest)]
+        public IActionResult GetAllCompaniesWithPlayers()
+        {
+            var response = new GetAllCompaniesWithPlayersResponseDto();
+            try
+            {
+                var companiesWithPlayers = _unitOfWork.Company.GetAllCompaniesWithPlayers();
+                response.Companies = _mapper.ProjectTo<CompanyWithPlayersBodyDto>(companiesWithPlayers).ToList();
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+    } 
 }
