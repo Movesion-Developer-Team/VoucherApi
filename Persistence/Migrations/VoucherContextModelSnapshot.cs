@@ -40,7 +40,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Company", b =>
@@ -67,7 +67,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.CompanyPlayer", b =>
@@ -85,7 +85,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("PlayerId");
 
-                    b.ToTable("CompanyPlayer");
+                    b.ToTable("CompanyPlayer", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
@@ -134,7 +134,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("PlayerId");
 
-                    b.ToTable("Discounts");
+                    b.ToTable("Discounts", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.DiscountCode", b =>
@@ -158,7 +158,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("UnassignedDiscountCodeCollectionsId");
 
-                    b.ToTable("DiscountCode");
+                    b.ToTable("DiscountCode", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Location", b =>
@@ -183,7 +183,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Player", b =>
@@ -217,7 +217,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Players");
+                    b.ToTable("Players", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerCategories", b =>
@@ -235,7 +235,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("PlayerCategories");
+                    b.ToTable("PlayerCategories", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerContact", b =>
@@ -266,7 +266,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("PlayerId");
 
-                    b.ToTable("PlayerContacts");
+                    b.ToTable("PlayerContacts", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerLocation", b =>
@@ -284,7 +284,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("PlayerLocation");
+                    b.ToTable("PlayerLocation", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Report", b =>
@@ -301,7 +301,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Reports", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.UnassignedDiscountCodeCollection", b =>
@@ -314,7 +314,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UnassignedDiscountCodeCollection");
+                    b.ToTable("UnassignedDiscountCodeCollection", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.User", b =>
@@ -335,7 +335,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("User");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Voucher", b =>
@@ -362,7 +362,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("DiscountId");
 
-                    b.ToTable("Vouchers");
+                    b.ToTable("Vouchers", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.CompanyPlayer", b =>
@@ -396,7 +396,7 @@ namespace Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Core.Domain.ValidityPeriod", "ValidityPeriod", b1 =>
+                    b.OwnsOne("Core.Domain.Discount.ValidityPeriod#Core.Domain.ValidityPeriod", "ValidityPeriod", b1 =>
                         {
                             b1.Property<int>("DiscountId")
                                 .HasColumnType("integer");
@@ -412,7 +412,7 @@ namespace Persistence.Migrations
 
                             b1.HasKey("DiscountId");
 
-                            b1.ToTable("Discounts");
+                            b1.ToTable("Discounts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("DiscountId");
