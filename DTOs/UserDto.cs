@@ -2,8 +2,8 @@
 {
     public class UserDto
     {
-        public string? WorkerId { get; set; }
-        public int CompanyId { get; set; }
+        public string? Id { get; set; }
+        public string? UserName { get; set; }
 
     }
 }

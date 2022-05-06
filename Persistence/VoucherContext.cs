@@ -19,6 +19,7 @@ namespace Persistence
         public DbSet<PlayerContact> PlayerContacts { get; set; }
         public DbSet<Voucher> Vouchers { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<User> Users { get; set; }
 
 
         public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
@@ -33,6 +34,7 @@ namespace Persistence
             new PlayerContactConfiguration().Configure(modelBuilder.Entity<PlayerContact>());
             new VoucherConfiguration().Configure(modelBuilder.Entity<Voucher>());
             new ReportConfiguration().Configure(modelBuilder.Entity<Report>());
+            new UserConfiguration().Configure(modelBuilder.Entity<User>());
         }
 
     }

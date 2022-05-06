@@ -287,16 +287,17 @@ namespace MobilityManagerApi.Tests
                 Address = "TestAddress",
                 NumberOfEmployees = 123
             }));
-            _companyController.AddPlayerToCompany(new AddPlayerToCompanyBodyDto()
+            await _companyController.AddPlayerToCompany(new AddPlayerToCompanyBodyDto()
                 {CompanyId = companyId, PlayerId = playerId});
 
             var okResult = _companyController.GetAllCompaniesWithPlayers() as ObjectResult;
             var companies = (okResult.Value as GetAllCompaniesWithPlayersResponseDto);
+            string jsonCompanies = JsonSerializer.Serialize(companies);
             Assert.Multiple(() =>
             {
                 Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
                 Assert.IsTrue(companies.Companies.Any(c=>c.Players.Any()));
-                string jsonCompanies = JsonSerializer.Serialize(companies);
+                
                 TestContext.Out.WriteLine(jsonCompanies);
             });
         }

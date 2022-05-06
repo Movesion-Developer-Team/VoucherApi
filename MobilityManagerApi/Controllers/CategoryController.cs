@@ -185,16 +185,16 @@ namespace MobilityManagerApi.Controllers
 
 
         [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpDelete]
+        [HttpGet]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllCategoriesForPlayer([FromBody] GetAllCategoriesForPlayerBodyDto body)
+        public async Task<IActionResult> GetAllCategoriesForPlayer(int playerId)
         {
             var response = new GetAllCategoriesForPlayerResponseDto();
             try
             {
 
-                var player = await _unitOfWork.Category.GetAllCategoriesForPlayer(body.PlayerId);
+                var player = await _unitOfWork.Category.GetAllCategoriesForPlayer(playerId);
                 if (player.Categories == null || !player.Categories.Any())
                 {
                     response.Message = "No categories assigned to the player";

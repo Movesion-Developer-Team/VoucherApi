@@ -1,8 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Core.Domain;
 using DTOs;
+using DTOs.BodyDtos;
+using DTOs.ResponseDtos;
 using Enum;
 using Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -24,23 +28,28 @@ namespace UserStoreLogic.Controllers
     {
 
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly UnitOfWork _unitOfWork;
-        //private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IConfiguration _configuration;
-        private readonly AuthResponseDto _response = new();
 
-        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager, VoucherContext voucherContext)
+        private readonly UnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
+        private readonly UserDbContext _userDbContext;
+        private readonly IMapper _mapper;
+        
+
+        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager,
+            VoucherContext voucherContext, UserDbContext context, IMapper mapper)
         {
             _configuration = configuration;
             _userManager = userManager;
             _unitOfWork = new UnitOfWork(voucherContext);
-            //_signInManager = signInManager;
+            _userDbContext = context;
+            _mapper = mapper;
         }
 
 
         [HttpPost]
         public async Task<ActionResult<IdentityResult?>> Register([FromBody] IdentityUserDto request)
         {
+            var response = new AuthResponseDto();
             Company currentCompany;
             var user = new IdentityUser
             {
@@ -52,11 +61,11 @@ namespace UserStoreLogic.Controllers
             {
                 currentCompany = await _unitOfWork.Company.Find(c => c.Id == request.CompanyId).FirstAsync();
             }
-            
+
             catch (NullReferenceException ex)
             {
-                _response.Message = ex.Message;
-                return BadRequest(_response);
+                response.Message = ex.Message;
+                return BadRequest(response);
             }
 
 
@@ -81,20 +90,20 @@ namespace UserStoreLogic.Controllers
             }
             else
             {
-                _response.Message = newUser.Errors.First().Description;
-                return BadRequest(_response);
+                response.Message = newUser.Errors.First().Description;
+                return BadRequest(response);
             }
 
 
         }
-        
+
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
-        public async Task<IActionResult> ChangeRole(string name, BasicRole role)
+        public async Task<IActionResult> ChangeRoleSearchByName([FromBody] ChangeRoleBodyDto body)
         {
 
 
-            var currentUser = await _userManager.FindByNameAsync(name);
+            var currentUser = await _userManager.FindByNameAsync(body.UserName);
             if (currentUser != null)
             {
                 var currentRole = _userManager.GetRolesAsync(currentUser).Result[0];
@@ -102,11 +111,11 @@ namespace UserStoreLogic.Controllers
                 {
                     return BadRequest("SuperAdmin is unchangeable");
                 }
-                if (role.ToString() != currentRole)
+                if (body.Role.ToString() != currentRole)
                 {
                     await _userManager.RemoveFromRoleAsync(currentUser, currentRole);
-                    await _userManager.AddToRoleAsync(currentUser, role.ToString());
-                    return Ok($"Assigned to role {role}");
+                    await _userManager.AddToRoleAsync(currentUser, body.Role.ToString());
+                    return Ok($"Assigned to role {body.Role}");
                 }
                 else
                 {
@@ -122,6 +131,39 @@ namespace UserStoreLogic.Controllers
 
 
 
+
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        public async Task<IActionResult> ChangeRoleSearchById([FromBody] ChangeRoleBodyDto body)
+        {
+
+
+            var currentUser = await _userManager.FindByIdAsync(body.UserId);
+            if (currentUser != null)
+            {
+                var currentRole = _userManager.GetRolesAsync(currentUser).Result[0];
+                if (currentRole == Role.SuperAdmin.ToString())
+                {
+                    return BadRequest("SuperAdmin is unchangeable");
+                }
+                if (body.Role.ToString() != currentRole)
+                {
+                    await _userManager.RemoveFromRoleAsync(currentUser, currentRole);
+                    await _userManager.AddToRoleAsync(currentUser, body.Role.ToString());
+                    return Ok($"Assigned to role {body.Role}");
+                }
+                else
+                {
+                    return BadRequest("User is already in role");
+                }
+
+            }
+            else
+            {
+                return NotFound("User Not Found");
+            }
 
         }
 
@@ -171,35 +213,62 @@ namespace UserStoreLogic.Controllers
 
         }
 
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllUsersResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllUsersResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var response = new GetAllUsersResponseDto();
+            var usersTask = () => _userDbContext.Users.AsQueryable();
+            try
+            {
+                var identityUsersQuery = await Task.Run(usersTask);
+                response.Users = _mapper.ProjectTo<UserDto>(identityUsersQuery);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
         {
+            var response = new AuthResponseDto();
             var currentUser = HttpContext.User.Identity;
             if (currentUser == null)
             {
-                _response.Message = "No user identified in current context";
-                return BadRequest(_response);
+                response.Message = "No user identified in current context";
+                return BadRequest(response);
             }
             if (currentUser.IsAuthenticated)
             {
                 var userIdentity = _userManager.FindByNameAsync(currentUser.Name).Result;
                 if (userIdentity == null)
                 {
-                    _response.Message = "User not found";
-                    return BadRequest(_response);
+                    response.Message = "User not found";
+                    return BadRequest(response);
                 }
                 await _userManager.ChangePasswordAsync(userIdentity, currentPassword, newPassword);
-                _response.Message = "Password changed successfully";
-                return Ok(_response);
+                response.Message = "Password changed successfully";
+                return Ok(response);
             }
             else
             {
-                _response.Message = "User not authenticated";
-                return BadRequest(_response);
+                response.Message = "User not authenticated";
+                return BadRequest(response);
             }
 
         }
+
+
+
+
 
 
     }

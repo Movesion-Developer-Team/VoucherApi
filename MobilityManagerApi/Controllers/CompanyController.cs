@@ -28,8 +28,8 @@ namespace MobilityManagerApi.Controllers
         public CompanyController(IMapper mapper, VoucherContext vContext)
         {
 
-            _mapper = mapper;
-            _unitOfWork = new UnitOfWork(vContext);
+                _mapper = mapper;
+                _unitOfWork = new UnitOfWork(vContext);
 
         }
 
@@ -133,6 +133,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 await _unitOfWork.Company.AddPlayerToCompany((int)body.PlayerId, (int)body.CompanyId);
+                await _unitOfWork.Complete();
                 response.Message = "Player added to the Company";
                 return Ok(response);
             }

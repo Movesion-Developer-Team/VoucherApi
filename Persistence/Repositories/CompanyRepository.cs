@@ -71,12 +71,12 @@ namespace Persistence.Repositories
 
         public IQueryable<Company> GetAllCompaniesWithPlayers()
         {
-            var a = VoucherContext.Companies.Select(c => c)
+            var companies = VoucherContext.Companies.Select(c => c)
                     .Include(c => c.Players)
                     .ThenInclude(p => p.Categories)
                     .AsQueryable();
 
-            return a;
+            return companies;
         }
 
     }
