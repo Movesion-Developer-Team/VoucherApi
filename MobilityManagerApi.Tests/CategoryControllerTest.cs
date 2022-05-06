@@ -250,15 +250,7 @@ namespace MobilityManagerApi.Tests
                     .Value as CreateNewEntityResponseDto)!)
                 .Id;
 
-            var body = new GetAllCategoriesForPlayerBodyDto
-            {
-                PlayerId = (int)playerId
-            };
-
-
-
-
-            var result = await _categoryController.GetAllCategoriesForPlayer(body) as ObjectResult;
+            var result = await _categoryController.GetAllCategoriesForPlayer((int)playerId) as ObjectResult;
 
             var categories = (result.Value as GetAllCategoriesForPlayerResponseDto).Categories;
             
