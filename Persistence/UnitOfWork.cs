@@ -17,6 +17,7 @@ namespace Persistence
         public IVoucherRepository Voucher { get; }
         public IDiscountCodeRepository DiscountCode { get; }
         public IUnassignedDiscountCodeCollectionsRepository UnassignedDiscountCodeCollections { get; }
+        public IUserRepository User { get; }
 
         private readonly VoucherContext _voucherContext;
 
@@ -32,6 +33,7 @@ namespace Persistence
             Report = new ReportRepository(voucherContext);
             Voucher = new VoucherRepository(voucherContext);
             DiscountCode = new DiscountCodeRepository(voucherContext);
+            User = new UserRepository(voucherContext);
             UnassignedDiscountCodeCollections = new UnassignedDiscountCodeCollectionsRepository(voucherContext);
         }
 

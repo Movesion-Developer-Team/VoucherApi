@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DTOs.ResponseDtos;
 using System.Text.Json;
+using Enum.Properties;
 
 namespace MobilityManagerApi.Tests
 {
@@ -69,7 +70,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(1)]
         public async Task CreateNewCompanyTest()
         {
@@ -104,7 +105,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(2)]
         public async Task DeleteTest()
         {
@@ -128,7 +129,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(3)]
         public async Task GetAllTest()
         {
@@ -153,7 +154,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(4)]
         public async Task FindByIdTest()
         {
@@ -185,7 +186,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(5)]
         public async Task ChangeTest()
         {
@@ -207,7 +208,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         public async Task FindByNameTest()
         {
             var objectOkResult = await _companyController.FindByName(_companyDto.Name) as ObjectResult;
@@ -226,7 +227,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author((nameof(Authors.Arif)))]
+        [Author((nameof(TestAuthors.Arif)))]
         public async Task AddPlayerToCompanyTest()
         {
             var body = new AddPlayerToCompanyBodyDto
@@ -246,7 +247,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author((nameof(Authors.Arif)))]
+        [Author((nameof(TestAuthors.Arif)))]
         public async Task GetAllPlayersTest()
         {
 
@@ -259,48 +260,48 @@ namespace MobilityManagerApi.Tests
             });
         }
 
-        [Test]
-        [Author((nameof(Authors.Arif)))]
-        public async Task GetAllCompaniesWithPlayersTest()
-        {
+        //[Test]
+        //[Author((nameof(TestAuthors.Arif)))]
+        //public async Task GetAllCompaniesWithPlayersTest()
+        //{
             
-            var categoryBody = new CreateNewCategoryBodyDto
-            {
-                Name = "TestCategory",
-                Description = "TestPlayer"
-            };
-            var categoryId = GetIdFromResponse(await _categoryController.CreateNewCategory(categoryBody));
-            var playerBody = new CreateNewPlayerBodyDto
-            {
-                ShortName = "TestPlayer",
-                FullName = "TestPlayer",
-                CategoryId = categoryId,
-                PlayStoreLink = null,
-                AppStoreLink = null,
-                LinkDescription = null,
-                Color = null
-            };
-            var playerId = GetIdFromResponse(await _playerController.CreateNewPlayer(playerBody));
-            var companyId = GetIdFromResponse(await _companyController.CreateNewCompany(new CreateNewCompanyBodyDto
-            {
-                Name = "TestCompany",
-                Address = "TestAddress",
-                NumberOfEmployees = 123
-            }));
-            await _companyController.AddPlayerToCompany(new AddPlayerToCompanyBodyDto()
-                {CompanyId = companyId, PlayerId = playerId});
+        //    var categoryBody = new CreateNewCategoryBodyDto
+        //    {
+        //        Name = "TestCategory",
+        //        Description = "TestPlayer"
+        //    };
+        //    var categoryId = GetIdFromResponse(await _categoryController.CreateNewCategory(categoryBody));
+        //    var playerBody = new CreateNewPlayerBodyDto
+        //    {
+        //        ShortName = "TestPlayer",
+        //        FullName = "TestPlayer",
+        //        CategoryId = categoryId,
+        //        PlayStoreLink = null,
+        //        AppStoreLink = null,
+        //        LinkDescription = null,
+        //        Color = null
+        //    };
+        //    var playerId = GetIdFromResponse(await _playerController.CreateNewPlayer(playerBody));
+        //    var companyId = GetIdFromResponse(await _companyController.CreateNewCompany(new CreateNewCompanyBodyDto
+        //    {
+        //        Name = "TestCompany",
+        //        Address = "TestAddress",
+        //        NumberOfEmployees = 123
+        //    }));
+        //    await _companyController.AddPlayerToCompany(new AddPlayerToCompanyBodyDto()
+        //        {CompanyId = companyId, PlayerId = playerId});
 
-            var okResult = _companyController.GetAllCompaniesWithPlayers() as ObjectResult;
-            var companies = (okResult.Value as GetAllCompaniesWithPlayersResponseDto);
-            string jsonCompanies = JsonSerializer.Serialize(companies);
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
-                Assert.IsTrue(companies.Companies.Any(c=>c.Players.Any()));
+        //    var okResult = await _companyController.GetAllCompaniesWithPlayers() as ObjectResult;
+        //    var companies = (okResult.Value as GetAllCompaniesWithPlayersResponseDto);
+        //    string jsonCompanies = JsonSerializer.Serialize(companies);
+        //    Assert.Multiple(() =>
+        //    {
+        //        Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        //        Assert.IsTrue(companies.Companies.Any(c=>c.Players.Any()));
                 
-                TestContext.Out.WriteLine(jsonCompanies);
-            });
-        }
+        //        TestContext.Out.WriteLine(jsonCompanies);
+        //    });
+        //}
 
     }
 }

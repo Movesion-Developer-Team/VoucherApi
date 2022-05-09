@@ -1,11 +1,14 @@
-﻿using AutoMapper;
+﻿using System.Reflection;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Core.Domain;
 using DTOs.BodyDtos;
+using DTOs.MethodDto;
 using DTOs.ResponseDtos;
 using Enum;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
@@ -132,12 +135,17 @@ namespace MobilityManagerApi.Controllers
 
             try
             {
-                await _unitOfWork.Company.AddPlayerToCompany((int)body.PlayerId, (int)body.CompanyId);
+                await _unitOfWork.Company.AddPlayerToCompany((int) body.PlayerId, (int) body.CompanyId);
                 await _unitOfWork.Complete();
                 response.Message = "Player added to the Company";
                 return Ok(response);
             }
             catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
             {
                 response.Message = ex.Message;
                 return BadRequest(response);
@@ -219,11 +227,22 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var company = await _unitOfWork.Company.Find(c => c.Id == companyId).FirstAsync();
+                if (company.Players == null)
+                {
+                    response.Message = "No players assigned";
+                    response.Players = new();
+                    return Ok(response);
+                }
                 response.Players = company.Players.ToList();
                 response.Message = "Success";
                 return Ok(response);
             }
-            catch(NullReferenceException ex)
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (ArgumentNullException ex)
             {
                 response.Message = ex.Message;
                 return BadRequest(response);
@@ -254,13 +273,14 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllCompaniesWithPlayersResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllCompaniesWithPlayersResponseDto), StatusCodes.Status400BadRequest)]
-        public IActionResult GetAllCompaniesWithPlayers()
+        public async Task<IActionResult> GetAllCompaniesWithPlayers()
         {
             var response = new GetAllCompaniesWithPlayersResponseDto();
             try
             {
-                var companiesWithPlayers = _unitOfWork.Company.GetAllCompaniesWithPlayers();
-                response.Companies = _mapper.ProjectTo<CompanyWithPlayersBodyDto>(companiesWithPlayers).ToList();
+                var companiesWithPlayersList = await Task.Run(() => _unitOfWork.Company.GetAllCompaniesWithPlayers());
+                var companiesWithPlayersDto = _mapper.ProjectTo<CompaniesWithPlayersBodyDto>(companiesWithPlayersList.AsQueryable());
+                response.Companies = companiesWithPlayersDto;
                 response.Message = "Done";
                 return Ok(response);
             }
@@ -270,5 +290,53 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllUsersOfCompany(int companyId)
+        {
+            var response = new GetAllUsersForCompanyResponseDto();
+            try
+            {
+                response.Users = await _unitOfWork.Company.GetAllUsersOfCompany(companyId).ToListAsync();
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+            
+        }
+
+        //[AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompanyBody body)
+        //{
+        //    var response = new BaseResponse();
+        //    foreach (var field in typeof(AddUserToCompanyBody).GetFields())
+        //    {
+        //        if (field.GetValue(body) == null)
+        //        {
+        //            response.Message = $"Please, provide value for {field.Name}";
+        //            return BadRequest(response);
+        //        }
+
+        //    }
+            
+        //    try
+        //    {
+        //        _unitOfWork.Company.AddUserToCompany();
+        //    }
+        //    catch ()
+        //    {
+
+        //    }
+
+        //}
     } 
 }

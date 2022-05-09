@@ -62,7 +62,7 @@ namespace Persistence.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ShortName = table.Column<string>(type: "text", nullable: false),
-                    FullName = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: true),
                     PlayStoreLink = table.Column<string>(type: "text", nullable: true),
                     AppStoreLink = table.Column<string>(type: "text", nullable: true),
                     LinkDescription = table.Column<string>(type: "text", nullable: true),
@@ -87,7 +87,7 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UnassignedDiscountCodeCollections",
+                name: "UnassignedDiscountCodeCollection",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -95,11 +95,11 @@ namespace Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UnassignedDiscountCodeCollections", x => x.Id);
+                    table.PrimaryKey("PK_UnassignedDiscountCodeCollection", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -109,9 +109,9 @@ namespace Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_User_Companies_CompanyId",
+                        name: "FK_Users_Companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
@@ -230,9 +230,9 @@ namespace Persistence.Migrations
                 {
                     table.PrimaryKey("PK_DiscountCode", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DiscountCode_UnassignedDiscountCodeCollections_UnassignedDi~",
+                        name: "FK_DiscountCode_UnassignedDiscountCodeCollection_UnassignedDis~",
                         column: x => x.UnassignedDiscountCodeCollectionsId,
-                        principalTable: "UnassignedDiscountCodeCollections",
+                        principalTable: "UnassignedDiscountCodeCollection",
                         principalColumn: "Id");
                 });
 
@@ -247,8 +247,8 @@ namespace Persistence.Migrations
                     LinkTermsAndConditions = table.Column<string>(type: "text", nullable: true),
                     UnityOfMeasurement = table.Column<string>(type: "text", nullable: true),
                     DiscountValue = table.Column<float>(type: "real", nullable: true),
-                    NumberOfUsagePerCompany = table.Column<int>(type: "integer", nullable: false),
-                    NumberOfUsagePerUser = table.Column<int>(type: "integer", nullable: false),
+                    NumberOfUsagePerCompany = table.Column<int>(type: "integer", nullable: true),
+                    NumberOfUsagePerUser = table.Column<int>(type: "integer", nullable: true),
                     InitialPrice = table.Column<int>(type: "integer", nullable: true),
                     FinalPrice = table.Column<int>(type: "integer", nullable: true),
                     DiscountType = table.Column<int>(type: "integer", nullable: false),
@@ -336,8 +336,8 @@ namespace Persistence.Migrations
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_CompanyId",
-                table: "User",
+                name: "IX_Users_CompanyId",
+                table: "Users",
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
@@ -369,7 +369,7 @@ namespace Persistence.Migrations
                 name: "Reports");
 
             migrationBuilder.DropTable(
-                name: "User");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Vouchers");
@@ -393,7 +393,7 @@ namespace Persistence.Migrations
                 name: "Players");
 
             migrationBuilder.DropTable(
-                name: "UnassignedDiscountCodeCollections");
+                name: "UnassignedDiscountCodeCollection");
         }
     }
 }

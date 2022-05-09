@@ -4,7 +4,7 @@ namespace Core.Domain
 {
     public class Player : EntityBase
     {
-        public string ShortName { get; set; }
+        public string? ShortName { get; set; }
         public string? FullName { get; set; }
         public string? PlayStoreLink { get; set; }
         public string? AppStoreLink { get; set; }

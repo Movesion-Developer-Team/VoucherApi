@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    [Migration("20220505160534_VoucherContextNowHasPartialUserInformation")]
-    partial class VoucherContextNowHasPartialUserInformation
+    [Migration("20220508202547_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -489,7 +489,7 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Core.Domain.User", b =>
                 {
                     b.HasOne("Core.Domain.Company", "Company")
-                        .WithMany("Workers")
+                        .WithMany("Users")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -527,7 +527,7 @@ namespace Persistence.Migrations
                 {
                     b.Navigation("CompanyPlayers");
 
-                    b.Navigation("Workers");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>

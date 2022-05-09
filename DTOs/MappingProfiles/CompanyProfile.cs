@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Domain;
 using DTOs.BodyDtos;
+using DTOs.MethodDto;
 using DTOs.ResponseDtos;
 
 namespace DTOs.MappingProfiles
@@ -14,7 +15,7 @@ namespace DTOs.MappingProfiles
 
             CreateMap<Company, CreateNewCompanyBodyDto>()
                 .ReverseMap()
-                .ForMember(c => c.Workers, opt => opt.Ignore())
+                .ForMember(c => c.Users, opt => opt.Ignore())
                 .ForMember(c => c.Players, opt => opt.Ignore())
                 .ForMember(c => c.CompanyPlayers, opt => opt.Ignore())
                 .ForMember(c => c.Id, opt => opt.Ignore())
@@ -23,7 +24,7 @@ namespace DTOs.MappingProfiles
 
             CreateMap<Company, CompanyBodyDto>()
                 .ReverseMap()
-                .ForMember(c => c.Workers, opt => opt.Ignore())
+                .ForMember(c => c.Users, opt => opt.Ignore())
                 .ForMember(c => c.Players, opt => opt.Ignore())
                 .ForMember(c => c.CompanyPlayers, opt => opt.Ignore())
                 .ForMember(c => c.Id, opt => opt.Ignore())
@@ -34,9 +35,11 @@ namespace DTOs.MappingProfiles
                 .ForMember(cb => cb.Id, opt => opt.Ignore())
                 .ReverseMap();
 
-            CreateMap<Company, CompanyWithPlayersBodyDto>()
-                .ForMember(cp => cp.Company, opt => opt.MapFrom(c => c))
-                .ForMember(cp => cp.Players, opt => opt.MapFrom(c => c.Players));
+            CreateMap<Tuple<string?, string?>, CompaniesWithPlayersBodyDto>()
+                .ForMember(cw => cw.CompanyName, opt => opt.MapFrom(t => t.Item1))
+                .ForMember(cw => cw.PlayerName, opt => opt.MapFrom(t => t.Item2));
+
+
 
         }
 
