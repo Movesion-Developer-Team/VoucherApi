@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Security.Cryptography.X509Certificates;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Core.Domain;
 using DTOs.BodyDtos;
@@ -232,6 +233,56 @@ namespace MobilityManagerApi.Controllers
             }
 
         }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteCategoryFromPlayer([FromBody] DeleteCategoryFromPlayerBodyDto body)
+        {
+            var response = new BaseResponse();
+            if (body.PlayerId == null)
+            {
+                response.Message = "Please provide Player Id";
+                return BadRequest(response);
+            }
+
+            if (body.CategoryId == null)
+            {
+                response.Message = "Please provide Category Id";
+                return BadRequest(response);
+
+            }
+
+            try
+            {
+                var deleted =
+                    await _unitOfWork.Player.DeleteCategoryFromPlayer((int) body.PlayerId, (int) body.CategoryId);
+                if (!deleted)
+                {
+                    response.Message = "Category is not assigned to the current Player";
+                    return BadRequest(response);
+                }
+
+                response.Message = "Deleted";
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return Ok(response);
+            }
+
+
+
+        }
+
+        
 
     }
 }

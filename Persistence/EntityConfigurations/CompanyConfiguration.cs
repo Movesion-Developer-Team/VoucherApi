@@ -28,7 +28,7 @@ namespace Persistence.EntityConfigurations
                         x.PlayerId
                     });
                 });
-            builder.HasMany(c => c.Workers)
+            builder.HasMany(c => c.Users)
                 .WithOne(w => w.Company)
                 .HasForeignKey(w => w.CompanyId);
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DTOs;
 using DTOs.ResponseDtos;
+using Enum.Properties;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MobilityManagerApi.Controllers;
@@ -17,10 +18,7 @@ namespace MobilityManagerApi.Tests
     [TestFixture]
     public class BaseTest
     {
-        protected enum Authors
-        {
-            Arif = 1
-        }
+        
 
         protected Func<IActionResult, int?> GetIdFromResponse = (result) => ((result as ObjectResult)?.Value as CreateNewEntityResponseDto)?.Id;
 
@@ -28,7 +26,7 @@ namespace MobilityManagerApi.Tests
 
         protected DbContext _context;
 
-        protected Mapper? _mapper;
+        protected IMapper? _mapper;
 
         protected CompanyController _companyController;
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Domain;
 using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
+using Enum.Properties;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
@@ -59,7 +60,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(1)]
         public async Task CreatePlayerTest()
         {
@@ -95,7 +96,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(2)]
         public async Task DeleteTest()
         {
@@ -119,7 +120,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(3)]
         public async Task GetAllTest()
         {
@@ -144,7 +145,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(4)]
         public async Task FindByIdTest()
         {
@@ -176,7 +177,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(5)]
         public async Task ChangeTest()
         {
@@ -199,7 +200,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         public async Task FindByNameTest()
         {
             var objectOkResult = await _playerController.FindByName(_playerDto.ShortName) as ObjectResult;
@@ -217,7 +218,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         public async Task AssignCategoryToPlayerTest()
         {
 

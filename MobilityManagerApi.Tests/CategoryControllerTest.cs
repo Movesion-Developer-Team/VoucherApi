@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
+using Enum.Properties;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using NUnit.Framework;
 
 namespace MobilityManagerApi.Tests
 {
+    [TestFixture]
     internal class CategoryControllerTest : BaseTest
     {
         private CreateNewCategoryBodyDto? _categoryDto;
@@ -59,7 +61,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(1)]
         public async Task CreateNewCategoryTest()
         {
@@ -100,7 +102,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(2)]
         public async Task DeleteTest()
         {
@@ -124,7 +126,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(3)]
         public async Task GetAllTest()
         {
@@ -149,7 +151,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(4)]
         public async Task FindByIdTest()
         {
@@ -181,7 +183,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         [Order(5)]
         public async Task ChangeTest()
         {
@@ -203,7 +205,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         public async Task FindByNameTest()
         {
             var objectOkResult = await _categoryController.FindByName(_categoryDto.Name) as ObjectResult;
@@ -221,7 +223,7 @@ namespace MobilityManagerApi.Tests
         }
 
         [Test]
-        [Author(nameof(Authors.Arif))]
+        [Author(nameof(TestAuthors.Arif))]
         public async Task GetAllCategoriesForPlayerTest()
         {
             var categoryDto = new CreateNewCategoryBodyDto()

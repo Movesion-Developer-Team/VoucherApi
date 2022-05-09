@@ -7,8 +7,9 @@ namespace Core.IRepositories
 
         Task ChangeCompanyName(int? companyId, string companyNewName);
         Task ChangeCompanyContactDate(int? companyId, DateTime newDate);
-        Task AddWorkerToCompany(User user, int? companyId);
+        Task AddUserToCompany(User user, int? companyId);
         Task AddPlayerToCompany(int playerId, int companyId);
-        IQueryable<Company> GetAllCompaniesWithPlayers();
+        List<Tuple<string?, string?>> GetAllCompaniesWithPlayers();
+        IQueryable<User> GetAllUsersOfCompany(int? companyId);
     }
 }

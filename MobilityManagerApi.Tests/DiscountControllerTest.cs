@@ -88,7 +88,7 @@ namespace MobilityManagerApi.Tests
         }
 
         //[Test]
-        //[Author(nameof(Authors.Arif))]
+        //[Author(nameof(TestAuthors.Arif))]
         //public async Task UploadCsvTest()
         //{
         //    var requestBody = new UploadCsvBodyDto

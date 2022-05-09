@@ -30,12 +30,12 @@ namespace UserStoreLogic.Controllers
         private readonly UserManager<IdentityUser> _userManager;
 
         private readonly UnitOfWork _unitOfWork;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration? _configuration;
         private readonly UserDbContext _userDbContext;
         private readonly IMapper _mapper;
         
 
-        public AuthController(IConfiguration configuration, UserManager<IdentityUser> userManager,
+        public AuthController(IConfiguration? configuration, UserManager<IdentityUser> userManager,
             VoucherContext voucherContext, UserDbContext context, IMapper mapper)
         {
             _configuration = configuration;
@@ -82,17 +82,17 @@ namespace UserStoreLogic.Controllers
                     CompanyId = request.CompanyId
                 };
 
-                await _unitOfWork.Company.AddWorkerToCompany(currentUser, currentCompany.Id);
+                await _unitOfWork.User.AddAsync(currentUser);
+
+                //await _unitOfWork.Company.AddUserToCompany(currentUser, currentCompany.Id);
 
                 await _unitOfWork.Complete();
 
                 return Ok(newUser);
             }
-            else
-            {
-                response.Message = newUser.Errors.First().Description;
-                return BadRequest(response);
-            }
+
+            response.Message = newUser.Errors.First().Description;
+            return BadRequest(response);
 
 
         }
@@ -220,10 +220,10 @@ namespace UserStoreLogic.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var response = new GetAllUsersResponseDto();
-            var usersTask = () => _userDbContext.Users.AsQueryable();
+            var getUsersAsQueryable = () => _userDbContext.Users.AsQueryable();
             try
             {
-                var identityUsersQuery = await Task.Run(usersTask);
+                var identityUsersQuery = await Task.Run(getUsersAsQueryable);
                 response.Users = _mapper.ProjectTo<UserDto>(identityUsersQuery);
                 response.Message = "Done";
                 return Ok(response);
@@ -265,10 +265,6 @@ namespace UserStoreLogic.Controllers
             }
 
         }
-
-
-
-
 
 
     }

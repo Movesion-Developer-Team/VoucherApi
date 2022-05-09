@@ -9,7 +9,7 @@ namespace Persistence.EntityConfigurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasOne(w => w.Company)
-                .WithMany(c => c.Workers);
+                .WithMany(c => c.Users);
         }
     }
 }
