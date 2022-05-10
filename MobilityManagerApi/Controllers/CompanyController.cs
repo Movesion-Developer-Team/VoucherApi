@@ -291,7 +291,7 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
-        [AuthorizeRoles(Role.SuperAdmin)]
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpGet]
         [ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status400BadRequest)]
@@ -311,6 +311,121 @@ namespace MobilityManagerApi.Controllers
             
         }
 
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(GenerateInvitationCodeResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GenerateInvitationCodeResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GenerateInvitationCodeForEmployees([FromBody] GenerateInvitationCodeForEmployeesBodyDto body)
+        {
+
+            var response = new GenerateInvitationCodeResponseDto();
+            try
+            {
+                response.InvitationCodeId = await _unitOfWork.InvitationCode.GenerateInvitationCodeForEmployees(
+                    body.StartDate, body.EndDate,
+                    body.CompanyId);
+                var codeEntity = await _unitOfWork.InvitationCode
+                    .Find(ic => ic.Id == response.InvitationCodeId)
+                    .FirstAsync();
+                response.Message = "Code generated successfully";
+                response.InvitationCode = codeEntity.InviteCode;
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+            
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllJoinRequestsResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllJoinRequestsResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllJoinRequests(int companyId)
+        {
+            var response = new GetAllJoinRequestsResponseDto();
+            try
+            {
+                var requests = await _unitOfWork.Company.GetAllJoinRequests(companyId);
+                response.JoinRequests = await _mapper.ProjectTo<JoinRequestBodyDto>(requests).ToListAsync();
+                response.Message = "Done";
+                
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AcceptJoinRequest([FromBody] AcceptJoinRequestBodyDto body)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                await _unitOfWork.Company.AcceptRequest(body.RequestId, body.UserId);
+                response.Message = "Request sent successfully";
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteJoinRequest([FromBody] DeleteJoinRequestBodyDto body)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                await _unitOfWork.Company.DeleteRequest(body.RequestId);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+            
+        }
+
+
+
+
+
         //[AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         //[HttpPost]
         //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
@@ -327,7 +442,7 @@ namespace MobilityManagerApi.Controllers
         //        }
 
         //    }
-            
+
         //    try
         //    {
         //        _unitOfWork.Company.AddUserToCompany();
@@ -338,5 +453,6 @@ namespace MobilityManagerApi.Controllers
         //    }
 
         //}
+
     } 
 }

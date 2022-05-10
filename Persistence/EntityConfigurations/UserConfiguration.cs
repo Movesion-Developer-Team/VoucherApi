@@ -10,6 +10,9 @@ namespace Persistence.EntityConfigurations
         {
             builder.HasOne(w => w.Company)
                 .WithMany(c => c.Users);
+            builder.HasOne(u => u.JoinRequest)
+                .WithOne(jr => jr.User);
+            builder.HasIndex(c => c.IdentityUserId).IsUnique();
         }
     }
 }

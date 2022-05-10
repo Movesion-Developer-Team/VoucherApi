@@ -20,6 +20,8 @@ namespace Persistence
         public DbSet<Voucher> Vouchers { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<InvitationCode> InvitationCodes { get; set; }
+        public DbSet<JoinRequest> JoinRequests { get; set; }
 
 
         public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
@@ -35,6 +37,8 @@ namespace Persistence
             new VoucherConfiguration().Configure(modelBuilder.Entity<Voucher>());
             new ReportConfiguration().Configure(modelBuilder.Entity<Report>());
             new UserConfiguration().Configure(modelBuilder.Entity<User>());
+            new InvitationCodeConfiguration().Configure(modelBuilder.Entity<InvitationCode>());
+            new JoinRequestConfiguration().Configure(modelBuilder.Entity<JoinRequest>());
         }
 
     }

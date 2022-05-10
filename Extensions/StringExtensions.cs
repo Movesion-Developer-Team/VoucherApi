@@ -1,8 +1,11 @@
-﻿namespace Extensions
+﻿using System.Security.Cryptography;
+using System.Text;
+
+namespace Extensions
 {
     public static class StringExtensions
     {
-
+        private static readonly char[] Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
         /// <summary>
         /// Method is used to remove spaces in front of and in the end of the Login string
         /// </summary>
@@ -77,6 +80,25 @@
             }
 
             return currentChar;
+        }
+
+        public static string RandomCodeGenerator(int size)
+        {
+            byte[] data = new byte[4 * size];
+            using (var crypto = RandomNumberGenerator.Create())
+            {
+                crypto.GetBytes(data);
+            }
+            StringBuilder result = new StringBuilder(size);
+            for (int i = 0; i < size; i++)
+            {
+                var rnd = BitConverter.ToUInt32(data, i * 4);
+                var idx = rnd % Chars.Length;
+
+                result.Append(Chars[idx]);
+            }
+
+            return result.ToString();
         }
 
     }

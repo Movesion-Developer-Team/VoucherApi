@@ -11,5 +11,8 @@ namespace Core.IRepositories
         Task AddPlayerToCompany(int playerId, int companyId);
         List<Tuple<string?, string?>> GetAllCompaniesWithPlayers();
         IQueryable<User> GetAllUsersOfCompany(int? companyId);
+        Task<IQueryable<JoinRequest>> GetAllJoinRequests(int companyId);
+        Task<bool> AcceptRequest(int requestId, int userId);
+        Task DeleteRequest(int requestId);
     }
 }

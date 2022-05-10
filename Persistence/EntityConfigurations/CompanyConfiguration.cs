@@ -31,6 +31,8 @@ namespace Persistence.EntityConfigurations
             builder.HasMany(c => c.Users)
                 .WithOne(w => w.Company)
                 .HasForeignKey(w => w.CompanyId);
+            builder.HasMany(c => c.InvitationCodes)
+                .WithOne(ic => ic.Company);
         }
     }
 }
