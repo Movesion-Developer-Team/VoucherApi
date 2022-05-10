@@ -1,5 +1,6 @@
 ﻿using Core.Domain;
 using Core.IRepositories;
+using Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Repositories
@@ -107,6 +108,51 @@ namespace Persistence.Repositories
         {
             var users = VoucherContext.Users.Where(u => u.CompanyId == companyId).Select(u => u);
             return users;
+        }
+
+        public async Task<IQueryable<JoinRequest>> GetAllJoinRequests(int companyId)
+        {
+            var anyRequests = await VoucherContext.JoinRequests.AnyAsync();
+            if (!anyRequests)
+            {
+                throw new InvalidOperationException("No requests in database");
+            }
+
+            var requests = await Task.Run(() => VoucherContext.JoinRequests
+                .Include(jr => jr.User)
+                .Where(jr => jr.User!.CompanyId == companyId));
+
+            return requests;
+        }
+
+        public async Task<bool> AcceptRequest(int requestId, int userId)
+        {
+            var request = await VoucherContext.JoinRequests
+                .Include(jr=>jr.InvitationCode)
+                .SingleOrDefaultAsync(jr=>jr.Id == requestId);
+            if (request == null)
+            {
+                throw new InvalidOperationException("Request not found");
+            }
+
+            var user = await VoucherContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            await AddUserToCompany(user, request.InvitationCode.CompanyId);
+            VoucherContext.JoinRequests.Remove(request);
+            await VoucherContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task DeleteRequest(int requestId)
+        {
+            var request = await VoucherContext.JoinRequests.FindAsync(requestId);
+            if (request == null) throw new InvalidOperationException("Request not found");
+            VoucherContext.JoinRequests.Remove(request);
+            await VoucherContext.SaveChangesAsync();
         }
     }
 }

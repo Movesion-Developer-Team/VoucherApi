@@ -66,7 +66,6 @@ namespace Persistence.Repositories
             if (Context.Set<TEntity>().Where(predicate).Any())
             {
                 return Context.Set<TEntity>().Where(predicate).Select(e => e);
-                
             }
 
             throw new NullReferenceException("No requested entities in database");

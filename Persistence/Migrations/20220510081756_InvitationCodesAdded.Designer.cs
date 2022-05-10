@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,10 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    partial class VoucherContextModelSnapshot : ModelSnapshot
+    [Migration("20220510081756_InvitationCodesAdded")]
+    partial class InvitationCodesAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,8 +180,8 @@ namespace Persistence.Migrations
                     b.Property<string>("InviteCode")
                         .HasColumnType("text");
 
-                    b.Property<int?>("JoinRequestId")
-                        .HasColumnType("integer");
+                    b.Property<bool?>("IsSent")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
@@ -189,34 +191,6 @@ namespace Persistence.Migrations
                     b.HasIndex("CompanyId");
 
                     b.ToTable("InvitationCodes");
-                });
-
-            modelBuilder.Entity("Core.Domain.JoinRequest", b =>
-                {
-                    b.Property<int?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
-
-                    b.Property<int?>("InvitationCodeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvitationCodeId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("JoinRequests");
                 });
 
             modelBuilder.Entity("Core.Domain.Location", b =>
@@ -383,7 +357,7 @@ namespace Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
-                    b.Property<int?>("CompanyId")
+                    b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<string>("IdentityUserId")
@@ -392,9 +366,6 @@ namespace Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
-
-                    b.HasIndex("IdentityUserId")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -505,21 +476,6 @@ namespace Persistence.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("Core.Domain.JoinRequest", b =>
-                {
-                    b.HasOne("Core.Domain.InvitationCode", "InvitationCode")
-                        .WithOne("JoinRequest")
-                        .HasForeignKey("Core.Domain.JoinRequest", "InvitationCodeId");
-
-                    b.HasOne("Core.Domain.User", "User")
-                        .WithOne("JoinRequest")
-                        .HasForeignKey("Core.Domain.JoinRequest", "UserId");
-
-                    b.Navigation("InvitationCode");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Core.Domain.PlayerCategories", b =>
                 {
                     b.HasOne("Core.Domain.Category", "Category")
@@ -573,7 +529,9 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Core.Domain.Company", "Company")
                         .WithMany("Users")
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Company");
                 });
@@ -623,11 +581,6 @@ namespace Persistence.Migrations
                     b.Navigation("Discount");
                 });
 
-            modelBuilder.Entity("Core.Domain.InvitationCode", b =>
-                {
-                    b.Navigation("JoinRequest");
-                });
-
             modelBuilder.Entity("Core.Domain.Location", b =>
                 {
                     b.Navigation("PlayerLocations");
@@ -649,11 +602,6 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Core.Domain.UnassignedDiscountCodeCollection", b =>
                 {
                     b.Navigation("DiscountCodes");
-                });
-
-            modelBuilder.Entity("Core.Domain.User", b =>
-                {
-                    b.Navigation("JoinRequest");
                 });
 #pragma warning restore 612, 618
         }

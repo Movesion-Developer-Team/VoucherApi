@@ -11,5 +11,6 @@ public class Company : EntityBase
     public List<User>? Users { get; set; }
     public ICollection<Player>? Players { get; set; }
     public List<CompanyPlayer>? CompanyPlayers { get; set; }
+    public ICollection<InvitationCode>? InvitationCodes { get; set; }
 
 }
