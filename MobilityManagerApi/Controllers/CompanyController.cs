@@ -405,7 +405,7 @@ namespace MobilityManagerApi.Controllers
             var response = new BaseResponse();
             try
             {
-                await _unitOfWork.Company.DeleteRequest(body.RequestId);
+                await _unitOfWork.Company.DeclineRequest(body.RequestId);
                 response.Message = "Done";
                 return Ok(response);
             }

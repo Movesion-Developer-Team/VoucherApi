@@ -13,6 +13,6 @@ namespace Core.IRepositories
         IQueryable<User> GetAllUsersOfCompany(int? companyId);
         Task<IQueryable<JoinRequest>> GetAllJoinRequests(int companyId);
         Task<bool> AcceptRequest(int requestId, int userId);
-        Task DeleteRequest(int requestId);
+        Task DeclineRequest(int requestId);
     }
 }

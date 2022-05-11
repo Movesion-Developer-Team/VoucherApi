@@ -8,6 +8,7 @@ namespace Persistence.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<JoinRequest> builder)
         {
+            builder.Property(jr => jr.Declined).HasDefaultValue(false);
             builder.HasOne(jr => jr.InvitationCode)
                 .WithOne(ic => ic.JoinRequest)
                 .HasForeignKey<JoinRequest>(jr => jr.InvitationCodeId);

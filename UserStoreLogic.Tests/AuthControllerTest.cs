@@ -10,11 +10,11 @@ namespace UserStoreLogic.Tests
     [TestFixture]
     internal class AuthControllerTest : BaseSetup
     {
-        [Test]
-        public async Task RegisterTest()
-        {
+        //[Test]
+        //public async Task RegisterTest()
+        //{
             
 
-        }
+        //}
     }
 }
