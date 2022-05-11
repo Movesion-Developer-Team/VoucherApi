@@ -194,26 +194,49 @@ namespace MobilityManagerApi.Controllers
             try
             {
 
-                var player = await _unitOfWork.Category.GetAllCategoriesForPlayer(playerId);
-                if (player.Categories == null || !player.Categories.Any())
-                {
-                    response.Message = "No categories assigned to the player";
-                    return BadRequest(response);
-                }
-
-                var categoriesQuery = player.Categories.AsQueryable();
-                response.Categories = _mapper.ProjectTo<CategoryBodyDto>(categoriesQuery);
+                var categories = await _unitOfWork.Category.GetAllCategoriesForPlayer(playerId);
+                response.Categories = _mapper.ProjectTo<CategoryBodyDto>(categories);
                 return Ok(response);
             }
-            catch(NullReferenceException ex)
+            catch (NullReferenceException ex)
             {
                 response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message =$"Internal server error: {ex.Message}";
                 return BadRequest(response);
             }
 
         }
 
-
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GHetAllCategoriesForCompanyResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GHetAllCategoriesForCompanyResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllCategoriesForCompany(int companyId)
+        {
+            var response = new GHetAllCategoriesForCompanyResponseDto();
+            try
+            {
+                var categories = await _unitOfWork.Category.GetAllCategoriesForCompany(companyId);
+                response.Categories = _mapper.ProjectTo<CategoryBodyDto>(categories);
+                response.Message = "Done";
+                return Ok(response);
+                
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
 
     }
 }

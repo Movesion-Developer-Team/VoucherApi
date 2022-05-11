@@ -4,6 +4,7 @@ namespace Core.IRepositories
 {
     public interface ICategoryRepository : IGenericRepository<Category>
     {
-        Task<Player> GetAllCategoriesForPlayer(int playerId);
+        Task<IQueryable<Category>> GetAllCategoriesForPlayer(int playerId);
+        Task<IQueryable<Category>> GetAllCategoriesForCompany(int companyId);
     }
 }
