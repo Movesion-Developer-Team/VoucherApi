@@ -147,11 +147,12 @@ namespace Persistence.Repositories
             return true;
         }
 
-        public async Task DeleteRequest(int requestId)
+        public async Task DeclineRequest(int requestId)
         {
             var request = await VoucherContext.JoinRequests.FindAsync(requestId);
             if (request == null) throw new InvalidOperationException("Request not found");
-            VoucherContext.JoinRequests.Remove(request);
+            VoucherContext.JoinRequests.Update(request);
+            request.Declined = true;
             await VoucherContext.SaveChangesAsync();
         }
     }

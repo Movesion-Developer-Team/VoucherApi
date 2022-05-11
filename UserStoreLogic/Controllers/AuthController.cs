@@ -50,41 +50,23 @@ namespace UserStoreLogic.Controllers
         public async Task<ActionResult<IdentityResult?>> Register([FromBody] IdentityUserDto request)
         {
             var response = new AuthResponseDto();
-            Company currentCompany;
             var user = new IdentityUser
             {
                 UserName = request.UserName,
             };
-
-
-            try
-            {
-                currentCompany = await _unitOfWork.Company.Find(c => c.Id == request.CompanyId).FirstAsync();
-            }
-
-            catch (NullReferenceException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-
 
             var newUser = await _userManager.CreateAsync(user, request.Password);
             if (newUser.Succeeded)
             {
                 var currentIdentityUser = _userManager.FindByNameAsync(request.UserName).Result;
                 await _userManager.AddToRoleAsync(currentIdentityUser, Role.User.ToString());
-                _unitOfWork.Company.Update(currentCompany);
-
+                
                 var currentUser = new User()
                 {
                     IdentityUserId = currentIdentityUser.Id,
-                    CompanyId = request.CompanyId
                 };
 
                 await _unitOfWork.User.AddAsync(currentUser);
-
-                //await _unitOfWork.Company.AddUserToCompany(currentUser, currentCompany.Id);
 
                 await _unitOfWork.Complete();
 
@@ -190,6 +172,7 @@ namespace UserStoreLogic.Controllers
             }
 
             authResponse.IsAuthenticated = true;
+
             List<Claim> claims = new()
 
             {
@@ -209,8 +192,6 @@ namespace UserStoreLogic.Controllers
 
             authResponse.Token = new JwtSecurityTokenHandler().WriteToken(token);
             return Ok(authResponse);
-
-
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]
