@@ -102,5 +102,12 @@ namespace Persistence.Repositories
 
             return players;
         }
+
+        public async Task AddImageToCategory(Image image, int? categoryId)
+        {
+            image.CategoryId = categoryId;
+            await VoucherContext.Images.AddAsync(image);
+            await VoucherContext.SaveChangesAsync();
+        }
     }
 }

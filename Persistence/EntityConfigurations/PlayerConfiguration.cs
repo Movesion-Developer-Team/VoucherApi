@@ -74,6 +74,9 @@ namespace Persistence.EntityConfigurations
                     });
                 });
 
+            builder.HasOne(p => p.Image)
+                .WithOne(i => i.Player);
+
         }
     }
 }
