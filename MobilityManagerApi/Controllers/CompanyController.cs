@@ -226,14 +226,15 @@ namespace MobilityManagerApi.Controllers
             var response = new GetAllPlayersForCurrentCompanyResponseDto();
             try
             {
-                var company = await _unitOfWork.Company.Find(c => c.Id == companyId).FirstAsync();
+                var company = await _unitOfWork.Company.Find(c => c.Id == companyId)
+                    .Include(c=>c.Players)
+                    .FirstAsync();
                 if (company.Players == null)
                 {
                     response.Message = "No players assigned";
-                    response.Players = new();
                     return Ok(response);
                 }
-                response.Players = company.Players.ToList();
+                response.Players = _mapper.ProjectTo<PlayerBodyDto>(company.Players.AsQueryable());
                 response.Message = "Success";
                 return Ok(response);
             }

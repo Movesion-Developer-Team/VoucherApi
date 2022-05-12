@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Core.Domain;
 using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
 using Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -218,16 +220,91 @@ namespace MobilityManagerApi.Controllers
         }
 
 
+        private async Task<IActionResult> GetCurrentUserInfo()
+        {
+            var response = new GetCurrentUserInfoResponseDto();
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                var id = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var role = identity.FindFirst(ClaimTypes.Role).Value;
+                if (role.Contains(Role.SuperAdmin.ToString()))
+                {
+                    response.Message = "SuperAdmin can be assigned only to one company - Movesion";
+                    return BadRequest(response);
+                }
+                var currentUser = await _unitOfWork.User
+                    .Find(u => u.IdentityUserId == id)
+                    .FirstOrDefaultAsync();
+
+                if (currentUser == null)
+                {
+                    response.Message = "User found";
+                    return BadRequest(response);
+                }
+
+                if (currentUser.CompanyId == null)
+                {
+                    response.Message = "User not assigned to the company";
+                    return BadRequest(response);
+                }
+
+                response.CompanyId = currentUser.CompanyId;
+                return Ok(response);
+            }
+
+            response.Message = "Claim not found";
+            return BadRequest(response);
+        }
+
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
         [HttpGet]
         [ProducesResponseType(typeof(GetAllCategoriesForCompanyResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllCategoriesForCompanyResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllCategoriesForCompany(int companyId)
+        public async Task<IActionResult> GetAllCategoriesForCurrentCompany()
         {
             var response = new GetAllCategoriesForCompanyResponseDto();
+            int? companyId;
+
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                var id = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var role = identity.FindFirst(ClaimTypes.Role).Value;
+                if (role.Contains(Role.SuperAdmin.ToString()))
+                {
+                    response.Message = "SuperAdmin is not a User";
+                    return BadRequest(response);
+                }
+                var currentUser = await _unitOfWork.User
+                    .Find(u => u.IdentityUserId == id)
+                    .FirstOrDefaultAsync();
+
+                if (currentUser == null)
+                {
+                    response.Message = "User not found";
+                    return BadRequest(response);
+                }
+
+                if (currentUser.CompanyId == null)
+                {
+                    response.Message = "User not assigned to the company";
+                    return BadRequest(response);
+                }
+
+                companyId = currentUser.CompanyId;
+                
+            }
+            else
+            {
+                response.Message = "Claim not found";
+                return BadRequest(response);
+            }
+
+            
+
+            
             try
             {
-                var categories = await _unitOfWork.Category.GetAllCategoriesForCompany(companyId);
+                var categories = await _unitOfWork.Category.GetAllCategoriesForCompany((int)companyId);
                 response.Categories = _mapper.ProjectTo<CategoryBodyDto>(categories);
                 response.Message = "Done";
                 return Ok(response);
@@ -239,6 +316,7 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
+
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
         [HttpGet]
@@ -263,6 +341,60 @@ namespace MobilityManagerApi.Controllers
 
         }
 
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddImageToCategory([FromBody] AddImageToCategoryBodyDto body)
+        {
+            var response = new BaseResponse();
+            var permittedExtensions = new string[]
+            {
+                ".jpeg",
+                ".png",
+                ".jpg"
+            };
+            try
+            {
+                await using var memoryStream = new MemoryStream();
+                Request.EnableBuffering();
+                var formCollection = await Request.ReadFormAsync();
+                var fileName = formCollection.Files.First().FileName;
+                var ext = Path.GetExtension(fileName).ToLowerInvariant();
+                if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
+                {
+                    response.Message = "Current file extension is not valid. Please upload only jpg, jpeg or png files.";
+                    return BadRequest(response);
+                }
+                await formCollection.Files.First().CopyToAsync(memoryStream);
+                
+                if (memoryStream.Length > 3000000)
+                {
+                    response.Message = "File Size should not exceed 3 mb";
+                    return BadRequest(response);
+                }
+
+                if (memoryStream.Length == 0)
+                {
+                    response.Message = "Image is empty";
+                    return BadRequest(response);
+                }
+
+                var image = new Image
+                {
+                    Content = memoryStream.ToArray()
+                };
+                await _unitOfWork.Category.AddImageToCategory(image, body.CategoryId);
+                await _unitOfWork.Complete();
+                response.Message = "Done";
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
 
     }
 }

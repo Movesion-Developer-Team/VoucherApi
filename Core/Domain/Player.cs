@@ -10,6 +10,7 @@ namespace Core.Domain
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
         public string? Color { get; set; }
+        public Image? Image { get; set; }
         public ICollection<Category>? Categories { get; set; }
         public ICollection<Discount>? Discounts { get; set; }
         public ICollection<Location>? Locations { get; set; }
