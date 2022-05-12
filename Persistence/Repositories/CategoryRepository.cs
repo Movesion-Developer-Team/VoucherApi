@@ -78,5 +78,29 @@ namespace Persistence.Repositories
             return result;
         }
 
+        public async Task<IQueryable<Player>> GetAllPlayersForCategoryAndCompany(int companyId, int categoryId)
+        {
+            var company = await Task.Run(()=>VoucherContext
+                .Companies
+                .Where(c => c.Id == companyId));
+            if (!company.Any())
+            {
+                throw new InvalidOperationException("Company not found");
+            }
+
+            if (!company.Select(c => c.Players).Any())
+            {
+                throw new InvalidOperationException("Company does not have any Players assigned");
+            }
+
+            var players = await Task.Run(()=>company
+                .Where(c =>
+                    c.Players.All(p =>
+                        p.Categories.All(c =>
+                            c.Id == categoryId)))
+                .SelectMany(c => c.Players));
+
+            return players;
+        }
     }
 }

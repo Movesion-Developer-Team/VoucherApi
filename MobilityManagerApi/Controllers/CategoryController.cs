@@ -185,6 +185,7 @@ namespace MobilityManagerApi.Controllers
 
 
         [AuthorizeRoles(Role.SuperAdmin)]
+
         [HttpGet]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status400BadRequest)]
@@ -216,13 +217,14 @@ namespace MobilityManagerApi.Controllers
 
         }
 
+
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
         [HttpGet]
-        [ProducesResponseType(typeof(GHetAllCategoriesForCompanyResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GHetAllCategoriesForCompanyResponseDto), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GetAllCategoriesForCompanyResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllCategoriesForCompanyResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllCategoriesForCompany(int companyId)
         {
-            var response = new GHetAllCategoriesForCompanyResponseDto();
+            var response = new GetAllCategoriesForCompanyResponseDto();
             try
             {
                 var categories = await _unitOfWork.Category.GetAllCategoriesForCompany(companyId);
@@ -237,6 +239,30 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllPlayersResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllPlayersResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllPlayersForCategoryAndCompany(int companyId, int categoryId)
+        {
+            var response = new GetAllPlayersResponseDto();
+
+            try
+            {
+                var players = await _unitOfWork.Category.GetAllPlayersForCategoryAndCompany(companyId, categoryId);
+                response.Players = _mapper.ProjectTo<PlayerBodyDto>(players);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+
+        }
+
 
     }
 }

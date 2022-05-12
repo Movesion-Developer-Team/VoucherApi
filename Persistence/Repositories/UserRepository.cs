@@ -58,6 +58,18 @@ namespace Persistence.Repositories
             return request.Declined;
         }
 
+        private async Task<bool> IsAssignedToCompany(int userId)
+        {
+            var user = await VoucherContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            return user.CompanyId != null;
+
+        }
+
         public async Task SendJoinRequestToCompany(string code, int userId, string? message = null)
         {
             bool userExists = await ExistsAsync(userId);
@@ -85,7 +97,6 @@ namespace Persistence.Repositories
                 throw new InvalidOperationException("Request already sent");
             }
 
-            
             var invitationCode = await VoucherContext.InvitationCodes.SingleOrDefaultAsync(c => c.InviteCode == code);
             if (invitationCode == null)
             {
@@ -116,17 +127,6 @@ namespace Persistence.Repositories
             await VoucherContext.SaveChangesAsync();
         }
 
-        public async Task<bool> IsAssignedToCompany(int userId)
-        {
-            var user = await VoucherContext.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new InvalidOperationException("User not found");
-            }
-
-            return user.CompanyId != null;
-
-        }
-
+        
     }
 }

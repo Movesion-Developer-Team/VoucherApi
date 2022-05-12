@@ -400,7 +400,7 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteJoinRequest([FromBody] DeleteJoinRequestBodyDto body)
+        public async Task<IActionResult> DeclineJoinRequest([FromBody] DeleteJoinRequestBodyDto body)
         {
             var response = new BaseResponse();
             try
@@ -422,7 +422,49 @@ namespace MobilityManagerApi.Controllers
             
         }
 
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
 
+        public async Task<IActionResult> AssignUserToCompany(int userId, int companyId)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                
+                var user = await _unitOfWork.User.Find(u => u.Id == userId).SingleOrDefaultAsync();
+                if (user == null)
+                {
+                    response.Message = "User not found";
+                    return BadRequest(response);
+                }
+
+                if (user.CompanyId != null && user.CompanyId != companyId)
+                {
+                    response.Message = "User is already assigned to another company";
+                    return BadRequest(response);
+                }
+
+                if (user.CompanyId == companyId)
+                {
+                    response.Message = "User is already assigned to this company";
+                    return BadRequest(response);
+                }
+
+                _unitOfWork.User.Update(user);
+                user.CompanyId = companyId;
+                await _unitOfWork.Complete();
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+            
+        }
 
 
 
@@ -430,6 +472,7 @@ namespace MobilityManagerApi.Controllers
         //[HttpPost]
         //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+
         //public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompanyBody body)
         //{
         //    var response = new BaseResponse();

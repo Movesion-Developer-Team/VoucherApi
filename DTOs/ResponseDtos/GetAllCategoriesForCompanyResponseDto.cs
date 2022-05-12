@@ -3,7 +3,7 @@ using DTOs.BodyDtos;
 
 namespace DTOs.ResponseDtos
 {
-    public class GHetAllCategoriesForCompanyResponseDto : BaseResponse
+    public class GetAllCategoriesForCompanyResponseDto : BaseResponse
     {
         public IQueryable<CategoryBodyDto>? Categories { get; set; }
     }
