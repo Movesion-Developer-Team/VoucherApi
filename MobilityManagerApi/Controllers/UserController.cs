@@ -90,7 +90,7 @@ namespace MobilityManagerApi.Controllers
 
                 if (currentUser == null)
                 {
-                    response.Message = "User found";
+                    response.Message = "User not found";
                     return BadRequest(response);
                 }
 
@@ -104,7 +104,7 @@ namespace MobilityManagerApi.Controllers
                 return Ok(response);
             }
 
-            response.Message = "Claim found";
+            response.Message = "Claim not found";
             return BadRequest(response);
         }
     }
