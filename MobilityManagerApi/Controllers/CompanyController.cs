@@ -427,7 +427,6 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-
         public async Task<IActionResult> AssignUserToCompany(int userId, int companyId)
         {
             var response = new BaseResponse();

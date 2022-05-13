@@ -191,7 +191,7 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllCategoriesForPlayerResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllCategoriesForPlayer(int playerId)
+        public async Task<IActionResult> GetAllCategoriesForPlayer([FromQuery] int playerId)
         {
             var response = new GetAllCategoriesForPlayerResponseDto();
             try
@@ -220,17 +220,18 @@ namespace MobilityManagerApi.Controllers
         }
 
 
-        private async Task<IActionResult> GetCurrentUserInfo()
+        private async Task<PrivateGetCurrentUserInfoResponseDto> GetCurrentUserInfo()
         {
-            var response = new GetCurrentUserInfoResponseDto();
+            var result = new PrivateGetCurrentUserInfoResponseDto();
             if (HttpContext.User.Identity is ClaimsIdentity identity)
             {
                 var id = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
                 var role = identity.FindFirst(ClaimTypes.Role).Value;
                 if (role.Contains(Role.SuperAdmin.ToString()))
                 {
-                    response.Message = "SuperAdmin can be assigned only to one company - Movesion";
-                    return BadRequest(response);
+                    result.Message = "SuperAdmin can be assigned only to one company - Movesion";
+                    result.StatusCode = StatusCodes.Status400BadRequest;
+                    return result;
                 }
                 var currentUser = await _unitOfWork.User
                     .Find(u => u.IdentityUserId == id)
@@ -238,22 +239,26 @@ namespace MobilityManagerApi.Controllers
 
                 if (currentUser == null)
                 {
-                    response.Message = "User found";
-                    return BadRequest(response);
+                    result.Message = "User found";
+                    result.StatusCode = StatusCodes.Status400BadRequest;
+                    return result;
                 }
 
                 if (currentUser.CompanyId == null)
                 {
-                    response.Message = "User not assigned to the company";
-                    return BadRequest(response);
+                    result.Message = "User not assigned to the company";
+                    result.StatusCode = StatusCodes.Status400BadRequest;
+                    return result;
                 }
 
-                response.CompanyId = currentUser.CompanyId;
-                return Ok(response);
+                result.CompanyId = currentUser.CompanyId;
+                result.StatusCode = StatusCodes.Status200OK;
+                return result;
             }
 
-            response.Message = "Claim not found";
-            return BadRequest(response);
+            result.Message = "Claim not found";
+            result.StatusCode = StatusCodes.Status400BadRequest;
+            return result;
         }
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
@@ -263,45 +268,14 @@ namespace MobilityManagerApi.Controllers
         public async Task<IActionResult> GetAllCategoriesForCurrentCompany()
         {
             var response = new GetAllCategoriesForCompanyResponseDto();
-            int? companyId;
-
-            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            var currentUserInfo = await GetCurrentUserInfo();
+            if (currentUserInfo.StatusCode != StatusCodes.Status200OK)
             {
-                var id = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var role = identity.FindFirst(ClaimTypes.Role).Value;
-                if (role.Contains(Role.SuperAdmin.ToString()))
-                {
-                    response.Message = "SuperAdmin is not a User";
-                    return BadRequest(response);
-                }
-                var currentUser = await _unitOfWork.User
-                    .Find(u => u.IdentityUserId == id)
-                    .FirstOrDefaultAsync();
-
-                if (currentUser == null)
-                {
-                    response.Message = "User not found";
-                    return BadRequest(response);
-                }
-
-                if (currentUser.CompanyId == null)
-                {
-                    response.Message = "User not assigned to the company";
-                    return BadRequest(response);
-                }
-
-                companyId = currentUser.CompanyId;
-                
-            }
-            else
-            {
-                response.Message = "Claim not found";
+                response.Message = currentUserInfo.Message;
                 return BadRequest(response);
             }
+            int? companyId = currentUserInfo.CompanyId;
 
-            
-
-            
             try
             {
                 var categories = await _unitOfWork.Category.GetAllCategoriesForCompany((int)companyId);
@@ -322,13 +296,19 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllPlayersResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllPlayersResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllPlayersForCategoryAndCompany(int companyId, int categoryId)
+        public async Task<IActionResult> GetAllPlayersForCurrentCategory([FromQuery] int categoryId)
         {
             var response = new GetAllPlayersResponseDto();
-
+            var currentUserInfo = await GetCurrentUserInfo();
+            if (currentUserInfo.StatusCode != StatusCodes.Status200OK)
+            {
+                response.Message = currentUserInfo.Message;
+                return BadRequest(response);
+            }
+            var companyId = currentUserInfo.CompanyId;
             try
             {
-                var players = await _unitOfWork.Category.GetAllPlayersForCategoryAndCompany(companyId, categoryId);
+                var players = await _unitOfWork.Category.GetAllPlayersForCategoryAndCompany((int) companyId, categoryId);
                 response.Players = _mapper.ProjectTo<PlayerBodyDto>(players);
                 response.Message = "Done";
                 return Ok(response);
