@@ -25,6 +25,14 @@ namespace Persistence.Repositories
                 throw new ArgumentNullException(nameof(player));
             }
 
+            if (player.Categories != null)
+            {
+                if (player.Categories.Any(c => c.Id == categoryId))
+                {
+                    throw new InvalidOperationException("Category is already assigned to the Player");
+                }
+            }
+
             var category = await VoucherContext.Categories.FindAsync(categoryId);
             if (category == null)
             {
