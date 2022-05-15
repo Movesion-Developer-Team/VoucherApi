@@ -51,7 +51,17 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
 
-            var category = await _unitOfWork.Category.Find(c => c.Id == body.CategoryId).FirstAsync();
+            Category? category;
+            try
+            {
+                category = await _unitOfWork.Category.Find(c => c.Id == body.CategoryId).FirstAsync();
+            }
+            catch(NullReferenceException ex)
+            {
+                response.Message = $"Category not found: {ex.Message}";
+                return BadRequest(response);
+            }
+            
             newPlayer.Categories = new List<Category>();
             newPlayer.Categories.Add(category);
             int? id;
@@ -220,6 +230,11 @@ namespace MobilityManagerApi.Controllers
                 await _unitOfWork.Player.AssignCategoryToPlayer((int) body.PlayerId, (int) body.CategoryId);
                 response.Message = "Done";
                 return Ok(response);
+            }
+            catch(InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
             }
             catch (ArgumentNullException ex)
             {
