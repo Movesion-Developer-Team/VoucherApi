@@ -82,7 +82,9 @@ namespace Persistence.Repositories
         {
             var company = await Task.Run(()=>VoucherContext
                 .Companies
-                .Where(c => c.Id == companyId));
+                .Where(c => c.Id == companyId)
+                .Include(c=>c.Players)
+                .Select(c=>c));
             if (!company.Any())
             {
                 throw new InvalidOperationException("Company not found");
