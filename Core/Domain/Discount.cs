@@ -20,7 +20,7 @@ namespace Core.Domain
 
 
         public DiscountType DiscountType { get; set; }
-        public Player Player { get; set; }
+        public Player? Player { get; set; }
         public ValidityPeriod ValidityPeriod { get; set; }
         public ICollection<Voucher> Vouchers { get; set; }
 

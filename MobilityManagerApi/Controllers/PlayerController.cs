@@ -297,7 +297,39 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-        
+
+
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllDiscountTypesForCurrentPlayer([FromQuery] int playerId)
+        {
+            var response = new GetAllDiscountTypesForCurrentPlayerResponseDto();
+            Player player;
+            try
+            {
+                player = await _unitOfWork.Player.Find(p => p.Id == playerId)
+                    .Include(d => d.Discounts)
+                    .FirstAsync();
+            }
+            catch(NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            
+
+            if (player.Discounts.IsNullOrEmpty())
+            {
+                response.Message = "Player does not have any discounts";
+                return BadRequest(response);
+            }
+
+            response.DiscountTypes = player.Discounts.Select(d => d.DiscountType).Distinct();
+            return Ok(response);
+
+        }
 
     }
 }
