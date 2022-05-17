@@ -96,7 +96,7 @@ namespace MobilityManagerApi
                 }
             }
 
-            DiscountType[] discpDiscountTypes = new DiscountType[]
+            DiscountType[] discountTypes = new DiscountType[]
             {
                 new DiscountType
                 {
@@ -112,9 +112,10 @@ namespace MobilityManagerApi
                 }
             };
 
-            if (!await _voucherContext.DiscountTypes.AnyAsync())
+            if (!await _voucherContext.DiscountTypes.AnyAsync(
+                    ))
             {
-                foreach (var discountType in discpDiscountTypes)
+                foreach (var discountType in discountTypes)
                 {
 
                     await _voucherContext.DiscountTypes.AddAsync(discountType);

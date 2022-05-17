@@ -8,14 +8,12 @@ namespace Persistence.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Voucher> builder)
         {
-            builder.Property(v => v.CategoryId).IsRequired();
-            builder.Property(v => v.DiscountId).IsRequired();
+            
             builder.Property(v => v.Name).IsRequired();
 
-            builder.HasOne(v => v.Category)
-                .WithMany(c => c.Vouchers);
-            builder.HasOne(v => v.Discount)
-                .WithMany(d => d.Vouchers);
+            builder.HasOne(v => v.DiscountCode)
+                .WithOne(dc => dc.Voucher)
+                .HasForeignKey<Voucher>(v => v.DiscountCodeId);
         }
     }
 }

@@ -18,7 +18,7 @@ using System.Text;
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]/[action]/")]
     [EnableCors]
     public class DiscountController : ControllerBase, IControllerBaseActions
     {
@@ -35,15 +35,23 @@ namespace MobilityManagerApi.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
-        [ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(CsvToDiscountCodesResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CsvToDiscountCodes()
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        [Route("{discountId}")]
+        public async Task<IActionResult> UploadCsv([FromRoute] int discountId)
         {
-            var response = new CsvToDiscountCodesResponseDto();
+            var response = new BaseResponse();
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = false
             };
+
+            var discount = _unitOfWork.Discount.Find(d => d.Id == discountId);
+            if (!await discount.AnyAsync())
+            {
+                response.Message = "Discount not found";
+                return BadRequest(response);
+            }
             
             try
             {
@@ -57,12 +65,9 @@ namespace MobilityManagerApi.Controllers
                     var reader = new StreamReader(stream);
                     var csv = new CsvReader(reader, config);
 
-                    response.UnassignedCollectionId = await
-                        _unitOfWork.UnassignedDiscountCodeCollections.AddAsync(new UnassignedDiscountCodeCollection());
-
                     var codes = _mapper.ProjectTo<DiscountCode>(csv.GetRecords<CsvCodeDto>().AsQueryable()).ToList();
 
-                    void Apply(DiscountCode code) => code.UnassignedCollectionId = response.UnassignedCollectionId;
+                    void Apply(DiscountCode code) => code.DiscountId = discountId;
 
                     foreach (var code in codes)
                     {
@@ -78,76 +83,40 @@ namespace MobilityManagerApi.Controllers
                 }
 
                 response.Message = "Please provide a file";
-                return BadRequest();
+                return BadRequest(response);
             }
             catch (Exception ex)
             {
-                response.Message = $"Internal Server error: {ex.Message}";
+                response.Message = $"Unexpected server error: {ex.Message}";
                 return BadRequest(response);
             }
         }
 
-        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
-        [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AssignCodesCollectionToPlayer([FromBody] AssignCodesCollectionToPlayerBodyDto body)
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllDiscountTypesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllDiscountTypesResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllDiscountTypes()
         {
-            var response = new BaseResponse();
-            IQueryable<DiscountCode> collection;
-            if (body.UnassignedCollectionId == null)
-            {
-                response.Message = "Please provide Unassigned Code Collection id";
-                return BadRequest(response);
-            }
+            var response = new GetAllDiscountTypesResponseDto();
             try
             {
-                collection = _unitOfWork.DiscountCode
-                    .Find(dc => dc.UnassignedCollectionId == body.UnassignedCollectionId);
+                var discountTypes = await _unitOfWork.Discount.GetAllDiscountTypes();
+                response.DiscountTypes = _mapper.ProjectTo<DiscountTypeBodyDto>(discountTypes);
+                response.Message = "Done";
+                return Ok(response);
+
             }
-            catch (NullReferenceException ex)
+            catch (ArgumentNullException ex)
             {
-                response.Message = ex.Message;
+                response.Message = $"Internal server error: {ex.Message}";
                 return BadRequest(response);
             }
             catch (Exception ex)
             {
-                response.Message = ex.Message;
-                return BadRequest(response);
+                response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest((response));
             }
-
-            List<Discount> newDiscountsList = new();
-            void Apply(DiscountCode dc) => newDiscountsList.Add(new Discount
-            {
-                DiscountCodeId = dc.Id,
-                PlayerId = body.PlayerId,
-                DiscountType = _mapper.Map<DiscountType>(body.DiscountType),
-                ValidityPeriod = new ValidityPeriod
-                {
-                    StartDate = body.StartDate,
-                    EndDate = body.EndDate
-                }
-            });
-            foreach (var c in collection)
-
-            {
-                await Task.Run(() => Apply(c));
-
-            }
-
-            await _unitOfWork.Discount.AddRangeAsync(newDiscountsList);
-            await _unitOfWork.Complete();
-
-            foreach (var c in collection)
-            {
-                _unitOfWork.DiscountCode.Update(c);
-                c.UnassignedCollectionId = null;
-            }
-            await _unitOfWork.UnassignedDiscountCodeCollections.RemoveAsync((int)body.UnassignedCollectionId);
-            await _unitOfWork.Complete();
-
-            response.Message = "Discount codes assigned to a Player";
-            return Ok(response);
         }
 
     }

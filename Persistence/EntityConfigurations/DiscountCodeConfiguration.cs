@@ -11,11 +11,14 @@ namespace Persistence.EntityConfigurations
             builder.HasIndex(d => d.Code).IsUnique();
 
             builder.HasOne(dc => dc.Discount)
-                .WithOne(d => d.DiscountCode)
-                .HasForeignKey<Discount>(d=>d.DiscountCodeId);
+                .WithMany(d => d.DiscountCodes)
+                .HasForeignKey(dc=>dc.DiscountId);
 
-            builder.HasOne(dc => dc.UnassignedDiscountCodeCollections)
-                .WithMany(ua => ua.DiscountCodes);
+            builder.HasOne(dc => dc.UnassignedDiscountCodesCollection)
+                .WithMany(ua => ua.DiscountCodes)
+                .HasForeignKey(dc=>dc.UnassignedCollectionId);
+            builder.HasOne(dc => dc.Voucher)
+                .WithOne(v => v.DiscountCode);
         }
     }
 }

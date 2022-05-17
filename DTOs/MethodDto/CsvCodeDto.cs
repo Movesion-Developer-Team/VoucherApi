@@ -3,5 +3,6 @@
     public class CsvCodeDto
     {
         public string? Code { get; set; }
+
     }
 }

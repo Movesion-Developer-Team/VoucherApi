@@ -30,10 +30,6 @@ namespace Persistence.EntityConfigurations
                     });
                 });
 
-            builder.HasMany(c => c.Vouchers)
-                .WithOne(v => v.Category)
-                .HasForeignKey(v => v.CategoryId);
-
             builder.HasOne(c => c.Image)
                 .WithOne(i => i.Category);
 
