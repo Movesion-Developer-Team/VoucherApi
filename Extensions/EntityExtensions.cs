@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Domain;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Extensions
 {
@@ -14,6 +15,22 @@ namespace Extensions
             if (entity == null)
             {
                 throw new ArgumentNullException(nameof(entity), $"{nameof(entity)} not found");
+            }
+        }
+
+        public static void CheckQueryForNull(this IQueryable<EntityBase>? entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentNullException(nameof(entities), $"{nameof(entities)} not found");
+            }
+        }
+
+        public static void CheckEnumerableForNull(this IEnumerable<EntityBase>? entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentNullException(nameof(entities), $"{nameof(entities)} not found");
             }
         }
     }

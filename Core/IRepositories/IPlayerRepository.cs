@@ -8,6 +8,7 @@ namespace Core.IRepositories
         Task<bool> DeleteCategoryFromPlayer(int playerId, int categoryId);
 
         Task AssignDiscountTypeToPlayer(int? playerId, int? discountTypeId);
+        Task<IQueryable<DiscountType>> GetAllDiscountTypesForPlayer(int? playerId);
     }
 
 

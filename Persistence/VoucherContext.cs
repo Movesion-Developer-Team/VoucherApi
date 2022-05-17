@@ -23,7 +23,7 @@ namespace Persistence
         public DbSet<InvitationCode> InvitationCodes { get; set; }
         public DbSet<JoinRequest> JoinRequests { get; set; }
         public DbSet<Image> Images { get; set; }
-        public DbSet<DiscountType> DiscountsTypes { get; set; }
+        public DbSet<DiscountType> DiscountTypes { get; set; }
 
 
         public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
