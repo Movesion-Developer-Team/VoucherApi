@@ -12,7 +12,6 @@ namespace Core
         IReportRepository Report { get; }
         IVoucherRepository Voucher { get; }
         IDiscountCodeRepository DiscountCode { get; }
-        IUnassignedDiscountCodeCollectionsRepository UnassignedDiscountCodeCollections { get; }
 
         Task Complete();
 

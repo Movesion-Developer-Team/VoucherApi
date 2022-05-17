@@ -14,9 +14,6 @@ namespace Persistence.EntityConfigurations
                 .WithMany(d => d.DiscountCodes)
                 .HasForeignKey(dc=>dc.DiscountId);
 
-            builder.HasOne(dc => dc.UnassignedDiscountCodesCollection)
-                .WithMany(ua => ua.DiscountCodes)
-                .HasForeignKey(dc=>dc.UnassignedCollectionId);
             builder.HasOne(dc => dc.Voucher)
                 .WithOne(v => v.DiscountCode);
         }

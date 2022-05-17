@@ -346,7 +346,7 @@ namespace MobilityManagerApi.Controllers
 
 
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(GetAllDiscountTypesForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllDiscountTypesForPlayerResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllDiscountTypesForPlayer([FromQuery] int? playerId)
@@ -358,7 +358,7 @@ namespace MobilityManagerApi.Controllers
                 var discountTypes = await _unitOfWork.Player.GetAllDiscountTypesForPlayer(playerId);
                 response.DiscountTypes = _mapper.ProjectTo<DiscountTypeBodyDto>(discountTypes);
                 response.Message = "Done";
-                return Ok(Response);
+                return Ok(response);
             }
             catch (ArgumentNullException ex)
             {
