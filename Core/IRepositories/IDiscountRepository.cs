@@ -4,5 +4,9 @@ namespace Core.IRepositories
 {
     public interface IDiscountRepository : IGenericRepository<Discount>
     {
+        Task<DiscountType> FindDiscountType(int? discountTypeId);
+        Task<IQueryable<DiscountType>> GetAllDiscountTypes();
+
     }
+
 }

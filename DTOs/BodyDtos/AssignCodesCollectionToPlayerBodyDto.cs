@@ -1,4 +1,5 @@
-﻿using Enum;
+﻿using Core.Domain;
+using Enum;
 
 namespace DTOs.BodyDtos
 {
@@ -6,7 +7,7 @@ namespace DTOs.BodyDtos
     {
         public int? UnassignedCollectionId { get; set; }
         public int? PlayerId { get; set; }
-        public DiscountType DiscountType { get; set; }
+        public DiscountTypeBodyDto? DiscountType { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
     }

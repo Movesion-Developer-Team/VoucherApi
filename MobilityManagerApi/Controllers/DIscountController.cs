@@ -121,7 +121,7 @@ namespace MobilityManagerApi.Controllers
             {
                 DiscountCodeId = dc.Id,
                 PlayerId = body.PlayerId,
-                DiscountType = body.DiscountType,
+                DiscountType = _mapper.Map<DiscountType>(body.DiscountType),
                 ValidityPeriod = new ValidityPeriod
                 {
                     StartDate = body.StartDate,

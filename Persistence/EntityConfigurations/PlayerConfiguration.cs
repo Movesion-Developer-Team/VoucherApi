@@ -77,6 +77,23 @@ namespace Persistence.EntityConfigurations
             builder.HasOne(p => p.Image)
                 .WithOne(i => i.Player);
 
+            builder.HasMany(p => p.DiscountsTypes)
+                .WithMany(dt => dt.Players)
+                .UsingEntity<PlayerDiscountType>(opt =>
+                {
+                    opt.HasOne(pd => pd.DiscountType)
+                        .WithMany(dt => dt.PlayerDiscountTypes)
+                        .HasForeignKey(pd => pd.DiscountTypeId);
+                    opt.HasOne(pd => pd.Player)
+                        .WithMany(dt => dt.PlayerDiscountTypes)
+                        .HasForeignKey(pd => pd.PlayerId);
+                    opt.HasKey(key => new
+                    {
+                        key.PlayerId,
+                        key.DiscountTypeId
+                    });
+                });
+
         }
     }
 }

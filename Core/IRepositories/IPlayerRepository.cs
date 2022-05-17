@@ -6,6 +6,8 @@ namespace Core.IRepositories
     {
         Task AssignCategoryToPlayer(int playerId, int categoryId);
         Task<bool> DeleteCategoryFromPlayer(int playerId, int categoryId);
+
+        Task AssignDiscountTypeToPlayer(int? playerId, int? discountTypeId);
     }
 
 

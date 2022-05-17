@@ -1,6 +1,4 @@
-﻿using Enum;
-
-namespace Core.Domain
+﻿namespace Core.Domain
 {
     public class Discount : EntityBase
     {
@@ -17,12 +15,13 @@ namespace Core.Domain
         public int? NumberOfUsagePerUser { get; set; }
         public int? InitialPrice { get; set; }
         public int? FinalPrice { get; set; }
+        public int? DiscountTypeId { get; set; }
 
 
-        public DiscountType DiscountType { get; set; }
+        public DiscountType? DiscountType { get; set; }
         public Player? Player { get; set; }
-        public ValidityPeriod ValidityPeriod { get; set; }
-        public ICollection<Voucher> Vouchers { get; set; }
+        public ValidityPeriod? ValidityPeriod { get; set; }
+        public ICollection<Voucher>? Vouchers { get; set; }
 
     }
 }

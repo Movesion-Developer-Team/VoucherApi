@@ -15,19 +15,20 @@ namespace Persistence.EntityConfigurations
                     vp.Property(vp => vp.EndDate).IsRequired();
                 });
 
-            builder.Property(d => d.DiscountType)
-                .HasConversion<int>()
-                .IsRequired();
-
             builder.HasOne(d => d.DiscountCode)
                 .WithOne(dc => dc.Discount);
 
             builder.HasOne(d => d.Player)
-                .WithMany(p => p.Discounts);
+                .WithMany(p => p.Discounts)
+                .HasForeignKey(d=>d.PlayerId);
 
             builder.HasMany(d => d.Vouchers)
                 .WithOne(v => v.Discount)
                 .HasForeignKey(v => v.DiscountId);
+
+            builder.HasOne(d => d.DiscountType)
+                .WithMany(dt => dt.Discounts)
+                .HasForeignKey(d => d.DiscountTypeId);
 
         }
     }
