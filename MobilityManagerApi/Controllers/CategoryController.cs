@@ -16,7 +16,7 @@ using UserStoreLogic;
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]/[action]/")]
     [EnableCors]
     public class CategoryController : ControllerBase, IControllerBaseActions
     {
@@ -325,7 +325,7 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        [Route("category/{idCategory}/upload")]
+        [Route("{idCategory}")]
         public async Task<IActionResult> AddImageToCategory([FromRoute] int idCategory)
         {
 

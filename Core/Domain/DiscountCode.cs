@@ -6,8 +6,6 @@
         public int? DiscountId { get; set; }
         public Voucher? Voucher { get; set; }
         public Discount? Discount { get; set; }
-        public int? UnassignedCollectionId { get; set; }
-        public UnassignedDiscountCodeCollection? UnassignedDiscountCodesCollection { get; set; }
         
     }
 }

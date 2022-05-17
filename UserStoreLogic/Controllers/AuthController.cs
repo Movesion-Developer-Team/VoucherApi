@@ -33,7 +33,7 @@ namespace UserStoreLogic.Controllers
         private readonly IConfiguration? _configuration;
         private readonly UserDbContext _userDbContext;
         private readonly IMapper _mapper;
-        
+
 
         public AuthController(IConfiguration? configuration, UserManager<IdentityUser> userManager,
             VoucherContext voucherContext, UserDbContext context, IMapper mapper)
@@ -201,7 +201,10 @@ namespace UserStoreLogic.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var response = new GetAllUsersResponseDto();
-            var getUsersAsQueryable = () => _userDbContext.Users.AsQueryable();
+            var superAdmins = await _userManager.GetUsersInRoleAsync(Role.SuperAdmin.ToString());
+            var getUsersAsQueryable = () => _userDbContext.Users
+                .Where(u => !superAdmins.Contains(u))
+                .Select(u => u);
             try
             {
                 var identityUsersQuery = await Task.Run(getUsersAsQueryable);
