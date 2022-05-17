@@ -325,8 +325,10 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddImageToCategory([FromBody] AddImageToCategoryBodyDto body)
+        [Route("category/{idCategory}/upload")]
+        public async Task<IActionResult> AddImageToCategory([FromRoute] int idCategory)
         {
+
             var response = new BaseResponse();
             var permittedExtensions = new string[]
             {
@@ -364,7 +366,7 @@ namespace MobilityManagerApi.Controllers
                 {
                     Content = memoryStream.ToArray()
                 };
-                await _unitOfWork.Category.AddImageToCategory(image, body.CategoryId);
+                await _unitOfWork.Category.AddImageToCategory(image, idCategory);
                 await _unitOfWork.Complete();
                 response.Message = "Done";
                 return BadRequest(response);

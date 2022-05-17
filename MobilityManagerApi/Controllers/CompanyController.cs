@@ -427,13 +427,16 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AssignUserToCompany(int userId, int companyId)
+        public async Task<IActionResult> AssignUserToCompany([FromBody] AssignUserToCompanyBodyDto body)
         {
+            var userId = body.UserId;
+            var companyId = body.CompanyId;
+
             var response = new BaseResponse();
             try
             {
                 
-                var user = await _unitOfWork.User.Find(u => u.Id == userId).SingleOrDefaultAsync();
+                var user = await _unitOfWork.User.Find(u => u.IdentityUserId == userId).SingleOrDefaultAsync();
                 if (user == null)
                 {
                     response.Message = "User not found";

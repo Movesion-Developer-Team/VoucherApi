@@ -13,12 +13,14 @@ namespace Core.Domain
         public Image? Image { get; set; }
         public ICollection<Category>? Categories { get; set; }
         public ICollection<Discount>? Discounts { get; set; }
+        public ICollection<DiscountType>? DiscountsTypes { get; set; }
         public ICollection<Location>? Locations { get; set; }
         public List<PlayerLocation>? PlayerLocations { get; set; }
         public List<PlayerCategories>? PlayerCategories { get; set; }
         public ICollection<PlayerContact>? PlayerContacts { get; set; }
         public ICollection<Company>? Companies { get; set; }
         public List<CompanyPlayer>? CompanyPlayers { get; set; }
+        public ICollection<PlayerDiscountType>? PlayerDiscountTypes { get; set; }
 
     }
 }

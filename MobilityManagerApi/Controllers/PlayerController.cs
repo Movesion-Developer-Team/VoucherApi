@@ -64,6 +64,21 @@ namespace MobilityManagerApi.Controllers
             
             newPlayer.Categories = new List<Category>();
             newPlayer.Categories.Add(category);
+            DiscountType discountType;
+            try
+            {
+                discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
+            }
+            catch(ArgumentNullException ex)
+            {
+                response.Message = $"Internal Server error: {ex.Message}";
+                return BadRequest(response);
+            }
+
+            newPlayer.DiscountsTypes = new List<DiscountType>()
+            {
+                discountType
+            };
             int? id;
             try
             {
@@ -297,39 +312,77 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-
-
-        [Authorize]
+        [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
-        [ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllDiscountTypesForCurrentPlayer([FromQuery] int playerId)
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignDiscountTypeToPlayer([FromBody] AssignDiscountTypeToPlayerBodyDto body)
         {
-            var response = new GetAllDiscountTypesForCurrentPlayerResponseDto();
-            Player player;
+            var response = new BaseResponse();
             try
             {
-                player = await _unitOfWork.Player.Find(p => p.Id == playerId)
-                    .Include(d => d.Discounts)
-                    .FirstAsync();
+                await _unitOfWork.Player.AssignDiscountTypeToPlayer(body.PlayerId, body.DiscountTypeId);
+                response.Message = "Done";
+                return Ok(response);
             }
-            catch(NullReferenceException ex)
+            catch (ArgumentNullException ex)
             {
-                response.Message = ex.Message;
+                response.Message = $"Internal server error: {ex.Message}";
                 return BadRequest(response);
             }
-            
-
-            if (player.Discounts.IsNullOrEmpty())
+            catch (Exception ex)
             {
-                response.Message = "Player does not have any discounts";
+                response.Message = $"Unexpected server error: {ex.Message}";
                 return BadRequest(response);
+
             }
-
-            response.DiscountTypes = player.Discounts.Select(d => d.DiscountType).Distinct();
-            return Ok(response);
-
         }
+
+
+        //[AuthorizeRoles(Role.SuperAdmin)]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetAllDiscountTypes ([FromBody] )
+
+
+
+        //[Authorize]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetAllDiscountTypesForCurrentPlayer([FromQuery] int playerId)
+        //{
+        //    var response = new GetAllDiscountTypesForCurrentPlayerResponseDto();
+        //    Player player;
+        //    try
+        //    {
+        //        player = await _unitOfWork.Player.Find(p => p.Id == playerId)
+        //            .Include(d => d.Discounts)
+        //            .FirstAsync();
+        //    }
+        //    catch(NullReferenceException ex)
+        //    {
+        //        response.Message = ex.Message;
+        //        return BadRequest(response);
+        //    }
+
+
+        //    if (player.Discounts.IsNullOrEmpty())
+        //    {
+        //        response.Message = "Player does not have any discounts";
+        //        return BadRequest(response);
+        //    }
+
+        //    response.DiscountTypes = player.Discounts.Select(d => d.DiscountType).Distinct();
+        //    return Ok(response);
+
+        //}
 
     }
 }

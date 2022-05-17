@@ -10,6 +10,8 @@ namespace DTOs.MappingProfiles
         public DiscountProfile()
         {
             CreateMap<CsvCodeDto, DiscountCode>();
+            CreateMap<DiscountType, DiscountTypeBodyDto>()
+                .ReverseMap();
         }
     }
 }

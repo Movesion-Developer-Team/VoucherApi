@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Core.Domain;
 using Core.IRepositories;
+using Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Repositories
@@ -83,6 +84,18 @@ namespace Persistence.Repositories
             }
         }
 
-        
+        public async Task AssignDiscountTypeToPlayer(int? playerId, int? discountTypeId)
+        {
+            var discountType = await VoucherContext.DiscountsTypes.FindAsync(discountTypeId);
+            discountType.CheckForNull();
+            var player = await VoucherContext.Players.FindAsync(playerId);
+            player.CheckForNull();
+
+            Update(player);
+            player.DiscountsTypes!.Add(discountType);
+            await Complete();
+        }
+
+
     }
 }

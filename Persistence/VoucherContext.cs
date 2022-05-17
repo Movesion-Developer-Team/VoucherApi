@@ -23,6 +23,7 @@ namespace Persistence
         public DbSet<InvitationCode> InvitationCodes { get; set; }
         public DbSet<JoinRequest> JoinRequests { get; set; }
         public DbSet<Image> Images { get; set; }
+        public DbSet<DiscountType> DiscountsTypes { get; set; }
 
 
         public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
@@ -41,6 +42,7 @@ namespace Persistence
             new InvitationCodeConfiguration().Configure(modelBuilder.Entity<InvitationCode>());
             new JoinRequestConfiguration().Configure(modelBuilder.Entity<JoinRequest>());
             new ImageConfiguration().Configure(modelBuilder.Entity<Image>());
+            new DiscountTypeConfiguration().Configure(modelBuilder.Entity<DiscountType>());
         }
 
     }

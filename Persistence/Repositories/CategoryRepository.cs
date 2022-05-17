@@ -84,6 +84,7 @@ namespace Persistence.Repositories
                 .Companies
                 .Where(c => c.Id == companyId)
                 .Include(c=>c.Players)
+                .ThenInclude(p=>p.Categories)
                 .Select(c=>c));
             if (!company.Any())
             {
