@@ -312,10 +312,6 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpPost]
@@ -344,45 +340,57 @@ namespace MobilityManagerApi.Controllers
         }
 
 
-        //[AuthorizeRoles(Role.SuperAdmin)]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> GetAllDiscountTypes ([FromBody] )
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllDiscountTypes()
+        {
+            var response = new GetAllDiscountTypesResponseDto();
+            try
+            {
+                var discountTypes = await _unitOfWork.Discount.GetAllDiscountTypes();
+                response.DiscountTypes = _mapper.ProjectTo<DiscountTypeBodyDto>(discountTypes);
+                response.Message = "Done";
+                return Ok(response);
+
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest((response));
+            }
+        }
 
 
 
-        //[Authorize]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(GetAllDiscountTypesForCurrentPlayerResponseDto), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> GetAllDiscountTypesForCurrentPlayer([FromQuery] int playerId)
-        //{
-        //    var response = new GetAllDiscountTypesForCurrentPlayerResponseDto();
-        //    Player player;
-        //    try
-        //    {
-        //        player = await _unitOfWork.Player.Find(p => p.Id == playerId)
-        //            .Include(d => d.Discounts)
-        //            .FirstAsync();
-        //    }
-        //    catch(NullReferenceException ex)
-        //    {
-        //        response.Message = ex.Message;
-        //        return BadRequest(response);
-        //    }
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(GetAllDiscountTypesForPlayerResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllDiscountTypesForPlayerResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllDiscountTypesForPlayer([FromQuery] int? playerId)
+        {
+            var response = new GetAllDiscountTypesForPlayerResponseDto();
+            
+            try
+            {
+                var discountTypes = await _unitOfWork.Player.GetAllDiscountTypesForPlayer(playerId);
+                response.DiscountTypes = _mapper.ProjectTo<DiscountTypeBodyDto>(discountTypes);
+                response.Message = "Done";
+                return Ok(Response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message =$"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
 
-
-        //    if (player.Discounts.IsNullOrEmpty())
-        //    {
-        //        response.Message = "Player does not have any discounts";
-        //        return BadRequest(response);
-        //    }
-
-        //    response.DiscountTypes = player.Discounts.Select(d => d.DiscountType).Distinct();
-        //    return Ok(response);
-
-        //}
+        }
 
     }
 }

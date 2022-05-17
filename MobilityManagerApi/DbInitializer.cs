@@ -95,8 +95,31 @@ namespace MobilityManagerApi
                     await _categoryRepository.AddAsync(category);
                 }
             }
-            
 
+            DiscountType[] discpDiscountTypes = new DiscountType[]
+            {
+                new DiscountType
+                {
+                    Name = "SingleUse"
+                },
+                new DiscountType
+                {
+                    Name = "MultiUse"
+                },
+                new DiscountType
+                {
+                    Name = "PromotionalCode"
+                }
+            };
+
+            if (!await _voucherContext.DiscountTypes.AnyAsync())
+            {
+                foreach (var discountType in discpDiscountTypes)
+                {
+
+                    await _voucherContext.DiscountTypes.AddAsync(discountType);
+                }
+            }
 
 
             await _voucherContext.SaveChangesAsync();

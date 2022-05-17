@@ -86,7 +86,7 @@ namespace Persistence.Repositories
 
         public async Task AssignDiscountTypeToPlayer(int? playerId, int? discountTypeId)
         {
-            var discountType = await VoucherContext.DiscountsTypes.FindAsync(discountTypeId);
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountTypeId);
             discountType.CheckForNull();
             var player = await VoucherContext.Players.FindAsync(playerId);
             player.CheckForNull();
@@ -96,6 +96,17 @@ namespace Persistence.Repositories
             await Complete();
         }
 
+        public async Task<IQueryable<DiscountType>> GetAllDiscountTypesForPlayer(int? playerId)
+        {
+            var player = await VoucherContext.Players
+                .Where(p => p.Id == playerId)
+                .Include(p => p.DiscountsTypes)
+                .FirstAsync();
+            player.CheckForNull();
+            player.DiscountsTypes.CheckEnumerableForNull();
+            return player.DiscountsTypes.AsQueryable();
+
+        }
 
     }
 }

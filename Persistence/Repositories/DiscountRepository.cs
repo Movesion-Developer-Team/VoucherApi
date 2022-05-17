@@ -15,12 +15,12 @@ namespace Persistence.Repositories
 
         public Task<IQueryable<DiscountType>> GetAllDiscountTypes()
         {
-             return Task.Run(()=>VoucherContext.DiscountsTypes.Select(d => d));
+             return Task.Run(()=>VoucherContext.DiscountTypes.Select(d => d));
         }
 
         public async Task<DiscountType> FindDiscountType(int? discountTypeId)
         {
-            var discountType = await VoucherContext.DiscountsTypes.FindAsync(discountTypeId);
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountTypeId);
             discountType.CheckForNull();
             return discountType;
         }
