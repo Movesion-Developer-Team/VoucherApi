@@ -90,7 +90,15 @@ namespace Persistence.Repositories
             discountType.CheckForNull();
             var player = await VoucherContext.Players.FindAsync(playerId);
             player.CheckForNull();
+            if (player.DiscountsTypes == null)
+            {
+                player.DiscountsTypes = new List<DiscountType>();
+            }
 
+            if (player.DiscountsTypes.Contains(discountType))
+            {
+                throw new InvalidOperationException("This discount type is already assigned to the player");
+            }
             Update(player);
             player.DiscountsTypes!.Add(discountType);
             await Complete();

@@ -9,7 +9,7 @@ namespace Persistence.EntityConfigurations
         public void Configure(EntityTypeBuilder<UnassignedDiscountCodeCollection> builder)
         {
             builder.HasMany(ud => ud.DiscountCodes)
-                .WithOne(dc => dc.UnassignedDiscountCodeCollections)
+                .WithOne(dc => dc.UnassignedDiscountCodesCollection)
                 .HasForeignKey(dc => dc.UnassignedCollectionId);
         }
     }

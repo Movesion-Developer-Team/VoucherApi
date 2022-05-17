@@ -331,31 +331,7 @@ namespace MobilityManagerApi.Controllers
                 response.Message = $"Internal server error: {ex.Message}";
                 return BadRequest(response);
             }
-            catch (Exception ex)
-            {
-                response.Message = $"Unexpected server error: {ex.Message}";
-                return BadRequest(response);
-
-            }
-        }
-
-
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpGet]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllDiscountTypes()
-        {
-            var response = new GetAllDiscountTypesResponseDto();
-            try
-            {
-                var discountTypes = await _unitOfWork.Discount.GetAllDiscountTypes();
-                response.DiscountTypes = _mapper.ProjectTo<DiscountTypeBodyDto>(discountTypes);
-                response.Message = "Done";
-                return Ok(response);
-
-            }
-            catch (ArgumentNullException ex)
+            catch (InvalidOperationException ex)
             {
                 response.Message = $"Internal server error: {ex.Message}";
                 return BadRequest(response);
@@ -363,10 +339,10 @@ namespace MobilityManagerApi.Controllers
             catch (Exception ex)
             {
                 response.Message = $"Unexpected server error: {ex.Message}";
-                return BadRequest((response));
+                return BadRequest(response);
+
             }
         }
-
 
 
         [Authorize]
