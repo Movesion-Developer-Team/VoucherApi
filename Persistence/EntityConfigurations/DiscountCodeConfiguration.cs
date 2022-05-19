@@ -13,9 +13,25 @@ namespace Persistence.EntityConfigurations
             builder.HasOne(dc => dc.Discount)
                 .WithMany(d => d.DiscountCodes)
                 .HasForeignKey(dc=>dc.DiscountId);
+            builder.HasMany(dc => dc.Companies)
+                .WithMany(c => c.DiscountCodes)
+                .UsingEntity<CompanyDiscountCode>(ent =>
+                {
+                    ent.HasOne(cdc => cdc.Company)
+                        .WithMany(c => c.CompanyDiscountCodes)
+                        .HasForeignKey(cdc => cdc.CompanyId);
+                    ent.HasOne(cdc => cdc.DiscountCode)
+                        .WithMany(dc => dc.CompanyDiscountCodes)
+                        .HasForeignKey(cdc => cdc.DiscountCodeId);
+                    ent.HasKey(key => new
+                    {
+                        key.CompanyId, 
+                        key.DiscountCodeId
+                    });
+                });
+            builder.HasMany(dc => dc.Purchases)
+                .WithOne(p => p.DiscountCode);
 
-            builder.HasOne(dc => dc.Voucher)
-                .WithOne(v => v.DiscountCode);
         }
     }
 }

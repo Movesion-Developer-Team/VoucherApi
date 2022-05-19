@@ -14,7 +14,6 @@ namespace Persistence
         public ILocationRepository Location { get; }
         public IPlayerRepository Player { get; }
         public IReportRepository Report { get; }
-        public IVoucherRepository Voucher { get; }
         public IDiscountCodeRepository DiscountCode { get; }
         public IUserRepository User { get; }
         public IInvitationCodeRepository InvitationCode { get; }
@@ -31,7 +30,6 @@ namespace Persistence
             Location = new LocationRepository(voucherContext);
             Player = new PlayerRepository(voucherContext);
             Report = new ReportRepository(voucherContext);
-            Voucher = new VoucherRepository(voucherContext);
             DiscountCode = new DiscountCodeRepository(voucherContext);
             User = new UserRepository(voucherContext);
             InvitationCode  = new InvitationCodeRepository(voucherContext);

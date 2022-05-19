@@ -6,5 +6,6 @@
         public int? CompanyId { get; set; }
         public Company? Company { get; set; }
         public JoinRequest? JoinRequest { get; set; }
+        public ICollection<Purchase>? Purchases { get; set; }
     }
 }

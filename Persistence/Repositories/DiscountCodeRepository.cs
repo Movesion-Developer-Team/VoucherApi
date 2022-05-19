@@ -10,5 +10,7 @@ namespace Persistence.Repositories
         public DiscountCodeRepository(DbContext context) : base(context)
         {
         }
+
+
     }
 }

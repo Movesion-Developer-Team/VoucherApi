@@ -10,7 +10,6 @@ namespace Core
         ILocationRepository Location { get; }
         IPlayerRepository Player { get; }
         IReportRepository Report { get; }
-        IVoucherRepository Voucher { get; }
         IDiscountCodeRepository DiscountCode { get; }
 
         Task Complete();

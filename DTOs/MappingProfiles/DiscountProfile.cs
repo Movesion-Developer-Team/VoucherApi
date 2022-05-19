@@ -9,9 +9,12 @@ namespace DTOs.MappingProfiles
     {
         public DiscountProfile()
         {
+            CreateMap<DiscountBodyDto, Discount>();
             CreateMap<CsvCodeDto, DiscountCode>();
             CreateMap<DiscountType, DiscountTypeBodyDto>()
                 .ReverseMap();
         }
+
+
     }
 }

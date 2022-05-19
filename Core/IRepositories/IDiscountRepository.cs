@@ -6,7 +6,7 @@ namespace Core.IRepositories
     {
         Task<DiscountType> FindDiscountType(int? discountTypeId);
         Task<IQueryable<DiscountType>> GetAllDiscountTypes();
-
+        Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int numberOfDiscounts);
     }
 
 }
