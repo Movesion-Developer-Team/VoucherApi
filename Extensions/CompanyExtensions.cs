@@ -56,10 +56,9 @@ namespace Extensions
             {
                 throw new InvalidOperationException(
                     "Company do not have any categories, players and discounts assigned to it");
-
-
             }
-            return context.Set<Company>().SelectMany(c => c.DiscountCodes.Select(dc => dc.Discount.Player));
+
+            return context.Set<Company>().SelectMany(c => c.DiscountCodes.Select(dc => dc.Discount.Player)).Distinct();
         }
         public static bool HasPlayer(this Company company, Player? player, DbContext context)
         {
