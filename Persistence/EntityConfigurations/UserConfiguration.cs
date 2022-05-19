@@ -9,10 +9,13 @@ namespace Persistence.EntityConfigurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasOne(w => w.Company)
-                .WithMany(c => c.Users);
+                .WithMany(c => c.Users)
+                .HasForeignKey(u=>u.CompanyId);
             builder.HasOne(u => u.JoinRequest)
                 .WithOne(jr => jr.User);
             builder.HasIndex(c => c.IdentityUserId).IsUnique();
+            builder.HasMany(u => u.Purchases)
+                .WithOne(p => p.User);
         }
     }
 }

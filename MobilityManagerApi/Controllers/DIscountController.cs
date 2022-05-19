@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Reflection.Metadata;
 using AutoMapper;
 using Core.Domain;
 using CsvHelper;
@@ -14,6 +15,7 @@ using Microsoft.Win32.SafeHandles;
 using Persistence;
 using UserStoreLogic;
 using System.Text;
+using Extensions;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -31,7 +33,87 @@ namespace MobilityManagerApi.Controllers
             _unitOfWork = new UnitOfWork(vContext);
         }
 
-        
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        [Route("{discountId}")]
+        public async Task<IActionResult> CreateNewDiscount([FromBody] DiscountBodyDto body)
+        {
+            var response = new BaseResponse();
+            var discount = _mapper.Map<Discount>(body);
+
+            var checks = new List<int?>
+            
+            {
+                body.PlayerId,
+                body.DiscountTypeId
+            };
+            var namesOfCheck = new List<string>
+            {
+                nameof(body.PlayerId),
+                nameof(body.DiscountTypeId)
+            };
+            for (int i = 0; i < checks.Count; i++)
+            {
+                if (checks[i] == null)
+                {
+                    response.Message = $"Please provide value of {namesOfCheck[i]}";
+                    return BadRequest(response);
+                }
+            }
+
+            try
+            {
+                var player = await _unitOfWork.Player.Find(p => p.Id == body.PlayerId).SingleOrDefaultAsync();
+                player.CheckForNull();
+                var discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
+                discountType.CheckForNull();
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            
+            
+            try
+            {
+                await _unitOfWork.Discount.AddAsync(discount);
+                await _unitOfWork.Complete();
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpDelete]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteDiscount([FromBody] DeleteDiscountBodyDto body)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                var discount = await _unitOfWork.Discount.Find(d => d.Id == body.DiscountId).FirstAsync();
+                discount.CheckForNull();
+                await _unitOfWork.Discount.RemoveAsync(body.DiscountId);
+                await _unitOfWork.Complete();
+                response.Message = "Deleted";
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+
+        }
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
@@ -46,8 +128,8 @@ namespace MobilityManagerApi.Controllers
                 HasHeaderRecord = false
             };
 
-            var discount = _unitOfWork.Discount.Find(d => d.Id == discountId);
-            if (!await discount.AnyAsync())
+            var discount = await _unitOfWork.Discount.Find(d => d.Id == discountId).Include(d=>d.DiscountCodes).SingleOrDefaultAsync();
+            if (discount == null)
             {
                 response.Message = "Discount not found";
                 return BadRequest(response);
@@ -67,17 +149,15 @@ namespace MobilityManagerApi.Controllers
 
                     var codes = _mapper.ProjectTo<DiscountCode>(csv.GetRecords<CsvCodeDto>().AsQueryable()).ToList();
 
-                    void Apply(DiscountCode code) => code.DiscountId = discountId;
-
-                    foreach (var code in codes)
+                    _unitOfWork.Discount.Update(discount);
+                    if (discount.DiscountCodes == null)
                     {
-                        await Task.Run(() => Apply(code));
-                    }
-
-                    await _unitOfWork.DiscountCode.AddRangeAsync(codes);
+                        discount.DiscountCodes = new List<DiscountCode>().AsQueryable();
+                    };
+                    discount.DiscountCodes = discount.DiscountCodes.Concat(codes);
                     await _unitOfWork.Complete();
 
-                    response.Message = "Discounts are saved in Db without assignment to the player!";
+                    response.Message = "Discounts are assigned to the player!";
 
                     return Ok(response);
                 }
@@ -116,6 +196,44 @@ namespace MobilityManagerApi.Controllers
             {
                 response.Message = $"Unexpected server error: {ex.Message}";
                 return BadRequest((response));
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignDiscountCodesToCompany([FromBody] AssignDiscountCodesToCompanyBodyDto body)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                await _unitOfWork.Discount.AssignDiscountCodesToCompany(body.DiscountId, body.CompanyId,
+                    body.NumberOfDiscounts);
+                await _unitOfWork.Complete();
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error : {ex.Message}";
+                return BadRequest(response);
             }
         }
 

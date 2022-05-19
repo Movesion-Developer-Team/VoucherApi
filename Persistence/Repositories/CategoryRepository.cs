@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Core.Domain;
 using Core.IRepositories;
+using Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Repositories
@@ -46,64 +47,15 @@ namespace Persistence.Repositories
             var company = await VoucherContext
                 .Companies
                 .FindAsync(companyId);
-            if(company == null)
-            {
-                throw new InvalidOperationException("Company not found");
-            }
 
-            var companyWithPlayers = await VoucherContext
-                .Companies.Where(c => c.Id == companyId)
-                .Include(c => c.Players)
-                .FirstAsync();
-            if (companyWithPlayers.Players == null)
-            {
-                throw new InvalidOperationException("Company does not have any players assigned");
-            }
-
-            var companyWithPlayersAndCategories = VoucherContext.Companies
-                .Where(c => c.Id == companyId)
-                .Include(c => c.Players)
-                .ThenInclude(p => p.Categories);
-            if (!companyWithPlayersAndCategories.Any())
-            {
-                throw new InvalidOperationException("Players pf the company does not contain any categories");
-            }
-
-            var result = companyWithPlayersAndCategories
-                .SelectMany(c => c.Players)
-                .Distinct()
-                .SelectMany(p => p.Categories)
-                .Distinct();
-
-            return result;
+            return company.GetCategories(VoucherContext);
         }
 
         public async Task<IQueryable<Player>> GetAllPlayersForCategoryAndCompany(int companyId, int categoryId)
         {
-            var company = await Task.Run(()=>VoucherContext
-                .Companies
-                .Where(c => c.Id == companyId)
-                .Include(c=>c.Players)
-                .ThenInclude(p=>p.Categories)
-                .Select(c=>c));
-            if (!company.Any())
-            {
-                throw new InvalidOperationException("Company not found");
-            }
-
-            if (!company.Select(c => c.Players).Any())
-            {
-                throw new InvalidOperationException("Company does not have any Players assigned");
-            }
-
-            var players = await Task.Run(()=>company
-                .Where(c =>
-                    c.Players.All(p =>
-                        p.Categories.All(c =>
-                            c.Id == categoryId)))
-                .SelectMany(c => c.Players));
-
-            return players;
+            var company = await VoucherContext.Companies.FindAsync(companyId);
+            var category = await VoucherContext.Categories.FindAsync(categoryId);
+            return company.GetPlayers(VoucherContext, category);
         }
 
         public async Task AddImageToCategory(Image image, int? categoryId)

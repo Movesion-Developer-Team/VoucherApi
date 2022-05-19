@@ -6,6 +6,7 @@ using DTOs.BodyDtos;
 using DTOs.MethodDto;
 using DTOs.ResponseDtos;
 using Enum;
+using Extensions;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -121,36 +122,6 @@ namespace MobilityManagerApi.Controllers
             return Ok(response);
         }
 
-        [AuthorizeRoles(Role.SuperAdmin)]
-        [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddPlayerToCompany([FromBody] AddPlayerToCompanyBodyDto body)
-        {
-            var response = new BaseResponse();
-            if (body.CompanyId == null || body.PlayerId == null)
-            {
-                return BadRequest("Please, provide all required parameters");
-            }
-
-            try
-            {
-                await _unitOfWork.Company.AddPlayerToCompany((int) body.PlayerId, (int) body.CompanyId);
-                await _unitOfWork.Complete();
-                response.Message = "Player added to the Company";
-                return Ok(response);
-            }
-            catch (ArgumentNullException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                response.Message = ex.Message;
-                return BadRequest(response);
-            }
-        }
 
         [AuthorizeRoles(Role.SuperAdmin)]
         [HttpGet]
@@ -226,15 +197,9 @@ namespace MobilityManagerApi.Controllers
             var response = new GetAllPlayersForCurrentCompanyResponseDto();
             try
             {
-                var company = await _unitOfWork.Company.Find(c => c.Id == companyId)
-                    .Include(c=>c.Players)
-                    .FirstAsync();
-                if (company.Players == null)
-                {
-                    response.Message = "No players assigned";
-                    return Ok(response);
-                }
-                response.Players = _mapper.ProjectTo<PlayerBodyDto>(company.Players.AsQueryable());
+                var players = await _unitOfWork.Company.GetAllPlayersForOneCompany(companyId);
+                
+                response.Players = _mapper.ProjectTo<PlayerBodyDto>(players);
                 response.Message = "Success";
                 return Ok(response);
             }

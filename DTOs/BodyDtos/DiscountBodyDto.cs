@@ -1,6 +1,6 @@
-﻿namespace Core.Domain
+﻿namespace DTOs.BodyDtos
 {
-    public class Discount : EntityBase
+    public class DiscountBodyDto : BaseBody
     {
         public string? Name { get; set; }
         public string? LinkTermsAndConditions { get; set; }
@@ -10,13 +10,5 @@
         public int? FinalPrice { get; set; }
         public int? DiscountTypeId { get; set; }
         public int? PlayerId { get; set; }
-
-
-
-        public IQueryable<DiscountCode>? DiscountCodes { get; set; }
-        public DiscountType? DiscountType { get; set; }
-        public Player? Player { get; set; }
-        public ValidityPeriod? ValidityPeriod { get; set; }
-
     }
 }

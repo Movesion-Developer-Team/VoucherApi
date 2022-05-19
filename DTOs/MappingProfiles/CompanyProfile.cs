@@ -16,8 +16,6 @@ namespace DTOs.MappingProfiles
             CreateMap<Company, CreateNewCompanyBodyDto>()
                 .ReverseMap()
                 .ForMember(c => c.Users, opt => opt.Ignore())
-                .ForMember(c => c.Players, opt => opt.Ignore())
-                .ForMember(c => c.CompanyPlayers, opt => opt.Ignore())
                 .ForMember(c => c.Id, opt => opt.Ignore())
                 .ForMember(c => c.ContactDate, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
@@ -25,8 +23,6 @@ namespace DTOs.MappingProfiles
             CreateMap<Company, CompanyBodyDto>()
                 .ReverseMap()
                 .ForMember(c => c.Users, opt => opt.Ignore())
-                .ForMember(c => c.Players, opt => opt.Ignore())
-                .ForMember(c => c.CompanyPlayers, opt => opt.Ignore())
                 .ForMember(c => c.Id, opt => opt.Ignore())
                 .ForMember(c => c.ContactDate, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));

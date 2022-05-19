@@ -27,6 +27,7 @@ namespace Persistence.EntityConfigurations
                         key.DiscountTypeId
                     });
                 });
+                
         }
     }
 }

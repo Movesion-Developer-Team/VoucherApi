@@ -100,15 +100,17 @@ namespace MobilityManagerApi
             {
                 new DiscountType
                 {
-                    Name = "SingleUse"
+                    Name = DiscountTypes.SingleUse.ToString()
                 },
                 new DiscountType
                 {
-                    Name = "MultiUse"
+                    Name = DiscountTypes.MultiUse.ToString()
+
                 },
                 new DiscountType
                 {
-                    Name = "PromotionalCode"
+                    Name = DiscountTypes.PromotionalCode.ToString()
+
                 }
             };
 

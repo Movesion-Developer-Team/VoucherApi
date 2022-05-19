@@ -226,25 +226,6 @@ namespace MobilityManagerApi.Tests
 
         }
 
-        [Test]
-        [Author((nameof(TestAuthors.Arif)))]
-        public async Task AddPlayerToCompanyTest()
-        {
-            var body = new AddPlayerToCompanyBodyDto
-            {
-                PlayerId = _playerId,
-                CompanyId = _companyId
-            };
-            var okResult = await _companyController.AddPlayerToCompany(body) as ObjectResult;
-            body.PlayerId = _playerId + 1;
-            var badResult = await _companyController.AddPlayerToCompany(body) as ObjectResult;
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(okResult.StatusCode, StatusCodes.Status200OK);
-                Assert.AreEqual(badResult.StatusCode, StatusCodes.Status400BadRequest);
-            });
-
-        }
 
         [Test]
         [Author((nameof(TestAuthors.Arif)))]

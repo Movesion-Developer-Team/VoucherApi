@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Domain;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Core.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace Extensions
 {
@@ -16,6 +11,7 @@ namespace Extensions
             {
                 throw new ArgumentNullException(nameof(entity), $"{nameof(entity)} not found");
             }
+
         }
 
         public static void CheckQueryForNull(this IQueryable<EntityBase>? entities)
@@ -33,5 +29,7 @@ namespace Extensions
                 throw new ArgumentNullException(nameof(entities), $"{nameof(entities)} not found");
             }
         }
+
+        
     }
 }

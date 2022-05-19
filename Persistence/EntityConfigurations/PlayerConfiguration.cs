@@ -56,24 +56,6 @@ namespace Persistence.EntityConfigurations
                     });
                 });
 
-
-            builder.HasMany(p => p.Companies)
-                .WithMany(a => a.Players)
-                .UsingEntity<CompanyPlayer>(j =>
-                {
-                    j.HasOne(pt => pt.Company)
-                        .WithMany(a => a.CompanyPlayers)
-                        .HasForeignKey(pt=>pt.CompanyId);
-                    j.HasOne(pt => pt.Player)
-                        .WithMany(p => p.CompanyPlayers)
-                        .HasForeignKey(pt => pt.PlayerId);
-                    j.HasKey(x => new
-                    {
-                        AgencyId = x.CompanyId,
-                        x.PlayerId
-                    });
-                });
-
             builder.HasOne(p => p.Image)
                 .WithOne(i => i.Player);
 
