@@ -13,9 +13,9 @@ namespace Persistence.Repositories
             
         }
 
-        public Task<IQueryable<DiscountType>> GetAllDiscountTypes()
+        public async Task<IQueryable<DiscountType>> GetAllDiscountTypes()
         {
-             return Task.Run(()=>VoucherContext.DiscountTypes.Select(d => d));
+             return await Task.Run(()=>VoucherContext.DiscountTypes.Select(d => d));
         }
 
         public async Task<DiscountType> FindDiscountType(int? discountTypeId)
@@ -60,7 +60,12 @@ namespace Persistence.Repositories
                 .AssignToCompany(company, quantity, VoucherContext);
         }
 
+        public async Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId)
+        {
+            return await Task.Run(()=>VoucherContext.Discounts.Where(d => d.PlayerId == playerId));
+        }
 
+        
 
     }
 }

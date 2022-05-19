@@ -35,12 +35,11 @@ namespace MobilityManagerApi.Controllers
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        [Route("{discountId}")]
+        [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateNewDiscount([FromBody] DiscountBodyDto body)
         {
-            var response = new BaseResponse();
+            var response = new CreateNewEntityResponseDto();
             var discount = _mapper.Map<Discount>(body);
 
             var checks = new List<int?>
@@ -65,10 +64,16 @@ namespace MobilityManagerApi.Controllers
 
             try
             {
-                var player = await _unitOfWork.Player.Find(p => p.Id == body.PlayerId).SingleOrDefaultAsync();
+                var player = await _unitOfWork.Player.Find(p => p.Id == body.PlayerId).Include(p=>p.DiscountsTypes).SingleOrDefaultAsync();
                 player.CheckForNull();
                 var discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
                 discountType.CheckForNull();
+                if (player.DiscountsTypes != null && !player.DiscountsTypes.Contains(discountType))
+                {
+                    player.DiscountsTypes.Add(discountType);
+                }
+
+                await _unitOfWork.Complete();
             }
             catch (Exception ex)
             {
@@ -79,7 +84,7 @@ namespace MobilityManagerApi.Controllers
             
             try
             {
-                await _unitOfWork.Discount.AddAsync(discount);
+                response.Id = await _unitOfWork.Discount.AddAsync(discount);
                 await _unitOfWork.Complete();
                 response.Message = "Done";
                 return Ok(response);
@@ -90,6 +95,33 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
+
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status400BadRequest)]
+        [Route("{playerId}")]
+        public async Task<IActionResult> GetAllDiscountsForPlayer([FromRoute] int playerId)
+        {
+            var response = new GetAllDiscountsForPlayerResponseDto();
+            try
+            {
+                var discounts = await _unitOfWork.Discount.GetAllDiscountsForPlayer(playerId);
+                response.Discounts = _mapper.ProjectTo<DiscountBodyDto>(discounts);
+                discounts.CheckQueryForNull();
+                response.Message = "Done";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+
+
+        }
+
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpDelete]
