@@ -31,8 +31,7 @@ namespace MobilityManagerApi.Tests
             _companyDto = new CreateNewCompanyBodyDto()
             {
                 Name = "Hello",
-                Address = "Moon",
-                NumberOfEmployees = 7
+                Address = "Moon"
             };
             _categoryDto = new CreateNewCategoryBodyDto
             {
@@ -202,8 +201,7 @@ namespace MobilityManagerApi.Tests
             Assert.Multiple(() =>
             {
                 Assert.IsTrue(result.Name == _companyDto.Name);
-                Assert.IsTrue((result.Address == _companyDto.Address)
-                              && (result.NumberOfEmployees == _companyDto.NumberOfEmployees));
+                
             });
         }
 

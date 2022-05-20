@@ -184,9 +184,9 @@ namespace MobilityManagerApi.Controllers
                     _unitOfWork.Discount.Update(discount);
                     if (discount.DiscountCodes == null)
                     {
-                        discount.DiscountCodes = new List<DiscountCode>().AsQueryable();
+                        discount.DiscountCodes = new List<DiscountCode>();
                     };
-                    discount.DiscountCodes = discount.DiscountCodes.Concat(codes);
+                    discount.DiscountCodes = discount.DiscountCodes.Concat(codes) as ICollection<DiscountCode>;
                     await _unitOfWork.Complete();
 
                     response.Message = "Discounts are assigned to the player!";
