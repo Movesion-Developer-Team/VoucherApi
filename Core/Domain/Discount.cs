@@ -13,7 +13,7 @@
 
 
 
-        public IQueryable<DiscountCode>? DiscountCodes { get; set; }
+        public ICollection<DiscountCode>? DiscountCodes { get; set; }
         public DiscountType? DiscountType { get; set; }
         public Player? Player { get; set; }
         public ValidityPeriod? ValidityPeriod { get; set; }

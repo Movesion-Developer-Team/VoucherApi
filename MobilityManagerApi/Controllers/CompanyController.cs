@@ -18,7 +18,7 @@ using UserStoreLogic;
 namespace MobilityManagerApi.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]/[action]/")]
     [EnableCors]
     public class CompanyController : ControllerBase, IControllerBaseActions
     {
@@ -257,11 +257,12 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
-        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [AuthorizeRoles(Role.SuperAdmin)]
         [HttpGet]
         [ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllUsersOfCompany(int companyId)
+        [Route("{companyId}")]
+        public async Task<IActionResult> GetAllUsersOfCompany([FromRoute]int companyId)
         {
             var response = new GetAllUsersForCompanyResponseDto();
             try
@@ -276,6 +277,27 @@ namespace MobilityManagerApi.Controllers
             }
             
         }
+
+        //[AuthorizeRoles(Role.SuperAdmin)]
+        //[HttpGet]
+        //[ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetAllUsersOfCurrentCompany()
+        //{
+        //    var response = new GetAllUsersForCompanyResponseDto();
+        //    var companyId = HttpContext.
+        //    try
+        //    {
+        //        response.Users = await _unitOfWork.Company.GetAllUsersOfCompany(companyId).ToListAsync();
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        response.Message = $"Internal server error: {ex.Message}";
+        //        return BadRequest(response);
+        //    }
+
+        //}
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
