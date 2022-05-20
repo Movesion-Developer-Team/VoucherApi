@@ -96,7 +96,7 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
-        [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
         [HttpPost]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status400BadRequest)]

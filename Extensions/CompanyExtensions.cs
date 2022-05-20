@@ -64,7 +64,6 @@ namespace Extensions
         {
             return company.GetAllPlayers(context).Contains(player);
         }
-
         public static ICollection<Company> Initialize(this ICollection<Company>? companies)
         {
             if (companies == null)
