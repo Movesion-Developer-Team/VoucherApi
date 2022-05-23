@@ -14,8 +14,9 @@ namespace Extensions
         {
             company.CheckForNull();
             return context
-                .Set<DiscountCode>()
-                .Any(dc => dc.Companies != null && dc.Companies.Contains(company));
+                .Set<CompanyDiscountCode>()
+                .Where(cd => cd.CompanyId == company.Id)
+                .Select(cd=>cd.DiscountCodeId).Any();
         }
 
         public static IQueryable<Category> GetCategories(this Company? company, DbContext context)

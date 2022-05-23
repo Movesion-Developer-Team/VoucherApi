@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using Core.Domain;
 using Core.IRepositories;
 using Extensions;
