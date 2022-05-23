@@ -5,6 +5,7 @@ using Core.Domain;
 using Core.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using Persistence.EntityConfigurations;
+using DiscountType = Core.Domain.DiscountType;
 
 namespace Persistence
 {
@@ -24,7 +25,8 @@ namespace Persistence
         public DbSet<Image> Images { get; set; }
         public DbSet<DiscountType> DiscountTypes { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
-
+        public DbSet<DiscountCode> DiscountCodes { get; set; }
+             
 
         public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
 
@@ -43,6 +45,7 @@ namespace Persistence
             new ImageConfiguration().Configure(modelBuilder.Entity<Image>());
             new DiscountTypeConfiguration().Configure(modelBuilder.Entity<DiscountType>());
             new PurchaseConfiguration().Configure(modelBuilder.Entity<Purchase>());
+            new DiscountCodeConfiguration().Configure(modelBuilder.Entity<DiscountCode>());
         }
 
     }

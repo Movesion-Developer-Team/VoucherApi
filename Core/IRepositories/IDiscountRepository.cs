@@ -8,6 +8,8 @@ namespace Core.IRepositories
         Task<IQueryable<DiscountType>> GetAllDiscountTypes();
         Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int numberOfDiscounts);
         Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId);
+        Task<Discount?> GetDiscountWithCodes(int discountId);
+        Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes);
     }
 
 }

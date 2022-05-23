@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Core.Domain;
+using CsvHelper;
+using DTOs.MethodDto;
 using Enum;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Extensions
@@ -23,7 +18,7 @@ namespace Extensions
                     .Set<Discount>()
                     .Where(d => d.Id == discount.Id)
                     .Include(d => d.DiscountCodes)
-                    .SelectMany(d=>d.DiscountCodes)
+                    .SelectMany(d => d.DiscountCodes)
                     .Any(dc => dc.IsAssignedToCompany == false);
 
             }
@@ -72,9 +67,9 @@ namespace Extensions
 
             discountType = context.Set<DiscountType>().Find(discount.DiscountTypeId).Name;
 
-            discountCodes = context.Set<Discount>().Where(d=>d.Id == discount.Id)
-                .Include(d=>d.DiscountCodes)
-                .ThenInclude(dc=>dc.Companies)
+            discountCodes = context.Set<Discount>().Where(d => d.Id == discount.Id)
+                .Include(d => d.DiscountCodes)
+                .ThenInclude(dc => dc.Companies)
                 .SelectMany(d => d.DiscountCodes)
                 .Take(quantity);
             return Tuple.Create(discountCodes, discountType);
@@ -83,12 +78,12 @@ namespace Extensions
         public static async Task OneUserUsageTypeCodesAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company, DbContext context)
         {
             await discountCodes.Where(dc => dc.Companies == null).ForEachAsync(dc => dc.Companies.Initialize());
-            await discountCodes.ForEachAsync(dc=>dc.Companies.Add(company));
+            await discountCodes.ForEachAsync(dc => dc.Companies.Add(company));
             await discountCodes.ForEachAsync(dc => dc.IsAssignedToCompany = true);
             await context.SaveChangesAsync();
         }
 
-        public static async Task MultiUserUsageTypeCodeAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company, 
+        public static async Task MultiUserUsageTypeCodeAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company,
             int quantity, DbContext context)
         {
             await discountCodes.Where(dc => dc.Companies == null).ForEachAsync(dc => dc.Companies.Initialize());
@@ -130,12 +125,25 @@ namespace Extensions
                     throw new InvalidOperationException("Please provide a quantity also in assignment method");
                 }
 
-                await discountCodeInfo.Item1.MultiUserUsageTypeCodeAssignToCompany(company, (int) quantity, context);
+                await discountCodeInfo.Item1.MultiUserUsageTypeCodeAssignToCompany(company, (int)quantity, context);
             }
             else
             {
                 await discountCodeInfo.Item1.OneUserUsageTypeCodesAssignToCompany(company, context);
             }
+        }
+
+        public static Task<List<DiscountCode>> WriteToDiscountCodes(this CsvReader csv, IMapper mapper)
+        {
+            return Task.Run(() => mapper.ProjectTo<DiscountCode>(csv.GetRecords<CsvCodeDto>().AsQueryable()).ToList());
+        }
+
+        public static bool CheckIfCodesAlreadyInDatabase(this List<DiscountCode> codes, IQueryable<string?> codesInDb)
+        {
+            
+            var checking = codes.Select(dc => dc.Code).Intersect(codesInDb);
+            return checking.Any();
+
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿using Core.Domain;
 using Core.IRepositories;
+using DTOs.BodyDtos;
 using Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -65,7 +66,17 @@ namespace Persistence.Repositories
             return await Task.Run(()=>VoucherContext.Discounts.Where(d => d.PlayerId == playerId));
         }
 
-        
+        public async Task<Discount?> GetDiscountWithCodes(int discountId)
+        {
+            return await VoucherContext.Discounts.Where(d => d.Id == discountId).Include(d => d.DiscountCodes).SingleOrDefaultAsync();
+        }
+
+        public Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes)
+        {
+            var codesInDb = VoucherContext.DiscountCodes.Select(dc => dc.Code);
+            return Task.Run(()=>codes.CheckIfCodesAlreadyInDatabase(codesInDb));
+        }
+
 
     }
 }

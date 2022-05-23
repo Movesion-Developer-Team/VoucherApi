@@ -8,7 +8,6 @@ namespace Persistence.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<DiscountCode> builder)
         {
-            builder.HasIndex(d => d.Code).IsUnique();
 
             builder.HasOne(dc => dc.Discount)
                 .WithMany(d => d.DiscountCodes)
