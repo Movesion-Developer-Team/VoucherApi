@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Domain;
 using CsvHelper;
+using DTOs.BodyDtos;
 using DTOs.MethodDto;
 using Enum;
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +15,13 @@ namespace Extensions
 
             try
             {
-                return context
+                var check = context
                     .Set<Discount>()
                     .Where(d => d.Id == discount.Id)
                     .Include(d => d.DiscountCodes)
                     .SelectMany(d => d.DiscountCodes)
-                    .Any(dc => dc.IsAssignedToCompany == false);
+                    .Any(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null);
+                return check;
 
             }
             catch (ArgumentNullException)
@@ -35,6 +37,10 @@ namespace Extensions
                 return 0;
             }
 
+            if (discount.DiscountType == null)
+            {
+                throw new InvalidOperationException("DiscountType is not assigned or not included in query");
+            }
             if (discount.DiscountType.Name == DiscountTypes.PromotionalCode.ToString())
             {
                 return context.Set<Discount>()
@@ -47,7 +53,7 @@ namespace Extensions
             return context.Set<Discount>()
                 .Where(d => d.Id == discount.Id)
                 .Include(d => d.DiscountCodes)
-                .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false))
+                .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null))
                 .Count();
         }
 
@@ -55,7 +61,12 @@ namespace Extensions
         {
             string discountType;
             IQueryable<DiscountCode> discountCodes;
-            if (discount.DiscountType.Name == DiscountTypes.PromotionalCode.ToString())
+            var checkDiscountType = context.Set<Discount>()
+                .Where(d => d.Id == discount.Id)
+                .Include(d => d.DiscountType)
+                .Select(d => d.DiscountType)
+                .FirstOrDefault();
+            if (checkDiscountType.Name == DiscountTypes.PromotionalCode.ToString())
             {
                 discountCodes = context.Set<Discount>().Where(d => d.Id == discount.Id)
                     .Include(d => d.DiscountCodes)
@@ -77,8 +88,14 @@ namespace Extensions
 
         public static async Task OneUserUsageTypeCodesAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company, DbContext context)
         {
-            await discountCodes.Where(dc => dc.Companies == null).ForEachAsync(dc => dc.Companies.Initialize());
-            await discountCodes.ForEachAsync(dc => dc.Companies.Add(company));
+            company.CheckForNull();
+            await discountCodes.ForEachAsync(dc=> context.Set<CompanyDiscountCode>()
+                .Add(new CompanyDiscountCode
+                {
+                    CompanyId = company.Id,
+                    DiscountCodeId = dc.Id,
+                }));
+            
             await discountCodes.ForEachAsync(dc => dc.IsAssignedToCompany = true);
             await context.SaveChangesAsync();
         }
