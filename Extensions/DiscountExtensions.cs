@@ -71,7 +71,7 @@ namespace Extensions
                 discountCodes = context.Set<Discount>().Where(d => d.Id == discount.Id)
                     .Include(d => d.DiscountCodes)
                     .ThenInclude(dc => dc.Companies)
-                    .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false));
+                    .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null));
                 discountType = DiscountTypes.PromotionalCode.ToString();
                 return Tuple.Create(discountCodes, discountType)!;
             }
@@ -81,7 +81,7 @@ namespace Extensions
             discountCodes = context.Set<Discount>().Where(d => d.Id == discount.Id)
                 .Include(d => d.DiscountCodes)
                 .ThenInclude(dc => dc.Companies)
-                .SelectMany(d => d.DiscountCodes)
+                .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null))
                 .Take(quantity);
             return Tuple.Create(discountCodes, discountType);
         }
