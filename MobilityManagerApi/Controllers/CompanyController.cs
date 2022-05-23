@@ -198,7 +198,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var players = await _unitOfWork.Company.GetAllPlayersForOneCompany(companyId);
-                
+
                 response.Players = _mapper.ProjectTo<PlayerBodyDto>(players);
                 response.Message = "Success";
                 return Ok(response);
@@ -209,6 +209,11 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
             catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
             {
                 response.Message = ex.Message;
                 return BadRequest(response);
