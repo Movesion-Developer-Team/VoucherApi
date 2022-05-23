@@ -100,8 +100,7 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status400BadRequest)]
-        [Route("{playerId}")]
-        public async Task<IActionResult> GetAllDiscountsForPlayer([FromRoute] int playerId)
+        public async Task<IActionResult> GetAllDiscountsForPlayer([FromQuery] int playerId)
         {
             var response = new GetAllDiscountsForPlayerResponseDto();
             try
