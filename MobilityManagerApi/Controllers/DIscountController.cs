@@ -97,7 +97,7 @@ namespace MobilityManagerApi.Controllers
         }
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status400BadRequest)]
         [Route("{playerId}")]
@@ -151,8 +151,7 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        [Route("{discountId}")]
-        public async Task<IActionResult> UploadCsv([FromRoute] int discountId)
+        public async Task<IActionResult> UploadCsv([FromQuery] int discountId)
         {
             var response = new BaseResponse();
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -160,7 +159,7 @@ namespace MobilityManagerApi.Controllers
                 HasHeaderRecord = false
             };
 
-            var discount = await _unitOfWork.Discount.Find(d => d.Id == discountId).Include(d=>d.DiscountCodes).SingleOrDefaultAsync();
+            var discount = await _unitOfWork.Discount.GetDiscountWithCodes(discountId);
             if (discount == null)
             {
                 response.Message = "Discount not found";
@@ -179,14 +178,17 @@ namespace MobilityManagerApi.Controllers
                     var reader = new StreamReader(stream);
                     var csv = new CsvReader(reader, config);
 
-                    var codes = _mapper.ProjectTo<DiscountCode>(csv.GetRecords<CsvCodeDto>().AsQueryable()).ToList();
+                    var codes = await csv.WriteToDiscountCodes(_mapper);
 
-                    _unitOfWork.Discount.Update(discount);
-                    if (discount.DiscountCodes == null)
+                    if (await _unitOfWork.Discount.CodesAreAlreadyInDb(codes))
                     {
-                        discount.DiscountCodes = new List<DiscountCode>();
-                    };
-                    discount.DiscountCodes = discount.DiscountCodes.Concat(codes) as ICollection<DiscountCode>;
+
+                        response.Message = "Codes are already assigned to Database";
+                        return BadRequest(response);
+                    }
+                    codes.ForEach(c=>c.DiscountId = discount.Id);
+
+                    await _unitOfWork.DiscountCode.AddRangeAsync(codes);
                     await _unitOfWork.Complete();
 
                     response.Message = "Discounts are assigned to the player!";
