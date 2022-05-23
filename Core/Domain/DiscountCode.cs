@@ -4,6 +4,7 @@
     {
         public string? Code { get; set; }
         public int? DiscountId { get; set; }
+        public int BatchId { get; set; }
         public double? Price { get; set; }
         public int? UsageLimit { get; set; }
         public bool? IsAssignedToUser { get; set; }
