@@ -33,9 +33,11 @@ namespace Persistence.Repositories
                 .FindAsync(companyId);
             company.CheckForNull();
             var discount = await VoucherContext
-                .Discounts.FindAsync(discountId);
+                .Discounts.Where(dc => dc.Id == discountId)
+                .Include(dc => dc.DiscountType)
+                .FirstOrDefaultAsync();
             discount.CheckForNull();
-            if (discount.HasAvailableDiscountCodes(VoucherContext))
+            if (!discount.HasAvailableDiscountCodes(VoucherContext))
             {
                 throw new InvalidOperationException("Discount is not available currently");
 
@@ -55,7 +57,6 @@ namespace Persistence.Repositories
             {
                 throw new InvalidOperationException($"Discount has only {limit} codes currently");
             }
-
             await discount
                 .ChooseCodes(numberOfDiscounts, VoucherContext)
                 .AssignToCompany(company, quantity, VoucherContext);
