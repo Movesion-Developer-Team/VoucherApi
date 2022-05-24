@@ -10,6 +10,7 @@ namespace Core.IRepositories
         Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId);
         Task<Discount?> GetDiscountWithCodes(int discountId);
         Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes);
+        Task<int?> GetDiscountLimit(int discountId);
     }
 
 }
