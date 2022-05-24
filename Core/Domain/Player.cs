@@ -12,6 +12,8 @@ namespace Core.Domain
         public string? Color { get; set; }
         public Image? Image { get; set; }
 
+        public ICollection<CompanyPlayer> CompanyPlayers { get; set; }
+        public ICollection<Company>? Companies { get; set; }
         public ICollection<Category>? Categories { get; set; }
         public ICollection<Discount>? Discounts { get; set; }
         public ICollection<DiscountType>? DiscountsTypes { get; set; }

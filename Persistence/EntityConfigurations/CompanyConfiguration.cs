@@ -10,6 +10,23 @@ namespace Persistence.EntityConfigurations
         {
             builder.Property(a => a.Name).HasMaxLength(100).IsRequired();
             builder.Property(a => a.ContactDate).IsRequired();
+
+            builder.HasMany(c => c.Players)
+                .WithMany(p => p.Companies)
+                .UsingEntity<CompanyPlayer>(c =>
+                {
+                    c.HasOne(c => c.Company)
+                        .WithMany(c => c.CompanyPlayers)
+                        .HasForeignKey(c => c.CompanyId);
+                    c.HasOne(c => c.Player)
+                        .WithMany(p => p.CompanyPlayers)
+                        .HasForeignKey(c => c.PlayerId);
+                    c.HasKey(c => new
+                    {
+                        c.CompanyId,
+                        c.PlayerId
+                    });
+                });
             
             builder.HasMany(c => c.Users)
                 .WithOne(w => w.Company)

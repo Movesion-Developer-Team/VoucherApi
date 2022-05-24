@@ -48,7 +48,7 @@ namespace Persistence.Repositories
             await Task.Run(() => currentCompany.Users.Add(user));
         }
 
-        public List<Tuple<string?, string?>> GetAllCompaniesWithPlayers()
+        public async Task<List<Tuple<string?, string?>>> GetAllCompaniesWithPlayers()
         {
             var companies = VoucherContext.Companies.Select(c => c)
                     .AsQueryable();
@@ -57,9 +57,9 @@ namespace Persistence.Repositories
             List<Tuple<string?, string?>> companiesWithPlayers = new List<Tuple<string?, string?>>();
             foreach (var company in companies)
             {
-                if (company.HasCodes(VoucherContext))
+                if (await company.HasAnyPlayer(VoucherContext))
                 {
-                    foreach (var player in company.GetAllPlayers(VoucherContext))
+                    foreach (var player in await company.GetAllPlayers(VoucherContext))
                     {
 
                         companiesWithPlayers.Add(Tuple.Create(company.Name, player.ShortName));
@@ -79,7 +79,7 @@ namespace Persistence.Repositories
         public async Task<IQueryable<Player>> GetAllPlayersForOneCompany(int companyId)
         {
             var company = await VoucherContext.Companies.FindAsync(companyId);
-            return company.GetAllPlayers(VoucherContext);
+            return await company.GetAllPlayers(VoucherContext);
         }
 
         public IQueryable<User> GetAllUsersOfCompany(int? companyId)

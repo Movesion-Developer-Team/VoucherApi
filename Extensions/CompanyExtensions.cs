@@ -19,19 +19,18 @@ namespace Extensions
                 .Select(cd=>cd.DiscountCodeId).Any();
         }
 
-        public static IQueryable<Category> GetCategories(this Company? company, DbContext context)
+        public static async Task<IQueryable<Category>> GetCategories(this Company? company, DbContext context)
         {
             company.CheckForNull();
-            if (!company.HasCodes(context))
+            if (!await company.HasAnyPlayer(context))
             {
                 throw new InvalidOperationException("Company do not have categories");
             }
             return context.Set<Company>().Where(c => c == company)
-                .Include(c => c.DiscountCodes)
-                .ThenInclude(dc => dc.Discount)
-                .ThenInclude(d => d.Player)
-                .ThenInclude(p => p.Categories)
-                .SelectMany(c => c.DiscountCodes.SelectMany(dc => dc.Discount.Player.Categories))
+                .Include(c => c.Players)
+                .ThenInclude(p=>p.Categories)
+                .SelectMany(c=>c.Players
+                    .SelectMany(p=>p.Categories))
                 .Distinct();
         }
         public static IQueryable<Player> GetPlayers(this Company? company, DbContext context, Category? category)
@@ -43,27 +42,38 @@ namespace Extensions
                 throw new InvalidOperationException(
                     "Company do not have any categories, players and discounts assigned to it");
             }
+
             return context.Set<Company>()
                 .Where(c => c == company)
-                .Include(c => c.DiscountCodes)
-                .ThenInclude(dc => dc.Discount.Player)
-                .SelectMany(c => c.DiscountCodes.Select(dc => dc.Discount.Player))
+                .Include(c => c.Players)
+                .ThenInclude(p => p.Categories)
+                .SelectMany(c => c.Players)
                 .Where(p => p.Categories.Contains(category));
         }
-        public static IQueryable<Player> GetAllPlayers(this Company? company, DbContext context)
+        public static async Task<IQueryable<Player>> GetAllPlayers(this Company? company, DbContext context)
         {
             company.CheckForNull();
-            if (!company.HasCodes(context))
+            var companyWIthPlayers = await context.Set<Company>()
+                .Where(c => c.Id == company.Id)
+                .Include(c => c.Players)
+                .SingleOrDefaultAsync();
+            if (companyWIthPlayers == null)
             {
-                throw new InvalidOperationException(
-                    "Company do not have any categories, players and discounts assigned to it");
+                throw new ArgumentNullException(nameof(companyWIthPlayers), "Company not found");
             }
 
-            return context.Set<Company>().SelectMany(c => c.DiscountCodes.Select(dc => dc.Discount.Player)).Distinct();
+            if (companyWIthPlayers.Players == null)
+            {
+                throw new ArgumentNullException(nameof(companyWIthPlayers), "Company does not have players");
+            }
+
+            return companyWIthPlayers.Players.AsQueryable();
+
         }
-        public static bool HasPlayer(this Company company, Player? player, DbContext context)
+        public static async Task<bool> HasAnyPlayer(this Company company, DbContext context)
         {
-            return company.GetAllPlayers(context).Contains(player);
+            var players = await company.GetAllPlayers(context);
+            return company.Players.Any();
         }
         public static ICollection<Company> Initialize(this ICollection<Company>? companies)
         {
@@ -75,6 +85,7 @@ namespace Extensions
 
             throw new InvalidOperationException("Lis contains elements");
         }
+        
 
     }
 }
