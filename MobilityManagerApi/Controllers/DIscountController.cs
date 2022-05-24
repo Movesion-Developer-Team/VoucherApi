@@ -16,6 +16,7 @@ using Persistence;
 using UserStoreLogic;
 using System.Text;
 using Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -270,5 +271,28 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetDiscountLimitResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetDiscountLimitResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetDiscountLimit([FromQuery] int discountId)
+        {
+            var response = new GetDiscountLimitResponseDto();
+
+            try
+            {
+                response.Limit = await _unitOfWork.Discount.GetDiscountLimit(discountId);
+                response.Message = "Done";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Server internal error: {ex.Message}";
+                return BadRequest(response);
+            }
+            
+
+        }
     }
 }

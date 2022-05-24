@@ -49,7 +49,7 @@ namespace Persistence.Repositories
 
             var quantity = Math.Abs((int)numberOfDiscounts);
             var limit = discount.GetLimit(VoucherContext);
-            if (limit is null or 0)
+            if (limit is 0)
             {
                 throw new InvalidOperationException("Discount is not available currently");
             }
@@ -78,6 +78,18 @@ namespace Persistence.Repositories
             return Task.Run(()=>codes.CheckIfCodesAlreadyInDatabase(codesInDb));
         }
 
+        public async Task<int?> GetDiscountLimit(int discountId)
+        {
+            var discount = await VoucherContext.Discounts
+                .Where(d=>d.Id == discountId)
+                .Include(d=>d.DiscountType)
+                .SingleOrDefaultAsync();
+
+            discount.CheckForNull();
+
+            return await Task.Run(()=>discount.GetLimit(VoucherContext));
+
+        }
 
     }
 }

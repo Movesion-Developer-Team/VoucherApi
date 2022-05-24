@@ -30,7 +30,7 @@ namespace Extensions
             }
         }
 
-        public static int? GetLimit(this Discount discount, DbContext context)
+        public static int GetLimit(this Discount discount, DbContext context)
         {
             if (!discount.HasAvailableDiscountCodes(context))
             {
@@ -48,7 +48,7 @@ namespace Extensions
                     .Include(d => d.DiscountCodes)
                     .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false))
                     .Select(dc => dc.UsageLimit)
-                    .Max();
+                    .Max() ?? 0;
             }
             return context.Set<Discount>()
                 .Where(d => d.Id == discount.Id)
