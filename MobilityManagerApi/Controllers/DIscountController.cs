@@ -123,6 +123,44 @@ namespace MobilityManagerApi.Controllers
 
         }
 
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllDiscountsForPlayerOfCompany([FromQuery] int playerId, [FromQuery] int companyId)
+        {
+            var response = new GetAllDiscountsForPlayerResponseDto();
+            try
+            {
+                var discounts =
+                    await _unitOfWork.Discount.GetAllGetAllDiscountsForPlayerOfCompany(companyId, playerId);
+
+                response.Discounts = _mapper.ProjectTo<DiscountBodyDto>(discounts);
+                response.Message = "Done";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpDelete]

@@ -34,7 +34,16 @@ namespace Persistence.Repositories
             var discount = await VoucherContext
                 .Discounts.Where(dc => dc.Id == discountId)
                 .Include(dc => dc.DiscountType)
+                .Include(d=>d.Player)
                 .FirstOrDefaultAsync();
+
+            var isAssigned = await company.PlayerIsAssigned(discount.Player, VoucherContext);
+            if (!isAssigned)
+            {
+                throw new InvalidOperationException(
+                    "Player of selected discount is not assigned to the current company");
+            }
+
             discount.CheckForNull();
             if (!discount.HasAvailableDiscountCodes(VoucherContext))
             {
@@ -72,11 +81,13 @@ namespace Persistence.Repositories
             company.CheckForNull();
             var player = await VoucherContext.Players.FindAsync(playerId);
             player.CheckForNull();
-            return await Task.Run(() => VoucherContext.Players.Where(p => p == player)
+            var discounts = await Task.Run(() => VoucherContext.Players.Where(p => p == player)
                 .Include(c => c.Companies)
                 .Where(p => p.Companies.Contains(company))
                 .Include(p => p.Discounts)
                 .SelectMany(p => p.Discounts));
+            discounts.CheckQueryForNull();
+            return discounts;
 
         }
 

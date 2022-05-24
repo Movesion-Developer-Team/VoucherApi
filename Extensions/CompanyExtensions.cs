@@ -85,7 +85,25 @@ namespace Extensions
 
             throw new InvalidOperationException("Lis contains elements");
         }
-        
 
+        public static async Task<bool> PlayerIsAssigned(this Company? company, Player? player, DbContext context)
+        {
+            company.CheckForNull();
+            player.CheckForNull();
+
+            context.Set<Player>()
+                .Where(p => p.Id == player.Id)
+                .Include(p => p.Companies)
+                .SelectMany(p => p.Companies)
+                .CheckQueryForNull();
+
+            return await context.Set<Player>()
+                .Where(p => p.Id == player.Id)
+                .Include(p => p.Companies)
+                .SelectMany(p => p.Companies)
+                .ContainsAsync(company);
+
+
+        }
     }
 }

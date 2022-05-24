@@ -29,7 +29,5 @@ namespace Extensions
                 throw new ArgumentNullException(nameof(entities), $"{nameof(entities)} not found");
             }
         }
-
-        
     }
 }
