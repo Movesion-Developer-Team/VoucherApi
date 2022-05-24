@@ -12,6 +12,7 @@ namespace Core.IRepositories
         Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes);
         Task<int?> GetDiscountLimit(int discountId);
         Task<int?> AddBatch(Batch batch);
+        Task<IQueryable<Discount>?> GetAllGetAllDiscountsForPlayerOfCompany(int companyId, int playerId);
     }
 
 }

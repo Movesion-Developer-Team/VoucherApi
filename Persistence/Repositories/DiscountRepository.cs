@@ -1,6 +1,5 @@
 ﻿using Core.Domain;
 using Core.IRepositories;
-using DTOs.BodyDtos;
 using Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,12 +10,12 @@ namespace Persistence.Repositories
         public VoucherContext VoucherContext => Context as VoucherContext;
         public DiscountRepository(DbContext context) : base(context)
         {
-            
+
         }
 
         public async Task<IQueryable<DiscountType>> GetAllDiscountTypes()
         {
-             return await Task.Run(()=>VoucherContext.DiscountTypes.Select(d => d));
+            return await Task.Run(() => VoucherContext.DiscountTypes.Select(d => d));
         }
 
         public async Task<DiscountType> FindDiscountType(int? discountTypeId)
@@ -53,7 +52,7 @@ namespace Persistence.Repositories
             {
                 throw new InvalidOperationException("Discount is not available currently");
             }
-            if(quantity > limit)
+            if (quantity > limit)
             {
                 throw new InvalidOperationException($"Discount has only {limit} codes currently");
             }
@@ -64,7 +63,21 @@ namespace Persistence.Repositories
 
         public async Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId)
         {
-            return await Task.Run(()=>VoucherContext.Discounts.Where(d => d.PlayerId == playerId));
+            return await Task.Run(() => VoucherContext.Discounts.Where(d => d.PlayerId == playerId));
+        }
+
+        public async Task<IQueryable<Discount>?> GetAllGetAllDiscountsForPlayerOfCompany(int companyId, int playerId)
+        {
+            var company = await VoucherContext.Companies.FindAsync(companyId);
+            company.CheckForNull();
+            var player = await VoucherContext.Players.FindAsync(playerId);
+            player.CheckForNull();
+            return await Task.Run(() => VoucherContext.Players.Where(p => p == player)
+                .Include(c => c.Companies)
+                .Where(p => p.Companies.Contains(company))
+                .Include(p => p.Discounts)
+                .SelectMany(p => p.Discounts));
+
         }
 
         public async Task<Discount?> GetDiscountWithCodes(int discountId)
@@ -75,19 +88,19 @@ namespace Persistence.Repositories
         public Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes)
         {
             var codesInDb = VoucherContext.DiscountCodes.Select(dc => dc.Code);
-            return Task.Run(()=>codes.CheckIfCodesAlreadyInDatabase(codesInDb));
+            return Task.Run(() => codes.CheckIfCodesAlreadyInDatabase(codesInDb));
         }
 
         public async Task<int?> GetDiscountLimit(int discountId)
         {
             var discount = await VoucherContext.Discounts
-                .Where(d=>d.Id == discountId)
-                .Include(d=>d.DiscountType)
+                .Where(d => d.Id == discountId)
+                .Include(d => d.DiscountType)
                 .SingleOrDefaultAsync();
 
             discount.CheckForNull();
 
-            return await Task.Run(()=>discount.GetLimit(VoucherContext));
+            return await Task.Run(() => discount.GetLimit(VoucherContext));
 
         }
 

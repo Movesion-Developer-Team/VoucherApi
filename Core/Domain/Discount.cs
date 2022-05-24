@@ -12,8 +12,9 @@
         public int? PlayerId { get; set; }
 
 
-
+        public ICollection<CompanyDiscount>? CompanyDiscounts { get; set; }
         public ICollection<DiscountCode>? DiscountCodes { get; set; }
+        public ICollection<Company>? Companies { get; set; }
         public DiscountType? DiscountType { get; set; }
         public Player? Player { get; set; }
         public ValidityPeriod? ValidityPeriod { get; set; }
