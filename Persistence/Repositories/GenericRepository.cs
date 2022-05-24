@@ -30,8 +30,7 @@ namespace Persistence.Repositories
 
                 var entry = await Context.Set<TEntity>().AddAsync(entity);
                 await Context.SaveChangesAsync();
-                var idName = typeof(Company).GetProperties().First(p=>p.Name == "Id").Name;
-                var id = entry.CurrentValues.GetValue<int?>(idName);
+                var id = entry.CurrentValues.GetValue<int?>("Id");
 
                 return id;
 

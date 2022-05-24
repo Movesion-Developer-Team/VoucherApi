@@ -26,7 +26,8 @@ namespace Persistence
         public DbSet<DiscountType> DiscountTypes { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<DiscountCode> DiscountCodes { get; set; }
-             
+        public DbSet<Batch> Batches { get; set; }
+
 
         public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
 
@@ -46,6 +47,7 @@ namespace Persistence
             new DiscountTypeConfiguration().Configure(modelBuilder.Entity<DiscountType>());
             new PurchaseConfiguration().Configure(modelBuilder.Entity<Purchase>());
             new DiscountCodeConfiguration().Configure(modelBuilder.Entity<DiscountCode>());
+            new BatchConfiguration().Configure(modelBuilder.Entity<Batch>());
         }
 
     }

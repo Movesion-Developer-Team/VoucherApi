@@ -13,7 +13,7 @@ namespace Persistence.Repositories
         {
         }
 
-        public async Task<int?> GenerateInvitationCodeForEmployees(DateTime startDate, DateTime endDate, int companyId)
+        public async Task<int?> GenerateInvitationCodeForEmployees(DateTimeOffset startDate, DateTimeOffset endDate, int companyId)
         {
             if (startDate > endDate)
             {
@@ -22,8 +22,8 @@ namespace Persistence.Repositories
             var code = new InvitationCode
             {
                 InviteCode = StringExtensions.RandomCodeGenerator(15),
-                StartDate = startDate,
-                ExpireDate = endDate,
+                StartDate = startDate.UtcDateTime,
+                ExpireDate = endDate.UtcDateTime,
                 CompanyId = companyId
             };
             var id = await AddAsync(code);

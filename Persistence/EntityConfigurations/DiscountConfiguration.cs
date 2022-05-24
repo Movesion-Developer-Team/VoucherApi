@@ -14,6 +14,7 @@ namespace Persistence.EntityConfigurations
                     vp.Property(vp => vp.StartDate).IsRequired();
                     vp.Property(vp => vp.EndDate).IsRequired();
                 });
+            
 
             builder.HasMany(d => d.DiscountCodes)
                 .WithOne(dc => dc.Discount);
