@@ -50,6 +50,25 @@ namespace Persistence.EntityConfigurations
                         key.DiscountCodeId
                     });
                 });
+
+            builder.HasMany(c => c.Discounts)
+                .WithMany(d => d.Companies)
+                .UsingEntity<CompanyDiscount>(cd =>
+                {
+                    cd.HasOne(cd => cd.Company)
+                        .WithMany(c => c.CompanyDiscounts)
+                        .HasForeignKey(cd => cd.CompanyId);
+
+                    cd.HasOne(cd => cd.Discount)
+                        .WithMany(d => d.CompanyDiscounts)
+                        .HasForeignKey(cd => cd.DiscountId);
+
+                    cd.HasKey(c => new
+                    {
+                        c.CompanyId,
+                        c.DiscountId
+                    });
+                });
         }
     }
 }
