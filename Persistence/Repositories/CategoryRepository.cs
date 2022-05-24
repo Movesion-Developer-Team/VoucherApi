@@ -49,18 +49,26 @@ namespace Persistence.Repositories
                 .Companies
                 .FindAsync(companyId);
 
-            return company.GetCategories(VoucherContext);
+            return await company.GetCategories(VoucherContext);
         }
 
         public async Task<IQueryable<Player>> GetAllPlayersForCategoryAndCompany(int companyId, int categoryId)
         {
             var company = await VoucherContext.Companies.FindAsync(companyId);
             var category = await VoucherContext.Categories.FindAsync(categoryId);
+            company.CheckForNull();
+            category.CheckForNull();
             return company.GetPlayers(VoucherContext, category);
         }
 
         public async Task AddImageToCategory(Image image, int? categoryId)
         {
+            var category = await VoucherContext.Categories.FindAsync(categoryId);
+            category.CheckForNull();
+            if (await category.HasImage(VoucherContext))
+            {
+                await category.DeleteImage(VoucherContext);
+            }
             image.CategoryId = categoryId;
             await VoucherContext.Images.AddAsync(image);
             await VoucherContext.SaveChangesAsync();

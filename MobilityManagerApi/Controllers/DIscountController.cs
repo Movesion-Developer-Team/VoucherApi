@@ -288,10 +288,12 @@ namespace MobilityManagerApi.Controllers
         public async Task<IActionResult> GetDiscountLimit([FromQuery] int discountId)
         {
             var response = new GetDiscountLimitResponseDto();
-            response.Limit = new LimitBodyDto();
+            response.Limits = new List<LimitBodyDto>();
+            var limit = new LimitBodyDto();
             try
             {
-                response.Limit.LimitValue = await _unitOfWork.Discount.GetDiscountLimit(discountId);
+                limit.LimitValue = await _unitOfWork.Discount.GetDiscountLimit(discountId);
+                response.Limits.Add(limit);
                 response.Message = "Done";
                 response.StatusCode = StatusCodes.Status200OK;
                 return Ok(response);

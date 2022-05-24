@@ -13,6 +13,23 @@ namespace Persistence.EntityConfigurations
             builder.Property(p => p.Color).HasDefaultValue("Yellow");
             builder.Property(p => p.ShortName).IsRequired();
 
+            builder.HasMany(p => p.Companies)
+                .WithMany(c => c.Players)
+                .UsingEntity<CompanyPlayer>(c =>
+                {
+                    c.HasOne(c => c.Company)
+                        .WithMany(c => c.CompanyPlayers)
+                        .HasForeignKey(c => c.CompanyId);
+                    c.HasOne(c => c.Player)
+                        .WithMany(p => p.CompanyPlayers)
+                        .HasForeignKey(c => c.PlayerId);
+                    c.HasKey(c => new
+                    {
+                        c.CompanyId,
+                        c.PlayerId
+                    });
+                });
+
             builder.HasMany(p => p.Discounts)
                 .WithOne(d => d.Player)
                 .HasForeignKey(d=>d.PlayerId);

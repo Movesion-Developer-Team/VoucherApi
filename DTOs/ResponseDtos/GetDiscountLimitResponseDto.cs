@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class GetDiscountLimitResponseDto : BaseResponse
     {
-        public LimitBodyDto? Limit { get; set; }
+        public List<LimitBodyDto>? Limits { get; set; }
     }
 }
