@@ -3,8 +3,8 @@
     public class InvitationCode : EntityBase
     {
         public string? InviteCode { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? ExpireDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
+        public DateTimeOffset? ExpireDate { get; set; }
         public int? CompanyId { get; set; }
         public int? JoinRequestId { get; set; }
         public Company? Company { get; set; }

@@ -116,5 +116,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 app.Run("https://localhost:7098/");
 Console.WriteLine();

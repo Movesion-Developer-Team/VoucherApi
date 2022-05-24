@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    [Migration("20220523173655_BatchIdFieldAddedToDiscounCode")]
-    partial class BatchIdFieldAddedToDiscounCode
+    [Migration("20220524084945_BatchLogicsAdded")]
+    partial class BatchLogicsAdded
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,22 @@ namespace Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Domain.Batch", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<DateTime?>("UploadTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Batches");
+                });
 
             modelBuilder.Entity("Core.Domain.Category", b =>
                 {
@@ -133,7 +149,7 @@ namespace Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
-                    b.Property<int>("BatchId")
+                    b.Property<int?>("BatchId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Code")
@@ -155,6 +171,8 @@ namespace Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BatchId");
 
                     b.HasIndex("DiscountId");
 
@@ -539,9 +557,15 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.DiscountCode", b =>
                 {
+                    b.HasOne("Core.Domain.Batch", "Batch")
+                        .WithMany("DiscountCodes")
+                        .HasForeignKey("BatchId");
+
                     b.HasOne("Core.Domain.Discount", "Discount")
                         .WithMany("DiscountCodes")
                         .HasForeignKey("DiscountId");
+
+                    b.Navigation("Batch");
 
                     b.Navigation("Discount");
                 });
@@ -675,6 +699,11 @@ namespace Persistence.Migrations
                         .HasForeignKey("CompanyId");
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Core.Domain.Batch", b =>
+                {
+                    b.Navigation("DiscountCodes");
                 });
 
             modelBuilder.Entity("Core.Domain.Category", b =>

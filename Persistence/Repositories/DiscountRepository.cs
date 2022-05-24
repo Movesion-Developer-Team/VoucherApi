@@ -91,5 +91,12 @@ namespace Persistence.Repositories
 
         }
 
+        public async Task<int?> AddBatch(Batch batch)
+        {
+            await VoucherContext.Batches.AddAsync(batch);
+            await Complete();
+            return batch.Id;
+        }
+
     }
 }

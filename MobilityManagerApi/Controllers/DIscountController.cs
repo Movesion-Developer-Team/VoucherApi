@@ -15,6 +15,7 @@ using Microsoft.Win32.SafeHandles;
 using Persistence;
 using UserStoreLogic;
 using System.Text;
+using AutoMapper.Internal;
 using Extensions;
 using Microsoft.AspNetCore.Authorization;
 
@@ -179,14 +180,23 @@ namespace MobilityManagerApi.Controllers
                     var csv = new CsvReader(reader, config);
 
                     var codes = await csv.WriteToDiscountCodes(_mapper);
-
+                    codes.CheckEnumerableForNull();
+                    
                     if (await _unitOfWork.Discount.CodesAreAlreadyInDb(codes))
                     {
 
                         response.Message = "Codes are already assigned to Database";
                         return BadRequest(response);
                     }
-                    codes.ForEach(c=>c.DiscountId = discount.Id);
+                    var batchId = await _unitOfWork.Discount.AddBatch(new Batch
+                    {
+                        UploadTime = DateTimeOffset.Now.UtcDateTime
+                    });
+                    codes.ForEach(c =>
+                    {
+                        c.DiscountId = discount.Id;
+                        c.BatchId = batchId;
+                    });
 
                     await _unitOfWork.DiscountCode.AddRangeAsync(codes);
                     await _unitOfWork.Complete();

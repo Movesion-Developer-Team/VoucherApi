@@ -11,6 +11,7 @@ namespace Core.IRepositories
         Task<Discount?> GetDiscountWithCodes(int discountId);
         Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes);
         Task<int?> GetDiscountLimit(int discountId);
+        Task<int?> AddBatch(Batch batch);
     }
 
 }
