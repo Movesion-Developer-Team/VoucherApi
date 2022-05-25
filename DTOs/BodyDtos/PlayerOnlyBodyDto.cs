@@ -1,8 +1,6 @@
-﻿using System.Drawing;
-
-namespace DTOs.BodyDtos
+﻿namespace DTOs.BodyDtos
 {
-    public class PlayerBodyDto : BaseBody
+    public class PlayerOnlyBodyDto : BaseBody
     {
         public string? ShortName { get; set; }
         public string? FullName { get; set; }
@@ -10,7 +8,5 @@ namespace DTOs.BodyDtos
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
         public string? Color { get; set; }
-        public List<DiscountTypeBodyDto>? DiscountTypes { get; set; }
-        public List<CategoryBodyDto>? Categories { get; set; }
     }
 }

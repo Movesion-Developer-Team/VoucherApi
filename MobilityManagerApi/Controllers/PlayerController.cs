@@ -99,14 +99,14 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(PlayerMainResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PlayerMainResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Change([FromBody] PlayerBodyDto body)
+        public async Task<IActionResult> Change([FromBody] PlayerWithCategoriesAndDiscountTypesBodyDto withCategoriesAndDiscountTypesBody)
         {
             Player player = new();
             var response = new PlayerMainResponseDto();
 
             try
             {
-                player = await _unitOfWork.Player.Find(c => c.Id == body.Id).FirstAsync();
+                player = await _unitOfWork.Player.Find(c => c.Id == withCategoriesAndDiscountTypesBody.Id).FirstAsync();
                 _unitOfWork.Player.Update(player);
             }
             catch (NullReferenceException ex)
@@ -122,22 +122,22 @@ namespace MobilityManagerApi.Controllers
 
 
 
-            var listDtoProp = body.GetType().GetProperties();
+            var listDtoProp = withCategoriesAndDiscountTypesBody.GetType().GetProperties();
             foreach (var property in listDtoProp)
             {
-                if (property.GetValue(body) != null)
+                if (property.GetValue(withCategoriesAndDiscountTypesBody) != null)
                 {
-                    _mapper.Map(body, player);
+                    _mapper.Map(withCategoriesAndDiscountTypesBody, player);
                 }
 
             }
 
             await _unitOfWork.Complete();
 
-            var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(body);
+            var idValue = listDtoProp.First(p => p.Name == "Id").GetValue(withCategoriesAndDiscountTypesBody);
             response.Message = idValue != null ? "Warning: changes applied, but new Id is not assigned, because it is forbidden on server side"
                 : "Changes applied";
-            response.Player = body;
+            response.Player = withCategoriesAndDiscountTypesBody;
             return Ok(response);
         }
 
@@ -152,7 +152,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var players = await _unitOfWork.Player.GetAll();
-                response.Players = players.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider);
+                response.Players = players.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(_mapper.ConfigurationProvider);
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -173,7 +173,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var player = _unitOfWork.Player.Find(c => c.Id == id);
-                response.Player = await player.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                response.Player = await player.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -193,7 +193,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var players = _unitOfWork.Player.Find(c => c.ShortName == shortName);
-                response.Players = await Task.Run(() => players.ProjectTo<PlayerBodyDto>(_mapper.ConfigurationProvider));
+                response.Players = await Task.Run(() => players.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(_mapper.ConfigurationProvider));
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -366,6 +366,41 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
 
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignPlayerToCompany([FromBody] AddPlayerToCompanyBodyDto body)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                await _unitOfWork.Player.AssignPlayerToCompany(body.CompanyId, body.PlayerId);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest(response);
+            }
         }
 
     }

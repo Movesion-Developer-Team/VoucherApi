@@ -5,6 +5,6 @@ namespace DTOs.ResponseDtos
 {
     public class GetAllPlayersForCurrentCompanyResponseDto : BaseResponse
     {
-        public IQueryable<PlayerBodyDto>? Players { get; set; }
+        public IQueryable<PlayerOnlyBodyDto>? Players { get; set; }
     }
 }

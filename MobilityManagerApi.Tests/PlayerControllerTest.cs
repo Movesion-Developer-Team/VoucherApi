@@ -183,7 +183,7 @@ namespace MobilityManagerApi.Tests
         {
             _playerDto.ShortName = "sun";
 
-            var methodBody = _mapper.Map<CreateNewPlayerBodyDto, PlayerBodyDto>(_playerDto);
+            var methodBody = _mapper.Map<CreateNewPlayerBodyDto, PlayerWithCategoriesAndDiscountTypesBodyDto>(_playerDto);
             methodBody.Id = (int)_playerId;
 
 

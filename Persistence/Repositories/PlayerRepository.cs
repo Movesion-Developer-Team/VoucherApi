@@ -87,9 +87,9 @@ namespace Persistence.Repositories
         public async Task AssignDiscountTypeToPlayer(int? playerId, int? discountTypeId)
         {
             var discountType = await VoucherContext.DiscountTypes.FindAsync(discountTypeId);
-            discountType.CheckForNull();
+            discountType.CheckForNull(nameof(discountType));
             var player = await VoucherContext.Players.FindAsync(playerId);
-            player.CheckForNull();
+            player.CheckForNull(nameof(player));
             if (player.DiscountsTypes == null)
             {
                 player.DiscountsTypes = new List<DiscountType>();
@@ -104,13 +104,39 @@ namespace Persistence.Repositories
             await Complete();
         }
 
+        public async Task AssignPlayerToCompany(int? companyId, int? playerId)
+        {
+            var company = await VoucherContext.Companies
+                .Where(c=>c.Id == companyId)
+                .Include(c=>c.Players)
+                .FirstOrDefaultAsync();
+            company.CheckForNull(nameof(company));
+            var player = await VoucherContext.Players.FindAsync(playerId);
+            player.CheckForNull(nameof(player));
+
+            if (await company.HasPlayer(player, VoucherContext))
+            {
+                throw new InvalidOperationException("Player is already assigned to the company");
+            }
+
+            VoucherContext.Update(company);
+
+            if (!await company.HasAnyPlayer(VoucherContext))
+            {
+                company.Players = new List<Player>();
+            }
+            
+            company.Players.Add(player);
+            await VoucherContext.SaveChangesAsync();
+        }
+
         public async Task<IQueryable<DiscountType>> GetAllDiscountTypesForPlayer(int? playerId)
         {
             var player = await VoucherContext.Players
                 .Where(p => p.Id == playerId)
                 .Include(p => p.DiscountsTypes)
                 .FirstAsync();
-            player.CheckForNull();
+            player.CheckForNull(nameof(player));
             player.DiscountsTypes.CheckEnumerableForNull();
             return player.DiscountsTypes.AsQueryable();
 

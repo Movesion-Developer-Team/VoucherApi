@@ -199,8 +199,9 @@ namespace MobilityManagerApi.Controllers
             {
                 var players = await _unitOfWork.Company.GetAllPlayersForOneCompany(companyId);
 
-                response.Players = _mapper.ProjectTo<PlayerBodyDto>(players);
+                response.Players = _mapper.ProjectTo<PlayerOnlyBodyDto>(players);
                 response.Message = "Success";
+                response.StatusCode = StatusCodes.Status200OK;
                 return Ok(response);
             }
             catch (NullReferenceException ex)

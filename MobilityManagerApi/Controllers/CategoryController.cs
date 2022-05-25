@@ -309,7 +309,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var players = await _unitOfWork.Category.GetAllPlayersForCategoryAndCompany((int) companyId, categoryId);
-                response.Players = _mapper.ProjectTo<PlayerBodyDto>(players);
+                response.Players = _mapper.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(players);
                 response.Message = "Done";
                 return Ok(response);
             }

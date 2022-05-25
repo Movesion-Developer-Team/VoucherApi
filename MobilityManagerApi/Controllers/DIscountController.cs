@@ -67,9 +67,9 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var player = await _unitOfWork.Player.Find(p => p.Id == body.PlayerId).Include(p=>p.DiscountsTypes).SingleOrDefaultAsync();
-                player.CheckForNull();
+                player.CheckForNull(nameof(player));
                 var discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
-                discountType.CheckForNull();
+                discountType.CheckForNull(nameof(discountType));
                 if (player.DiscountsTypes != null && !player.DiscountsTypes.Contains(discountType))
                 {
                     player.DiscountsTypes.Add(discountType);
@@ -135,7 +135,7 @@ namespace MobilityManagerApi.Controllers
                 var discounts =
                     await _unitOfWork.Discount.GetAllGetAllDiscountsForPlayerOfCompany(companyId, playerId);
 
-                response.Discounts = _mapper.ProjectTo<DiscountBodyDto>(discounts);
+                response.Discounts = _mapper.ProjectTo<DiscountBodyDto>(discounts.AsQueryable());
                 response.Message = "Done";
                 response.StatusCode = StatusCodes.Status200OK;
                 return Ok(response);
@@ -172,7 +172,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var discount = await _unitOfWork.Discount.Find(d => d.Id == body.DiscountId).FirstAsync();
-                discount.CheckForNull();
+                discount.CheckForNull(nameof(discount));
                 await _unitOfWork.Discount.RemoveAsync(body.DiscountId);
                 await _unitOfWork.Complete();
                 response.Message = "Deleted";
@@ -341,6 +341,47 @@ namespace MobilityManagerApi.Controllers
             }
             
 
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignDiscountToCompany([FromBody] AssignDiscountToCompanyBodyDto body)
+        {
+            var response = new BaseResponse();
+
+            try
+            {
+                await _unitOfWork.Discount.AssignDiscountToCompany(body.DiscountId, body.CompanyId);
+                response.Message = "Done";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
         }
     }
 }

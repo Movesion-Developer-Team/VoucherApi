@@ -5,11 +5,11 @@ namespace Extensions
 {
     public static class EntityExtensions
     {
-        public static void CheckForNull(this EntityBase? entity)
+        public static void CheckForNull(this EntityBase? entity, string paramName)
         {
             if (entity == null)
             {
-                throw new ArgumentNullException(nameof(entity), $"{nameof(entity)} not found");
+                throw new ArgumentNullException(paramName,$"Not found");
             }
 
         }

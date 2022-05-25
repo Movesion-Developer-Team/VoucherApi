@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class PlayerFindByNameResponseDto : BaseResponse
     {
-        public IQueryable<PlayerBodyDto>? Players { get; set; }
+        public IQueryable<PlayerWithCategoriesAndDiscountTypesBodyDto>? Players { get; set; }
     }
 }
