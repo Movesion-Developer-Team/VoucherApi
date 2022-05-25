@@ -22,7 +22,7 @@ namespace Extensions
             var image = await context.Set<Image>()
                 .Where(i => i.CategoryId == category.Id)
                 .FirstOrDefaultAsync();
-            image.CheckForNull();
+            image.CheckForNull(nameof(image));
             context.Remove(image);
             await context.SaveChangesAsync();
         }

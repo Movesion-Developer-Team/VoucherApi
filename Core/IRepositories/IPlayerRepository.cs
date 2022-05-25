@@ -9,6 +9,9 @@ namespace Core.IRepositories
 
         Task AssignDiscountTypeToPlayer(int? playerId, int? discountTypeId);
         Task<IQueryable<DiscountType>> GetAllDiscountTypesForPlayer(int? playerId);
+        Task AssignPlayerToCompany(int? companyId, int? playerId);
+
+
     }
 
 

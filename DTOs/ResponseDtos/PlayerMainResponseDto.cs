@@ -4,6 +4,6 @@ namespace DTOs.ResponseDtos
 {
     public class PlayerMainResponseDto : BaseResponse
     {
-        public PlayerBodyDto? Player { get; set; }
+        public PlayerWithCategoriesAndDiscountTypesBodyDto? Player { get; set; }
     }
 }

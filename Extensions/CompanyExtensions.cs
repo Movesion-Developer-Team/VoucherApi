@@ -12,16 +12,15 @@ namespace Extensions
     {
         public static bool HasCodes(this Company? company, DbContext context)
         {
-            company.CheckForNull();
+            company.CheckForNull(nameof(company));
             return context
                 .Set<CompanyDiscountCode>()
                 .Where(cd => cd.CompanyId == company.Id)
                 .Select(cd=>cd.DiscountCodeId).Any();
         }
-
         public static async Task<IQueryable<Category>> GetCategories(this Company? company, DbContext context)
         {
-            company.CheckForNull();
+            company.CheckForNull(nameof(company));
             if (!await company.HasAnyPlayer(context))
             {
                 throw new InvalidOperationException("Company do not have categories");
@@ -35,8 +34,8 @@ namespace Extensions
         }
         public static IQueryable<Player> GetPlayers(this Company? company, DbContext context, Category? category)
         {
-            company.CheckForNull();
-            category.CheckForNull();
+            company.CheckForNull(nameof(company));
+            category.CheckForNull(nameof(category));
             if (!company.HasCodes(context))
             {
                 throw new InvalidOperationException(
@@ -52,7 +51,7 @@ namespace Extensions
         }
         public static async Task<IQueryable<Player>> GetAllPlayers(this Company? company, DbContext context)
         {
-            company.CheckForNull();
+            company.CheckForNull(nameof(company));
             var companyWIthPlayers = await context.Set<Company>()
                 .Where(c => c.Id == company.Id)
                 .Include(c => c.Players)
@@ -75,6 +74,19 @@ namespace Extensions
             var players = await company.GetAllPlayers(context);
             return company.Players.Any();
         }
+        public static async Task<bool> HasPlayer(this Company? company, Player? player, DbContext context)
+        {
+            if (!await company.HasAnyPlayer(context))
+            {
+                return false;
+            }
+
+            return context.Set<Company>()
+                .Where(c => c.Id == company.Id)
+                .Include(c => c.Players)
+                .SelectMany(c => c.Players)
+                .Contains(player);
+        }
         public static ICollection<Company> Initialize(this ICollection<Company>? companies)
         {
             if (companies == null)
@@ -85,7 +97,24 @@ namespace Extensions
 
             throw new InvalidOperationException("Lis contains elements");
         }
-        
+        public static async Task<bool> PlayerIsAssigned(this Company? company, Player? player, DbContext context)
+        {
+            company.CheckForNull(nameof(company));
+            player.CheckForNull(nameof(player));
 
+            context.Set<Player>()
+                .Where(p => p.Id == player.Id)
+                .Include(p => p.Companies)
+                .SelectMany(p => p.Companies)
+                .CheckQueryForNull();
+
+            return await context.Set<Player>()
+                .Where(p => p.Id == player.Id)
+                .Include(p => p.Companies)
+                .SelectMany(p => p.Companies)
+                .ContainsAsync(company);
+
+
+        }
     }
 }

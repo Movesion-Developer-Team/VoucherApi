@@ -20,7 +20,10 @@ namespace DTOs.MappingProfiles
                 .ForMember(p => p.PlayerLocations, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
-            CreateMap<Player, PlayerBodyDto>()
+            CreateMap<Player, PlayerOnlyBodyDto>()
+                .ReverseMap();
+
+            CreateMap<Player, PlayerWithCategoriesAndDiscountTypesBodyDto>()
                 .ForMember(pb=>pb.DiscountTypes, opt=>opt.MapFrom(p=>p.DiscountsTypes))
                 .ForMember(pb=>pb.Categories, opt=>opt.MapFrom(p=>p.Categories))
                 .ReverseMap()
@@ -33,7 +36,7 @@ namespace DTOs.MappingProfiles
                 .ForMember(p=>p.DiscountsTypes, opt=>opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
-            CreateMap<CreateNewPlayerBodyDto, PlayerBodyDto>()
+            CreateMap<CreateNewPlayerBodyDto, PlayerWithCategoriesAndDiscountTypesBodyDto>()
                 .ForMember(pb => pb.Id, opt => opt.Ignore())
                 .ReverseMap();
 

@@ -88,7 +88,7 @@ namespace Extensions
 
         public static async Task OneUserUsageTypeCodesAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company, DbContext context)
         {
-            company.CheckForNull();
+            company.CheckForNull(nameof(company));
             await discountCodes.ForEachAsync(dc=> context.Set<CompanyDiscountCode>()
                 .Add(new CompanyDiscountCode
                 {

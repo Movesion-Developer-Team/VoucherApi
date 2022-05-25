@@ -56,15 +56,15 @@ namespace Persistence.Repositories
         {
             var company = await VoucherContext.Companies.FindAsync(companyId);
             var category = await VoucherContext.Categories.FindAsync(categoryId);
-            company.CheckForNull();
-            category.CheckForNull();
+            company.CheckForNull(nameof(company));
+            category.CheckForNull(nameof(category));
             return company.GetPlayers(VoucherContext, category);
         }
 
         public async Task AddImageToCategory(Image image, int? categoryId)
         {
             var category = await VoucherContext.Categories.FindAsync(categoryId);
-            category.CheckForNull();
+            category.CheckForNull(nameof(category));
             if (await category.HasImage(VoucherContext))
             {
                 await category.DeleteImage(VoucherContext);
