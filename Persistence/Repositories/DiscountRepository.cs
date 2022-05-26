@@ -25,7 +25,7 @@ namespace Persistence.Repositories
             return discountType;
         }
 
-        public async Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int numberOfDiscounts)
+        public async Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int numberOfDiscounts, double price)
         {
             var company = await VoucherContext
                 .Companies
@@ -66,7 +66,7 @@ namespace Persistence.Repositories
             }
             await discount
                 .ChooseCodes(numberOfDiscounts, VoucherContext)
-                .AssignToCompany(company, quantity, VoucherContext);
+                .AssignToCompany(company, quantity, price, VoucherContext);
         }
 
         public async Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId)

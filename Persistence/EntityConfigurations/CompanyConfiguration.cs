@@ -34,23 +34,6 @@ namespace Persistence.EntityConfigurations
             builder.HasMany(c => c.InvitationCodes)
                 .WithOne(ic => ic.Company);
 
-            builder.HasMany(c=>c.DiscountCodes)
-                .WithMany(dc=>dc.Companies)
-                .UsingEntity<CompanyDiscountCode>(ent =>
-                {
-                    ent.HasOne(cdc => cdc.Company)
-                        .WithMany(c => c.CompanyDiscountCodes)
-                        .HasForeignKey(cdc => cdc.CompanyId);
-                    ent.HasOne(cdc => cdc.DiscountCode)
-                        .WithMany(dc => dc.CompanyDiscountCodes)
-                        .HasForeignKey(cdc => cdc.DiscountCodeId);
-                    ent.HasKey(key => new
-                    {
-                        key.CompanyId,
-                        key.DiscountCodeId
-                    });
-                });
-
             builder.HasMany(c => c.Discounts)
                 .WithMany(d => d.Companies)
                 .UsingEntity<CompanyDiscount>(cd =>
@@ -69,6 +52,10 @@ namespace Persistence.EntityConfigurations
                         c.DiscountId
                     });
                 });
+
+            builder.HasMany(c => c.Offers)
+                .WithOne(o => o.Company);
+
         }
     }
 }
