@@ -291,7 +291,7 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 await _unitOfWork.Discount.AssignDiscountCodesToCompany(body.DiscountId, body.CompanyId,
-                    body.NumberOfDiscounts);
+                    body.NumberOfDiscounts, body.Price);
                 await _unitOfWork.Complete();
                 response.Message = "Done";
                 return Ok(response);
@@ -383,5 +383,7 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
+
+
     }
 }

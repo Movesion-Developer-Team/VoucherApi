@@ -14,9 +14,9 @@ namespace Extensions
         {
             company.CheckForNull(nameof(company));
             return context
-                .Set<CompanyDiscountCode>()
-                .Where(cd => cd.CompanyId == company.Id)
-                .Select(cd=>cd.DiscountCodeId).Any();
+                .Set<Offer>()
+                .Where(o => o.CompanyId == company.Id)
+                .Select(o=>o.Availability>0).Any();
         }
         public static async Task<IQueryable<Category>> GetCategories(this Company? company, DbContext context)
         {
