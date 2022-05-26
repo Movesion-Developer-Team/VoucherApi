@@ -158,46 +158,56 @@ namespace Extensions
             }
         }
 
-        //public static async Task ReassignToOtherCompany()
-        //{
+        public static async Task ReassignToOtherCompany(this IQueryable<Offer> codes, int companyId, double price, DbContext context)
+        {
+            context.Set<Offer>().UpdateRange(codes);
+            await codes.ForEachAsync(c =>
+            {
+                c.CompanyId = companyId;
+                c.Price = price;
+            });
+            await context.SaveChangesAsync();
+        }
 
-        //}
-
-        //public static async Task ChooseAssignedDiscountCodes(this Discount? discount,int companyId, int quantity, DbContext context)
-        //{
-        //    var discountType = await context.Set<DiscountType>().FindAsync(discount.DiscountTypeId);
-        //    discountType.CheckForNull(nameof(discountType));
-        //    var company = await context.Set<Company>().FindAsync(companyId);
-        //    company.CheckForNull(nameof(company));
-        //    var player = await context.Set<Player>().FindAsync(discount.PlayerId);
-        //    if (!await company.HasPlayer(player, context))
-        //    {
-        //        throw new InvalidOperationException($"Player {player.ShortName} is not assigned to the current company");
-        //    }
-        //    if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
-        //    {
-        //        var assignedCodes = context.Set<DiscountCode>()
-        //            .Where(dc => dc.DiscountId == discount.Id)
-        //            .Include(dc => dc.Offers)
-        //            .SelectMany(dc => dc.Offers)
-        //            .Where(o => o.CompanyId == companyId);
-        //        if (!assignedCodes.Any())
-        //        {
-        //            throw new InvalidOperationException("Company does not have any codes for related discount");
-        //        }
-
-        //        var assignedCodesAvailable = assignedCodes.Where(o => o.Availability > 0);
-        //        if (!assignedCodesAvailable.Any())
-        //        {
-        //            throw new InvalidOperationException("Company does not have available discount codes for the current discount");
-        //        }
-
-        //        var maxUsageAvailablePerCode = await assignedCodesAvailable.MaxAsync(o => o.Availability);
-        //        var promotionCode = assignedCodesAvailable.Where(o => o.Availability == maxUsageAvailablePerCode);
-        //    }
+        public static async Task<IQueryable<Offer>> ChooseAssignedDiscountCodes(this Discount? discount, int companyId, int quantity, DbContext context)
+        {
+            var discountType = await context.Set<DiscountType>().FindAsync(discount.DiscountTypeId);
+            discountType.CheckForNull(nameof(discountType));
+            var company = await context.Set<Company>().FindAsync(companyId);
+            company.CheckForNull(nameof(company));
+            var player = await context.Set<Player>().FindAsync(discount.PlayerId);
+            if (!await company.HasPlayer(player, context))
+            {
+                throw new InvalidOperationException($"Player {player.ShortName} is not assigned to the current company");
+            }
 
 
-        //}
+            var assignedCodes = context.Set<DiscountCode>()
+                .Where(dc => dc.DiscountId == discount.Id)
+                .Include(dc => dc.Offers)
+                .SelectMany(dc => dc.Offers)
+                .Where(o => o.CompanyId == companyId);
+            if (!assignedCodes.Any())
+            {
+                throw new InvalidOperationException("Company does not have any codes for related discount");
+            }
+
+            var assignedCodesAvailable = assignedCodes.Where(o => o.Availability > 0);
+            if (!assignedCodesAvailable.Any())
+            {
+                throw new InvalidOperationException("Company does not have available discount codes for the current discount");
+            }
+
+            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            {
+                var maxUsageAvailablePerCode = await assignedCodesAvailable.MaxAsync(o => o.Availability);
+                var promotionCode = assignedCodesAvailable.Where(o => o.Availability == maxUsageAvailablePerCode);
+                return promotionCode;
+            }
+
+            return assignedCodesAvailable;
+
+        }
 
         public static Task<List<DiscountCode>> WriteToDiscountCodes(this CsvReader csv, IMapper mapper)
         {
