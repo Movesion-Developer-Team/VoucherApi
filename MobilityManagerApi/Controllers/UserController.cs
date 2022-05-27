@@ -100,7 +100,10 @@ namespace MobilityManagerApi.Controllers
                     return BadRequest(response);
                 }
 
-                response.CompanyId = currentUser.CompanyId;
+                response.CompanyId = new()
+                {
+                    Id = (int)currentUser.CompanyId
+                };
                 return Ok(response);
             }
 

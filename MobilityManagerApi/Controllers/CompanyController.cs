@@ -227,18 +227,30 @@ namespace MobilityManagerApi.Controllers
         [ProducesResponseType(typeof(DeleteResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            var response = new DeleteResponseDto
+            var response = new DeleteResponseDto();
+
+            try
             {
-                IsDeleted = await _unitOfWork.Company.RemoveAsync(id)
-            };
-            if (!response.IsDeleted)
+                response.Message = "Deleted";
+                response.IsDeleted = await _unitOfWork.Company.RemoveAsync(id);
+                
+                if (!response.IsDeleted)
+                {
+                    response.Message = "Company not found";
+                    return BadRequest(response);
+                }
+
+                await _unitOfWork.Complete();
+                response.Message = "Deleted";
+                return Ok(response);
+            }
+            catch (Exception ex)
             {
-                response.Message = "Company not found";
+                response.Message = $"Unexpected server error: {ex.Message}";
+                response.IsDeleted = false;
                 return BadRequest(response);
             }
-            await _unitOfWork.Complete();
-            response.Message = "Deleted";
-            return Ok(response);
+            
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]
