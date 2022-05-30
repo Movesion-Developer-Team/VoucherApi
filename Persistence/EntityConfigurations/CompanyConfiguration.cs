@@ -30,9 +30,11 @@ namespace Persistence.EntityConfigurations
             
             builder.HasMany(c => c.Users)
                 .WithOne(w => w.Company)
-                .HasForeignKey(w => w.CompanyId);
+                .HasForeignKey(w => w.CompanyId)
+                .OnDelete(DeleteBehavior.ClientCascade);
             builder.HasMany(c => c.InvitationCodes)
-                .WithOne(ic => ic.Company);
+                .WithOne(ic => ic.Company)
+                .OnDelete(DeleteBehavior.ClientCascade);
 
             builder.HasMany(c => c.Discounts)
                 .WithMany(d => d.Companies)
@@ -54,7 +56,8 @@ namespace Persistence.EntityConfigurations
                 });
 
             builder.HasMany(c => c.Offers)
-                .WithOne(o => o.Company);
+                .WithOne(o => o.Company)
+                .OnDelete(DeleteBehavior.ClientCascade);
 
         }
     }

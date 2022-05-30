@@ -10,7 +10,8 @@ namespace Persistence.EntityConfigurations
         {
             builder.HasOne(w => w.Company)
                 .WithMany(c => c.Users)
-                .HasForeignKey(u=>u.CompanyId);
+                .HasForeignKey(u=>u.CompanyId)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.HasOne(u => u.JoinRequest)
                 .WithOne(jr => jr.User);
             builder.HasIndex(c => c.IdentityUserId).IsUnique();
