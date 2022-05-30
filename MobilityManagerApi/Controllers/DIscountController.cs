@@ -123,7 +123,7 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-        [AuthorizeRoles(Role.SuperAdmin)]
+        [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
         [HttpGet]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllDiscountsForPlayerResponseDto), StatusCodes.Status400BadRequest)]

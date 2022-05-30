@@ -650,7 +650,8 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Core.Domain.Company", "Company")
                         .WithMany("InvitationCodes")
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.Navigation("Company");
                 });
@@ -659,11 +660,13 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Core.Domain.InvitationCode", "InvitationCode")
                         .WithOne("JoinRequest")
-                        .HasForeignKey("Core.Domain.JoinRequest", "InvitationCodeId");
+                        .HasForeignKey("Core.Domain.JoinRequest", "InvitationCodeId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Core.Domain.User", "User")
                         .WithOne("JoinRequest")
-                        .HasForeignKey("Core.Domain.JoinRequest", "UserId");
+                        .HasForeignKey("Core.Domain.JoinRequest", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("InvitationCode");
 
@@ -674,7 +677,8 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Core.Domain.Company", "Company")
                         .WithMany("Offers")
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.HasOne("Core.Domain.DiscountCode", "DiscountCode")
                         .WithMany("Offers")
@@ -772,7 +776,8 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Core.Domain.Company", "Company")
                         .WithMany("Users")
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Company");
                 });

@@ -58,7 +58,7 @@ namespace Persistence.Repositories
             var category = await VoucherContext.Categories.FindAsync(categoryId);
             company.CheckForNull(nameof(company));
             category.CheckForNull(nameof(category));
-            return company.GetPlayers(VoucherContext, category);
+            return await company.GetPlayersOfCategory(VoucherContext, category);
         }
 
         public async Task AddImageToCategory(Image image, int? categoryId)

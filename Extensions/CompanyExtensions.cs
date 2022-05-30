@@ -32,14 +32,13 @@ namespace Extensions
                     .SelectMany(p=>p.Categories))
                 .Distinct();
         }
-        public static IQueryable<Player> GetPlayers(this Company? company, DbContext context, Category? category)
+        public static async Task<IQueryable<Player>> GetPlayersOfCategory(this Company? company, DbContext context, Category? category)
         {
             company.CheckForNull(nameof(company));
             category.CheckForNull(nameof(category));
-            if (!company.HasCodes(context))
+            if (!await company.HasAnyPlayer(context))
             {
-                throw new InvalidOperationException(
-                    "Company do not have any categories, players and discounts assigned to it");
+                throw new InvalidOperationException("Company does not have any players assigned to it");
             }
 
             return context.Set<Company>()
@@ -71,8 +70,15 @@ namespace Extensions
         }
         public static async Task<bool> HasAnyPlayer(this Company company, DbContext context)
         {
-            var players = await company.GetAllPlayers(context);
-            return company.Players.Any();
+            var companyWithPlayers = await context.Set<Company>()
+                .Where(c => c == company)
+                .Include(c => c.Players)
+                .FirstOrDefaultAsync();
+            if (companyWithPlayers.Players == null)
+            {
+                return false;
+            }
+            return companyWithPlayers.Players.Any();
         }
         public static async Task<bool> HasPlayer(this Company? company, Player? player, DbContext context)
         {

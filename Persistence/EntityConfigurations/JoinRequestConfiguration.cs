@@ -11,10 +11,13 @@ namespace Persistence.EntityConfigurations
             builder.Property(jr => jr.Declined).HasDefaultValue(false);
             builder.HasOne(jr => jr.InvitationCode)
                 .WithOne(ic => ic.JoinRequest)
-                .HasForeignKey<JoinRequest>(jr => jr.InvitationCodeId);
+                .HasForeignKey<JoinRequest>(jr => jr.InvitationCodeId)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.HasOne(jr => jr.User)
                 .WithOne(u => u.JoinRequest)
-                .HasForeignKey<JoinRequest>(j => j.UserId);
+                .HasForeignKey<JoinRequest>(j => j.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
         }
     }
 }
