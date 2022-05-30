@@ -10,6 +10,7 @@ using Persistence;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using DTOs.BodyDtos;
+using Stripe;
 using UserStoreLogic;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -77,8 +78,7 @@ builder.Services.AddCors(opt =>
 
 builder.Services.AddScoped<IUserStore<IdentityUser>, UserStore<IdentityUser, IdentityRole, UserDbContext>>();
 builder.Services.AddAutoMapper(typeof(CompanyBodyDto).Assembly);
-
-
+StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("StripeKey");
 var connectionString = builder.Configuration.GetValue<string>("ConnectionStrings:PostgreSqlConnectionString");
 
 builder.Services.AddDbContext<VoucherContext>(opt => opt.UseNpgsql(connectionString));
