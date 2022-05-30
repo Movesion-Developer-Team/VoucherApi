@@ -39,7 +39,7 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CreateNewEntityResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateNewDiscount([FromBody] DiscountBodyDto body)
+        public async Task<IActionResult> CreateNewDiscount([FromBody] CreateNewDiscountBodyDto body)
         {
             var response = new CreateNewEntityResponseDto();
             var discount = _mapper.Map<Discount>(body);
