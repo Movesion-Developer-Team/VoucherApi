@@ -1,21 +1,16 @@
 ﻿using System.Globalization;
-using System.Reflection.Metadata;
 using AutoMapper;
 using Core.Domain;
 using CsvHelper;
 using CsvHelper.Configuration;
 using DTOs.BodyDtos;
-using DTOs.MethodDto;
 using DTOs.ResponseDtos;
 using Enum;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32.SafeHandles;
 using Persistence;
 using UserStoreLogic;
-using System.Text;
-using AutoMapper.Internal;
 using Extensions;
 using Microsoft.AspNetCore.Authorization;
 
