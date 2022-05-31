@@ -11,6 +11,7 @@ using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using DTOs.BodyDtos;
 using Stripe;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using UserStoreLogic;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -85,6 +86,7 @@ builder.Services.AddDbContext<VoucherContext>(opt => opt.UseNpgsql(connectionStr
 builder.Services.AddDbContext<UserDbContext>(opt => opt.UseNpgsql(connectionString));
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
@@ -100,7 +102,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.InjectStylesheet("/swagger-ui/theme-muted.css");
+        c.DocExpansion(DocExpansion.None);
     });
+    
 }
 
 
