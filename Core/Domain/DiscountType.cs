@@ -7,6 +7,7 @@
 
         public ICollection<Player>? Players { get; set; }
         public ICollection<Discount>? Discounts { get; set; }
+        public ICollection<Batch>? Batches { get; set; }
         public ICollection<PlayerDiscountType>? PlayerDiscountTypes { get; set; }
     }
 }

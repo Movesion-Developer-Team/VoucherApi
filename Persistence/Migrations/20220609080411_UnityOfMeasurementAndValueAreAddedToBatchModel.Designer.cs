@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,10 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    partial class VoucherContextModelSnapshot : ModelSnapshot
+    [Migration("20220609080411_UnityOfMeasurementAndValueAreAddedToBatchModel")]
+    partial class UnityOfMeasurementAndValueAreAddedToBatchModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,7 +139,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("DiscountId");
 
-                    b.ToTable("CompanyPortfolios");
+                    b.ToTable("CompanyPortfolio");
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
@@ -154,8 +156,8 @@ namespace Persistence.Migrations
                     b.Property<float?>("DiscountValue")
                         .HasColumnType("real");
 
-                    b.Property<long?>("FinalPrice")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("FinalPrice")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("InitialPrice")
                         .HasColumnType("integer");
@@ -210,9 +212,6 @@ namespace Persistence.Migrations
                     b.Property<int?>("UsageLimit")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BatchId");
@@ -220,8 +219,6 @@ namespace Persistence.Migrations
                     b.HasIndex("CompanyPortfolioId");
 
                     b.HasIndex("PlayerId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("DiscountCodes");
                 });
@@ -644,17 +641,11 @@ namespace Persistence.Migrations
                         .WithMany("DiscountCodes")
                         .HasForeignKey("PlayerId");
 
-                    b.HasOne("Core.Domain.User", "User")
-                        .WithMany("DiscountCodes")
-                        .HasForeignKey("UserId");
-
                     b.Navigation("Batch");
 
                     b.Navigation("CompanyPortfolio");
 
                     b.Navigation("Player");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.Domain.Image", b =>
@@ -870,8 +861,6 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.User", b =>
                 {
-                    b.Navigation("DiscountCodes");
-
                     b.Navigation("JoinRequest");
 
                     b.Navigation("Purchases");

@@ -25,23 +25,21 @@ namespace MobilityManagerApi.Controllers
             _unitOfWork = new UnitOfWork(vContext);
         }
 
-        //[Authorize]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
 
-        //public async Task<IActionResult> CountPurchaseAmount([FromBody] DiscountBodyDto body)
-        //{
-        //    var response = new BaseResponse();
-        //    var discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
-        //    if (discountType.Name != DiscountTypes.SingleUse.ToString())
-        //    {
-        //        response.Message = "Currently only Single Use Discount purchases are implemented inside the system";
-        //        return BadRequest(response);
-        //    }
+        public async Task<IActionResult> ReserveCodes([FromQuery] int companyId, [FromQuery] int discountId, [FromQuery] int userId,
+            [FromQuery] int numberOfDiscounts)
+        {
+            var response = new BaseResponse();
 
-            
-        //}
+            await _unitOfWork.Discount.ReserveCodes(discountId, companyId, userId, numberOfDiscounts);
+            await _unitOfWork.Complete();
 
+            response.Message = "Reserved";
+            return Ok(response);
+        }
     }
 }

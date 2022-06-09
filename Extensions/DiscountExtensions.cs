@@ -11,17 +11,15 @@ namespace Extensions
 {
     public static class DiscountExtensions
     {
-        public static bool HasAvailableDiscountCodes(this Discount discount, DbContext context)
+        public static bool HasAvailableDiscountCodes(this CompanyPortfolio portfolio, DbContext context)
         {
 
             try
             {
                 var check = context
-                    .Set<Discount>()
-                    .Where(d => d.Id == discount.Id)
-                    .Include(d => d.DiscountCodes)
-                    .SelectMany(d => d.DiscountCodes)
-                    .Any(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null);
+                    .Set<DiscountCode>()
+                    .Where(dc => dc.CompanyPortfolioId == portfolio.Id)
+                    .Any(dc => (dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null) && dc.UsageLimit > 0);
                 return check;
 
             }
@@ -31,12 +29,16 @@ namespace Extensions
             }
         }
 
-        public static int GetLimit(this Discount discount, DbContext context)
+        public static async Task<int> GetCompanyLimit(this CompanyPortfolio portfolio, DbContext context)
         {
-            if (!discount.HasAvailableDiscountCodes(context))
+            if (!portfolio.HasAvailableDiscountCodes(context))
             {
                 return 0;
             }
+
+            var discount = await context.Set<Discount>().FindAsync(portfolio.DiscountId);
+            discount.CheckForNull(nameof(discount));
+            var discountType = await context.Set<DiscountType>().FindAsync(discount.DiscountTypeId);
 
             if (discount.DiscountType == null)
             {
@@ -44,81 +46,103 @@ namespace Extensions
             }
             if (discount.DiscountType.Name == DiscountTypes.PromotionalCode.ToString())
             {
-                return context.Set<Discount>()
-                    .Where(d => d.Id == discount.Id)
-                    .Include(d => d.DiscountCodes)
-                    .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false))
+                return context.Set<DiscountCode>()
+                    .Where(dc => dc.CompanyPortfolioId == portfolio.Id && dc.UsageLimit>0)
                     .Select(dc => dc.UsageLimit)
                     .Max() ?? 0;
             }
-            return context.Set<Discount>()
-                .Where(d => d.Id == discount.Id)
-                .Include(d => d.DiscountCodes)
-                .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null))
-                .Count();
+            return await context
+                .Set<DiscountCode>()
+                .Where(dc => dc.CompanyPortfolioId == portfolio.Id && dc.IsAssignedToUser!=true && dc.UsageLimit>0)
+                .CountAsync();
         }
 
-        public static Tuple<IQueryable<DiscountCode>, string?> ChooseCodes(this Discount discount, int quantity, DbContext context)
+        public static async Task<int> GetBatchLimit(this Batch? batch, DbContext context)
+        {
+            var discountType = await context.Set<DiscountType>().FindAsync(batch.DiscountTypeId);
+
+            if (batch.DiscountTypeId == null)
+            {
+                throw new InvalidOperationException("Forbidden: batch must contain discount type");
+            }
+
+            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            {
+                return await context.Set<DiscountCode>()
+                    .Where(dc => dc.CompanyPortfolioId == null && dc.UsageLimit > 0)
+                    .Select(dc => dc.UsageLimit)
+                    .MaxAsync() ?? 0;
+            }
+
+            return await context.Set<DiscountCode>()
+                .Where(dc => dc.BatchId == batch.Id && dc.CompanyPortfolioId == null 
+                                                    && dc.UsageLimit>0 && dc.IsAssignedToCompany == false
+                                                    && dc.IsAssignedToUser == false).CountAsync();
+        }
+
+        public static async Task<bool> CodesAreAssignedToAnyCompany(this IQueryable<DiscountCode> discountCodes)
+        {
+            return await discountCodes.Select(c => c.CompanyPortfolioId).AnyAsync();
+        }
+
+        public static async Task<Tuple<IQueryable<DiscountCode>, string?>> ChooseCodes(this Batch batch, int quantity, DbContext context)
         {
             IQueryable<DiscountCode> discountCodes;
-            var checkDiscountType = context.Set<Discount>()
-                .Where(d => d.Id == discount.Id)
-                .Include(d => d.DiscountType)
-                .Select(d => d.DiscountType)
-                .FirstOrDefault();
+
+
+            var checkDiscountType = await context.Set<DiscountType>().FindAsync(batch.DiscountTypeId);
+            checkDiscountType.CheckForNull(nameof(checkDiscountType));
             if (checkDiscountType.Name == DiscountTypes.PromotionalCode.ToString())
             {
-                discountCodes = context.Set<Discount>().Where(d => d.Id == discount.Id)
-                    .Include(d => d.DiscountCodes)
-                    .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null));
+                discountCodes = context.Set<DiscountCode>().Where(dc => dc.BatchId == batch.Id && 
+                                                                        (dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null) && dc.UsageLimit>0)
+                    .Select(dc=>dc);
                 var discountType = DiscountTypes.PromotionalCode.ToString();
                 return Tuple.Create(discountCodes, discountType)!;
             }
 
             
 
-            discountCodes = context.Set<Discount>().Where(d => d.Id == discount.Id)
-                .Include(d => d.DiscountCodes)
-                .SelectMany(d => d.DiscountCodes.Where(dc => dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null))
+            discountCodes = context.Set<DiscountCode>()
+                .Where(dc => dc.BatchId == batch.Id && (dc.IsAssignedToCompany == false || dc.IsAssignedToCompany == null) && dc.UsageLimit > 0)
                 .Take(quantity);
             return Tuple.Create(discountCodes, checkDiscountType.Name);
         }
 
-        public static async Task OneUserUsageTypeCodesAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company,
+        public static async Task OneUserUsageTypeCodesAssignToCompany(this IQueryable<DiscountCode> discountCodes, CompanyPortfolio? companyPortfolio,
             double price, DbContext context)
         {
-            
-            company.CheckForNull(nameof(company));
-            
+            if (await discountCodes.CodesAreAssignedToAnyCompany())
+            {
+                throw new InvalidOperationException(
+                    "Codes are already assigned to some company. Please, use reassignment");
+            }
+
             context.UpdateRange(discountCodes);
             await discountCodes.ForEachAsync(dc=>
             {
-                
-                context.Set<Offer>()
-
-                    .Add(new Offer
-                    {
-                        Price = price,
-                        Availability = dc.UsageLimit,
-                        CompanyId = company.Id,
-                        DiscountCodeId = dc.Id,
-                    });
-                
                 dc.IsAssignedToCompany = true;
-                dc.UsageLimit = 0;
-
+                dc.CompanyPortfolioId = companyPortfolio.CompanyId;
+                
             });
             await context.SaveChangesAsync();
         }
 
-        public static async Task MultiUserUsageTypeCodeAssignToCompany(this IQueryable<DiscountCode> discountCodes, Company? company,
+        public static async Task MultiUserUsageTypeCodeAssignToCompany(this IQueryable<DiscountCode> discountCodes, CompanyPortfolio? companyPortfolio,
             int quantity, double price, DbContext context)
         {
             
-            var codeGlobalAvailability = discountCodes.Max(dc => dc.UsageLimit);
-            var code = await discountCodes.Where(dc => dc.UsageLimit == codeGlobalAvailability).FirstAsync();
+            if (await discountCodes.CodesAreAssignedToAnyCompany())
+            {
+                throw new InvalidOperationException(
+                    "Codes are already assigned to some company. Please, use reassignment");
+            }
+
+            var maxAmongAllCodesAvailability = discountCodes.Max(dc => dc.UsageLimit);
+            var code = await discountCodes.Where(dc => dc.UsageLimit == maxAmongAllCodesAvailability).FirstAsync();
             context.Update(code);
             var restUsage = code.UsageLimit - quantity;
+
             if (restUsage < 0)
             {
                 throw new InvalidOperationException("Cannot assign usage limit more than available");
@@ -127,21 +151,23 @@ namespace Extensions
             code.IsAssignedToCompany = false;
             await context.SaveChangesAsync();
 
-            var offer = new Offer
+            var assignedCode = new DiscountCode
             {
-                
-                Price = price,
-                Availability = quantity,
-                CompanyId = company.Id,
-                DiscountCodeId = code.Id,
+                Code = code.Code,
+                BatchId = code.BatchId,
+                UsageLimit = quantity,
+                IsAssignedToUser = false,
+                IsAssignedToCompany = true,
+                PlayerId = code.PlayerId
             };
-            await context.Set<Offer>().AddAsync(offer);
+
+            await context.Set<DiscountCode>().AddAsync(assignedCode);
             await context.SaveChangesAsync();
 
         }
 
-        public static async Task AssignToCompany(this Tuple<IQueryable<DiscountCode>, string?> discountCodeInfo, Company? company,
-            int? quantity, double price, DbContext context)
+        public static async Task AssignToCompany(this Tuple<IQueryable<DiscountCode>, string?> discountCodeInfo, CompanyPortfolio? companyPortfolio,
+            int quantity, double price, DbContext context)
         {
             if (discountCodeInfo.Item2 == DiscountTypes.PromotionalCode.ToString())
             {
@@ -150,49 +176,81 @@ namespace Extensions
                     throw new InvalidOperationException("Please provide a quantity also in assignment method");
                 }
 
-                await discountCodeInfo.Item1.MultiUserUsageTypeCodeAssignToCompany(company, (int)quantity, price, context);
+                await discountCodeInfo.Item1.MultiUserUsageTypeCodeAssignToCompany(companyPortfolio, quantity, price, context);
             }
             else
             {
-                await discountCodeInfo.Item1.OneUserUsageTypeCodesAssignToCompany(company, price, context);
+                await discountCodeInfo.Item1.OneUserUsageTypeCodesAssignToCompany(companyPortfolio, price, context);
             }
         }
 
-        public static async Task ReassignToOtherCompany(this IQueryable<Offer> codes, int companyId, double price, DbContext context)
+        public static async Task ReassignToOtherCompany(this IQueryable<DiscountCode> codes, int companyId, double price, DbContext context)
         {
-            context.Set<Offer>().UpdateRange(codes);
+            context.Set<DiscountCode>().UpdateRange(codes);
+            var portfolioIds = codes.Select(c => c.CompanyPortfolioId).Distinct();
+            if (portfolioIds.Count() != 1)
+            {
+                throw new InvalidOperationException("Codes are assigned to different companies or vouchers, " +
+                                                    "which is forbidden in the current case, because reassignment should be applied " +
+                                                    "to the sequence of codes related to the same Voucher and the same Company");
+            }
+
+            var companyPortfolio = await context.Set<CompanyPortfolio>().FindAsync(portfolioIds.ElementAt(0));
+            companyPortfolio.CheckForNull(nameof(companyPortfolio));
+            var discountId = companyPortfolio.DiscountId;
+            if (companyPortfolio.CompanyId == companyId)
+            {
+                throw new InvalidOperationException("You are trying to reassign codes to the same company");
+            }
+            var portfolioForReassignment = await context.Set<CompanyPortfolio>()
+                .Where(cp => cp.DiscountId == discountId && cp.CompanyId == companyId)
+                .FirstOrDefaultAsync();
+            if (portfolioForReassignment == null)
+            {
+                throw new InvalidOperationException("Discount is not assigned to the company");
+            }
             await codes.ForEachAsync(c =>
             {
-                c.CompanyId = companyId;
-                c.Price = price;
+                c.CompanyPortfolioId = portfolioForReassignment.Id;
             });
+
             await context.SaveChangesAsync();
         }
 
-        public static async Task<IQueryable<Offer>> ChooseAssignedDiscountCodes(this Discount? discount, int companyId, int quantity, DbContext context)
+        public static async Task<bool> CompanyHasDiscount(this Company? company, Discount? discount, DbContext context)
         {
+            return await context.Set<CompanyPortfolio>()
+                .Where(o => o.DiscountId == discount.Id && o.CompanyId == company.Id)
+                .AnyAsync();
+        }
+
+        public static async Task<IQueryable<DiscountCode>>? ChooseAssignedDiscountCodes(this CompanyPortfolio? portfolio, int quantity, DbContext context) 
+        {
+            var discount = await context.Set<Discount>().FindAsync(portfolio.DiscountId);
+            discount.CheckForNull(nameof(discount));
             var discountType = await context.Set<DiscountType>().FindAsync(discount.DiscountTypeId);
             discountType.CheckForNull(nameof(discountType));
-            var company = await context.Set<Company>().FindAsync(companyId);
-            company.CheckForNull(nameof(company));
+
+            var company = await context.Set<Company>().FindAsync(portfolio.CompanyId);
             var player = await context.Set<Player>().FindAsync(discount.PlayerId);
+
             if (!await company.HasPlayer(player, context))
             {
                 throw new InvalidOperationException($"Player {player.ShortName} is not assigned to the current company");
             }
 
-
             var assignedCodes = context.Set<DiscountCode>()
-                .Where(dc => dc.DiscountId == discount.Id)
-                .Include(dc => dc.Offers)
-                .SelectMany(dc => dc.Offers)
-                .Where(o => o.CompanyId == companyId);
-            if (!assignedCodes.Any())
+                .Where(dc => dc.CompanyPortfolioId == portfolio.Id 
+                             && dc.TemporaryReserved == false
+                             && dc.IsAssignedToUser == false)
+                .Select(dc=>dc);
+
+            if (!portfolio.HasAvailableDiscountCodes(context))
             {
                 throw new InvalidOperationException("Company does not have any codes for related discount");
             }
 
-            var assignedCodesAvailable = assignedCodes.Where(o => o.Availability > 0);
+            var assignedCodesAvailable = assignedCodes.Where(dc => dc.UsageLimit > 0);
             if (!assignedCodesAvailable.Any())
             {
                 throw new InvalidOperationException("Company does not have available discount codes for the current discount");
@@ -200,8 +258,8 @@ namespace Extensions
 
             if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
             {
-                var maxUsageAvailablePerCode = await assignedCodesAvailable.MaxAsync(o => o.Availability);
-                var promotionCode = assignedCodesAvailable.Where(o => o.Availability == maxUsageAvailablePerCode);
+                var maxUsageAvailablePerCode = await assignedCodesAvailable.MaxAsync(dc => dc.UsageLimit);
+                var promotionCode = assignedCodesAvailable.Where(dc => dc.UsageLimit == maxUsageAvailablePerCode);
                 return promotionCode;
             }
 
@@ -220,6 +278,17 @@ namespace Extensions
             var checking = codes.Select(dc => dc.Code).Intersect(codesInDb);
             return checking.Any();
 
+        }
+
+        public static async Task AssignCodesToUserTemporary(this IQueryable<DiscountCode> codes, int userId, DbContext context)
+        {
+            context.Set<DiscountCode>().UpdateRange(codes);
+            await codes.ForEachAsync(dc =>
+            {
+                dc.UserId = userId;
+                dc.TemporaryReserved = true;
+            });
+            await context.SaveChangesAsync();
         }
 
     }

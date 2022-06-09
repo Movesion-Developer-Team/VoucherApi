@@ -87,7 +87,9 @@ builder.Services.AddDbContext<UserDbContext>(opt => opt.UseNpgsql(connectionStri
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 
 
+
 var app = builder.Build();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

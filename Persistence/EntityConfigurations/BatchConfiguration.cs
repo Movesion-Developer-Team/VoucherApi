@@ -10,6 +10,10 @@ namespace Persistence.EntityConfigurations
         {
             builder.HasMany(b => b.DiscountCodes)
                 .WithOne(dc => dc.Batch);
+
+            builder.HasOne(b => b.DiscountType)
+                .WithMany(dt => dt.Batches)
+                .HasForeignKey(b => b.DiscountTypeId);
         }
     }
 }

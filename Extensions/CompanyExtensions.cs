@@ -10,13 +10,13 @@ namespace Extensions
 {
     public static class CompanyExtensions
     {
-        public static bool HasCodes(this Company? company, DbContext context)
+        public static bool HasFreeCodes(this CompanyPortfolio? portfolio, DbContext context)
         {
-            company.CheckForNull(nameof(company));
+            portfolio.CheckForNull(nameof(portfolio));
             return context
-                .Set<Offer>()
-                .Where(o => o.CompanyId == company.Id)
-                .Select(o=>o.Availability>0).Any();
+                .Set<DiscountCode>()
+                .Where(dc => dc.CompanyPortfolioId == portfolio.Id)
+                .Select(dc=>dc.UsageLimit>0 && dc.IsAssignedToUser != true).Any();
         }
         public static async Task<IQueryable<Category>> GetCategories(this Company? company, DbContext context)
         {
@@ -121,6 +121,12 @@ namespace Extensions
                 .ContainsAsync(company);
 
 
+        }
+        public static async Task<bool> DiscountIsAssigned(this Company? company, Discount? discount, DbContext context)
+        {
+
+            return await context.Set<CompanyPortfolio>().Where(o => o.DiscountId == discount.Id && o.CompanyId == company.Id)
+                .AnyAsync();
         }
     }
 }

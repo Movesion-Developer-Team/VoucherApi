@@ -93,6 +93,9 @@ namespace Persistence.EntityConfigurations
                     });
                 });
 
+            builder.HasMany(p => p.DiscountCodes)
+                .WithOne(dc => dc.Player);
+
         }
     }
 }

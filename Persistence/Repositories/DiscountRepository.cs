@@ -1,5 +1,6 @@
 ﻿using Core.Domain;
 using Core.IRepositories;
+using Enum;
 using Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,48 +26,60 @@ namespace Persistence.Repositories
             return discountType;
         }
 
-        public async Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int numberOfDiscounts, double price)
+        public async Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int? batchId, int numberOfDiscounts, double price)
         {
             var company = await VoucherContext
                 .Companies
                 .FindAsync(companyId);
             company.CheckForNull(nameof(company));
+
             var discount = await VoucherContext
                 .Discounts.Where(dc => dc.Id == discountId)
                 .Include(dc => dc.DiscountType)
-                .Include(d=>d.Player)
+                .Include(d => d.Player)
                 .FirstOrDefaultAsync();
             discount.CheckForNull(nameof(discount));
-            var isAssigned = await company.PlayerIsAssigned(discount.Player, VoucherContext);
-            if (!isAssigned)
+
+            var batch = await VoucherContext.Batches.FindAsync(batchId);
+
+            var playerIsAssigned = await company.PlayerIsAssigned(discount.Player, VoucherContext);
+            var discountIsAssigned = await company.DiscountIsAssigned(discount, VoucherContext);
+            if (!playerIsAssigned)
             {
                 throw new InvalidOperationException(
                     "Player of selected discount is not assigned to the current company");
             }
 
-            if (!discount.HasAvailableDiscountCodes(VoucherContext))
+            if (!discountIsAssigned)
             {
-                throw new InvalidOperationException("Discount is not available currently");
-
+                throw new InvalidOperationException("Discount is not assigned to the company");
             }
+
             if (numberOfDiscounts == 0)
             {
                 throw new InvalidOperationException("Please provide a number higher than 0");
             }
 
+            var companyPortfolio = await Context.Set<CompanyPortfolio>()
+                .Where(cp => cp.CompanyId == companyId && cp.DiscountId == discountId)
+                .FirstOrDefaultAsync();
+
+
+
             var quantity = Math.Abs((int)numberOfDiscounts);
-            var limit = discount.GetLimit(VoucherContext);
+            var limit = await batch!.GetBatchLimit(VoucherContext);
             if (limit is 0)
             {
-                throw new InvalidOperationException("Discount is not available currently");
+                throw new InvalidOperationException("Batch is not available");
             }
             if (quantity > limit)
             {
-                throw new InvalidOperationException($"Discount has only {limit} codes currently");
+                throw new InvalidOperationException($"Batch has only {limit} codes currently");
             }
-            await discount
-                .ChooseCodes(numberOfDiscounts, VoucherContext)
-                .AssignToCompany(company, quantity, price, VoucherContext);
+
+
+            (await batch.ChooseCodes(numberOfDiscounts, VoucherContext))
+                .AssignToCompany(companyPortfolio, quantity, price, VoucherContext);
         }
 
         public async Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId)
@@ -88,18 +101,13 @@ namespace Persistence.Repositories
                 .Include(c => c.Companies)
                 .Where(p => p.Companies.Contains(company))
                 .Include(p => p.Discounts)
-                .ThenInclude(d=>d.Companies)
+                .ThenInclude(d => d.Companies)
                 .SingleOrDefaultAsync();
 
             playerWithCompanies.Discounts.CheckEnumerableForNull();
-            
-            return playerWithCompanies.Discounts.Where(d=>d.Companies.Contains(company));
 
-        }
+            return playerWithCompanies.Discounts.Where(d => d.Companies.Contains(company));
 
-        public async Task<Discount?> GetDiscountWithCodes(int discountId)
-        {
-            return await VoucherContext.Discounts.Where(d => d.Id == discountId).Include(d => d.DiscountCodes).SingleOrDefaultAsync();
         }
 
         public Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes)
@@ -108,16 +116,13 @@ namespace Persistence.Repositories
             return Task.Run(() => codes.CheckIfCodesAlreadyInDatabase(codesInDb));
         }
 
-        public async Task<int?> GetDiscountLimit(int discountId)
+        public async Task<int?> GetBatchLimit(int batchId)
         {
-            var discount = await VoucherContext.Discounts
-                .Where(d => d.Id == discountId)
-                .Include(d => d.DiscountType)
-                .SingleOrDefaultAsync();
+            var batch = await VoucherContext.Batches.FindAsync(batchId);
 
-            discount.CheckForNull(nameof(discount));
+            batch.CheckForNull(nameof(batch));
 
-            return await Task.Run(() => discount.GetLimit(VoucherContext));
+            return await batch.GetBatchLimit(VoucherContext);
 
         }
 
@@ -132,53 +137,88 @@ namespace Persistence.Repositories
         {
             var discount = await VoucherContext.Discounts
                 .Where(d => d.Id == discountId)
-                .Include(d => d.Companies)
-                .Include(d=>d.Player)
                 .SingleOrDefaultAsync();
 
             var company = await VoucherContext.Companies
-                .Where(c=>c.Id == companyId)
-                .Include(c=>c.Players)
+                .Where(c => c.Id == companyId)
+                .Include(c => c.Players)
                 .SingleOrDefaultAsync();
 
             discount.CheckForNull(nameof(discount));
             company.CheckForNull(nameof(company));
-            if (discount.Player == null)
+
+            if (discount.PlayerId == null)
             {
                 throw new InvalidOperationException("Discount must belong to some player");
             }
+
+            if (company.Players == null)
+            {
+                throw new InvalidOperationException("Discount belongs to the player that is not assigned to the company");
+            }
+            if (!company.Players.Contains(discount.Player))
+            {
+                throw new InvalidOperationException("Discount belongs to the player that is not assigned to the company");
+            }
+
+            if (await company.CompanyHasDiscount(discount, VoucherContext))
+            {
+                throw new InvalidOperationException("Discount is already assigned to the company");
+            }
+
             
-            if (discount.Companies != null)
+            await VoucherContext.SaveChangesAsync();
+            await VoucherContext.CompanyPortfolios.AddAsync(new CompanyPortfolio
             {
-                if (discount.Companies.Contains(company))
-                {
-                    throw new InvalidOperationException("Discount is already assigned to the company");
-                }
+                CompanyId = companyId,
+                DiscountId = discountId
+            });
 
-                if (company.Players == null)
-                {
-                    throw new InvalidOperationException("Discount belongs to the player that is not assigned to the company");
-
-                }
-                if (!company.Players.Contains(discount.Player))
-                {
-                    throw new InvalidOperationException("Discount belongs to the player that is not assigned to the company");
-
-                }
-                VoucherContext.Update(discount);
-                discount.Companies.Add(company);
-                await VoucherContext.SaveChangesAsync();
-            }
-            else
-            {
-                VoucherContext.Update(discount);
-                discount.Companies = new List<Company>();
-                discount.Companies.Add(company);
-                await VoucherContext.SaveChangesAsync();
-
-            }
         }
 
+        public async Task<IQueryable<Batch>?> GetAllBatches()
+        {
+            return await Task.Run(() => VoucherContext.Batches.Select(b=>b));
+        }
+
+        public async Task<long> OrderAmount(int? discountId, int? companyId, int numberOfCodes)
+        {
+            
+
+            var portfolio = await VoucherContext.CompanyPortfolios.Where(cp=>cp.DiscountId == discountId && cp.CompanyId == companyId).FirstOrDefaultAsync();
+            var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discount.DiscountTypeId);
+            portfolio.CheckForNull(nameof(portfolio));
+            discount.CheckForNull(nameof(discount));
+
+            if (numberOfCodes == null || numberOfCodes == 0)
+            {
+                return 0;
+            }
+
+            if (discount.FinalPrice == null || discount.FinalPrice == 0)
+            {
+                return 0;
+            }
+            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            {
+                throw new InvalidOperationException("Promotional codes cannot be purchased");
+            }
+
+            var amount = (long)discount.FinalPrice * numberOfCodes;
+            return amount;
+        }
+
+        public async Task ReserveCodes(int? discountId, int? companyId, int userId, int numberOfCodes)
+        {
+            var portfolio = await VoucherContext.CompanyPortfolios.Where(cp => cp.DiscountId == discountId && cp.CompanyId == companyId).FirstOrDefaultAsync();
+            portfolio.CheckForNull(nameof(portfolio));
+
+            var codes = await portfolio.ChooseAssignedDiscountCodes(numberOfCodes, VoucherContext);
+            await codes.AssignCodesToUserTemporary(userId, VoucherContext);
+
+
+        }
 
     }
 }

@@ -61,10 +61,14 @@ namespace MobilityManagerApi.Controllers
 
             try
             {
-                var player = await _unitOfWork.Player.Find(p => p.Id == body.PlayerId).Include(p=>p.DiscountsTypes).SingleOrDefaultAsync();
+                var player = await _unitOfWork.Player.Find(p => p.Id == body.PlayerId)
+                    .Include(p=>p.DiscountsTypes)
+                    .SingleOrDefaultAsync();
+
                 player.CheckForNull(nameof(player));
                 var discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
                 discountType.CheckForNull(nameof(discountType));
+
                 if (player.DiscountsTypes != null && !player.DiscountsTypes.Contains(discountType))
                 {
                     player.DiscountsTypes.Add(discountType);
@@ -104,7 +108,6 @@ namespace MobilityManagerApi.Controllers
             {
                 var discounts = await _unitOfWork.Discount.GetAllDiscountsForPlayer(playerId);
                 response.Discounts = _mapper.ProjectTo<DiscountBodyDto>(discounts);
-                discounts.CheckQueryForNull();
                 response.Message = "Done";
                 response.StatusCode = StatusCodes.Status200OK;
                 return Ok(response);
@@ -185,7 +188,8 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UploadCsv([FromQuery] int discountId)
+        public async Task<IActionResult> UploadCsv([FromQuery] int playerId, [FromQuery] double? purchasePrice, 
+            [FromQuery] string? unityOfMeasurement, [FromQuery] double? value)
         {
             var response = new BaseResponse();
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -193,10 +197,10 @@ namespace MobilityManagerApi.Controllers
                 HasHeaderRecord = false
             };
 
-            var discount = await _unitOfWork.Discount.GetDiscountWithCodes(discountId);
-            if (discount == null)
+            var player = await _unitOfWork.Player.Find(p => p.Id == playerId).FirstOrDefaultAsync();
+            if (player == null)
             {
-                response.Message = "Discount not found";
+                response.Message = "Player not found";
                 return BadRequest(response);
             }
             
@@ -223,18 +227,23 @@ namespace MobilityManagerApi.Controllers
                     }
                     var batchId = await _unitOfWork.Discount.AddBatch(new Batch
                     {
-                        UploadTime = DateTimeOffset.Now.UtcDateTime
+                        UploadTime = DateTimeOffset.Now.UtcDateTime,
+                        PurchasePrice = purchasePrice,
+                        UnityOfMeasurement = unityOfMeasurement,
+                        Value = value
                     });
-                    codes.ForEach(c =>
+
+                    await Task.Run(
+                        ()=>codes.ForEach(c =>
                     {
-                        c.DiscountId = discount.Id;
                         c.BatchId = batchId;
-                    });
+                        c.PlayerId = playerId;
+                    }));
 
                     await _unitOfWork.DiscountCode.AddRangeAsync(codes);
                     await _unitOfWork.Complete();
 
-                    response.Message = "Discounts are assigned to the player!";
+                    response.Message = "Codes are assigned to the player!";
 
                     return Ok(response);
                 }
@@ -285,7 +294,7 @@ namespace MobilityManagerApi.Controllers
             var response = new BaseResponse();
             try
             {
-                await _unitOfWork.Discount.AssignDiscountCodesToCompany(body.DiscountId, body.CompanyId,
+                await _unitOfWork.Discount.AssignDiscountCodesToCompany(body.DiscountId, body.CompanyId, body.BatchId,
                     body.NumberOfDiscounts, body.Price);
                 await _unitOfWork.Complete();
                 response.Message = "Done";
@@ -318,13 +327,13 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetDiscountLimitResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetDiscountLimitResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetDiscountLimit([FromQuery] int discountId)
+        public async Task<IActionResult> GetBatchLimit([FromQuery] int batchId)
         {
             var response = new GetDiscountLimitResponseDto();
             response.Limit = new LimitBodyDto();
             try
             {
-                response.Limit.LimitValue = await _unitOfWork.Discount.GetDiscountLimit(discountId);
+                response.Limit.LimitValue = await _unitOfWork.Discount.GetBatchLimit(batchId);
                 response.Message = "Done";
                 response.StatusCode = StatusCodes.Status200OK;
                 return Ok(response);
@@ -375,6 +384,33 @@ namespace MobilityManagerApi.Controllers
             {
                 response.Message = $"Internal server error: {ex.Message}";
                 response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(GetAllBatchesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllBatchesResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllBatches()
+        {
+            var response = new GetAllBatchesResponseDto();
+            try
+            {
+                var batches = await _unitOfWork.Discount.GetAllBatches();
+                if (batches == null)
+                {
+                    response.Message = "No batches in database";
+                    return Ok(response);
+                }
+
+                response.Batches = _mapper.ProjectTo<BatchBodyDto>(batches);
+                response.Message = "Done";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
                 return BadRequest(response);
             }
         }

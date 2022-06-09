@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using AutoMapper;
+using DTOs.ResponseDtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Persistence;
 using Stripe;
-using Stripe.StripeModels;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -11,13 +14,29 @@ namespace MobilityManagerApi.Controllers
     public class StripeController : ControllerBase
     {
 
-        [HttpPost]
-        public async Task<IActionResult> Create(PaymentIntentCreateRequest request)
+        private readonly IMapper _mapper;
+        private readonly UnitOfWork _unitOfWork;
+
+        public StripeController(IMapper mapper, VoucherContext vContext)
         {
+            _mapper = mapper;
+            _unitOfWork = new UnitOfWork(vContext);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreatePaymentIntent([FromQuery] int discountId, [FromQuery] int companyId, [FromQuery] int numberOfCodes)
+        {
+            var response = new PaymentIntentResponseDto();
             var paymentIntentService = new PaymentIntentService();
+
+            var amount = await _unitOfWork.Discount.OrderAmount(discountId, companyId, numberOfCodes);
+
             var paymentIntent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions()
                 {
-                    Amount = 1,
+                    Amount = amount,
                     Currency = "eur",
                     AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions()
                     {
@@ -25,7 +44,10 @@ namespace MobilityManagerApi.Controllers
                     }
                 }
             );
-            return Ok(new {clientSecret = paymentIntent.ClientSecret});
+            response.Message = "Selected";
+            response.Message = paymentIntent.ClientSecret;
+
+            return Ok(response);
         }
         
     }

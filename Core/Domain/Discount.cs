@@ -7,13 +7,11 @@
         public string? UnityOfMeasurement { get; set; }
         public float? DiscountValue { get; set; }
         public int? InitialPrice { get; set; }
-        public int? FinalPrice { get; set; }
+        public long? FinalPrice { get; set; }
         public int? DiscountTypeId { get; set; }
         public int? PlayerId { get; set; }
-
-
-        public ICollection<CompanyDiscount>? CompanyDiscounts { get; set; }
-        public ICollection<DiscountCode>? DiscountCodes { get; set; }
+        
+        public ICollection<CompanyPortfolio>? CompanyPortfolios { get; set; }
         public ICollection<Company>? Companies { get; set; }
         public DiscountType? DiscountType { get; set; }
         public Player? Player { get; set; }

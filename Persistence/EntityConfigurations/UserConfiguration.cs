@@ -17,6 +17,8 @@ namespace Persistence.EntityConfigurations
             builder.HasIndex(c => c.IdentityUserId).IsUnique();
             builder.HasMany(u => u.Purchases)
                 .WithOne(p => p.User);
+            builder.HasMany(u => u.DiscountCodes)
+                .WithOne(dc => dc.User);
         }
     }
 }

@@ -38,27 +38,21 @@ namespace Persistence.EntityConfigurations
 
             builder.HasMany(c => c.Discounts)
                 .WithMany(d => d.Companies)
-                .UsingEntity<CompanyDiscount>(cd =>
+                .UsingEntity<CompanyPortfolio>(cd =>
                 {
                     cd.HasOne(cd => cd.Company)
-                        .WithMany(c => c.CompanyDiscounts)
+                        .WithMany(c => c.CompanyPortfolios)
                         .HasForeignKey(cd => cd.CompanyId);
 
                     cd.HasOne(cd => cd.Discount)
-                        .WithMany(d => d.CompanyDiscounts)
+                        .WithMany(d => d.CompanyPortfolios)
                         .HasForeignKey(cd => cd.DiscountId);
-
-                    cd.HasKey(c => new
+                    cd.HasAlternateKey(key=>new
                     {
-                        c.CompanyId,
-                        c.DiscountId
+                        key.CompanyId,
+                        key.DiscountId
                     });
                 });
-
-            builder.HasMany(c => c.Offers)
-                .WithOne(o => o.Company)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
         }
     }
 }

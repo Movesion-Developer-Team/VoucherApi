@@ -16,9 +16,7 @@ namespace Persistence.EntityConfigurations
                 });
             
 
-            builder.HasMany(d => d.DiscountCodes)
-                .WithOne(dc => dc.Discount);
-
+            
             builder.HasOne(d => d.Player)
                 .WithMany(p => p.Discounts)
                 .HasForeignKey(d=>d.PlayerId);
@@ -29,20 +27,20 @@ namespace Persistence.EntityConfigurations
 
             builder.HasMany(c => c.Companies)
                 .WithMany(d => d.Discounts)
-                .UsingEntity<CompanyDiscount>(cd =>
+                .UsingEntity<CompanyPortfolio>(cd =>
                 {
-                    cd.HasOne(cd => cd.Company)
-                        .WithMany(c => c.CompanyDiscounts)
+                    cd.HasOne(cd => cd.Company )
+                        .WithMany(c => c.CompanyPortfolios)
                         .HasForeignKey(cd => cd.CompanyId);
 
                     cd.HasOne(cd => cd.Discount)
-                        .WithMany(d => d.CompanyDiscounts)
+                        .WithMany(d => d.CompanyPortfolios)
                         .HasForeignKey(cd => cd.DiscountId);
 
-                    cd.HasKey(c => new
+                    cd.HasAlternateKey(key => new
                     {
-                        c.CompanyId,
-                        c.DiscountId
+                        key.CompanyId,
+                        key.DiscountId
                     });
                 });
 

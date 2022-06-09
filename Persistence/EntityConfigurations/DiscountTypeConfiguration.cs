@@ -27,7 +27,10 @@ namespace Persistence.EntityConfigurations
                         key.DiscountTypeId
                     });
                 });
-                
+
+            builder.HasMany(dt => dt.Batches)
+                .WithOne(b => b.DiscountType);
+
         }
     }
 }
