@@ -49,7 +49,17 @@ namespace MobilityManagerApi.Controllers
 
             return Ok(response);
         }
-        
+
+
+        //[Authorize]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult>AcceptOrDeclinePayment([FromQuery] )
+        //{
+            
+        //}
+
     }
 
 }

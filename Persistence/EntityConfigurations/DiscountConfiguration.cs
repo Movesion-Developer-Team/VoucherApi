@@ -44,6 +44,9 @@ namespace Persistence.EntityConfigurations
                     });
                 });
 
+            builder.HasMany(d => d.DiscountCodes)
+                .WithOne(dc => dc.Discount);
+
         }
     }
 }

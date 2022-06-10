@@ -14,6 +14,9 @@ namespace Persistence.EntityConfigurations
             builder.HasOne(b => b.DiscountType)
                 .WithMany(dt => dt.Batches)
                 .HasForeignKey(b => b.DiscountTypeId);
+            builder.HasOne(b => b.Player)
+                .WithMany(p => p.Batches)
+                .HasForeignKey(b => b.PlayerId);
         }
     }
 }

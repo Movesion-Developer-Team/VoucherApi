@@ -6,6 +6,5 @@
         public int? DiscountId { get; set; }
         public Company? Company { get; set; }
         public Discount? Discount { get; set; }
-        public ICollection<DiscountCode>? DiscountCodes { get; set; }
     }
 }

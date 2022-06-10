@@ -10,14 +10,7 @@ namespace Extensions
 {
     public static class CompanyExtensions
     {
-        public static bool HasFreeCodes(this CompanyPortfolio? portfolio, DbContext context)
-        {
-            portfolio.CheckForNull(nameof(portfolio));
-            return context
-                .Set<DiscountCode>()
-                .Where(dc => dc.CompanyPortfolioId == portfolio.Id)
-                .Select(dc=>dc.UsageLimit>0 && dc.IsAssignedToUser != true).Any();
-        }
+        
         public static async Task<IQueryable<Category>> GetCategories(this Company? company, DbContext context)
         {
             company.CheckForNull(nameof(company));

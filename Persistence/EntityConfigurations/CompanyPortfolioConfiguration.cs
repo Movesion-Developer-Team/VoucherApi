@@ -8,8 +8,7 @@ namespace Persistence.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<CompanyPortfolio> builder)
         {
-            builder.HasMany(cp => cp.DiscountCodes)
-                .WithOne(d => d.CompanyPortfolio);
+            
         }
     }
 }

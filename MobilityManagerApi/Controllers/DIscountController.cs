@@ -230,14 +230,14 @@ namespace MobilityManagerApi.Controllers
                         UploadTime = DateTimeOffset.Now.UtcDateTime,
                         PurchasePrice = purchasePrice,
                         UnityOfMeasurement = unityOfMeasurement,
-                        Value = value
+                        Value = value,
+                        PlayerId = player.Id
                     });
 
                     await Task.Run(
                         ()=>codes.ForEach(c =>
                     {
                         c.BatchId = batchId;
-                        c.PlayerId = playerId;
                     }));
 
                     await _unitOfWork.DiscountCode.AddRangeAsync(codes);
@@ -289,13 +289,13 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AssignDiscountCodesToCompany([FromBody] AssignDiscountCodesToCompanyBodyDto body)
+        public async Task<IActionResult> AssignDiscountCodesToDiscount([FromBody] AssignDiscountCodesToCompanyBodyDto body)
         {
             var response = new BaseResponse();
             try
             {
-                await _unitOfWork.Discount.AssignDiscountCodesToCompany(body.DiscountId, body.CompanyId, body.BatchId,
-                    body.NumberOfDiscounts, body.Price);
+                await _unitOfWork.Discount.AssignDiscountCodesToDiscount(body.DiscountId, body.BatchId,
+                    body.NumberOfDiscounts);
                 await _unitOfWork.Complete();
                 response.Message = "Done";
                 return Ok(response);

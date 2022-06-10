@@ -6,7 +6,7 @@ namespace Core.IRepositories
     {
         Task<DiscountType> FindDiscountType(int? discountTypeId);
         Task<IQueryable<DiscountType>> GetAllDiscountTypes();
-        Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int? batchId, int numberOfDiscounts, double price);
+        Task AssignDiscountCodesToDiscount(int? discountId, int? batchId, int numberOfDiscounts);
         Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId);
         Task<bool> CodesAreAlreadyInDb(List<DiscountCode> codes);
         Task<int?> GetBatchLimit(int discountId);

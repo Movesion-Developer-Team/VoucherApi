@@ -26,48 +26,24 @@ namespace Persistence.Repositories
             return discountType;
         }
 
-        public async Task AssignDiscountCodesToCompany(int? discountId, int? companyId, int? batchId, int numberOfDiscounts, double price)
+        public async Task AssignDiscountCodesToDiscount(int? discountId, int? batchId, int numberOfDiscounts)
         {
-            var company = await VoucherContext
-                .Companies
-                .FindAsync(companyId);
-            company.CheckForNull(nameof(company));
-
             var discount = await VoucherContext
                 .Discounts.Where(dc => dc.Id == discountId)
-                .Include(dc => dc.DiscountType)
-                .Include(d => d.Player)
                 .FirstOrDefaultAsync();
             discount.CheckForNull(nameof(discount));
 
             var batch = await VoucherContext.Batches.FindAsync(batchId);
-
-            var playerIsAssigned = await company.PlayerIsAssigned(discount.Player, VoucherContext);
-            var discountIsAssigned = await company.DiscountIsAssigned(discount, VoucherContext);
-            if (!playerIsAssigned)
-            {
-                throw new InvalidOperationException(
-                    "Player of selected discount is not assigned to the current company");
-            }
-
-            if (!discountIsAssigned)
-            {
-                throw new InvalidOperationException("Discount is not assigned to the company");
-            }
-
+            batch.CheckForNull(nameof(batch));
+            
             if (numberOfDiscounts == 0)
             {
                 throw new InvalidOperationException("Please provide a number higher than 0");
             }
 
-            var companyPortfolio = await Context.Set<CompanyPortfolio>()
-                .Where(cp => cp.CompanyId == companyId && cp.DiscountId == discountId)
-                .FirstOrDefaultAsync();
-
-
-
+            
             var quantity = Math.Abs((int)numberOfDiscounts);
-            var limit = await batch!.GetBatchLimit(VoucherContext);
+            var limit = await batch!.GetBatchFreeCodesLimit(VoucherContext);
             if (limit is 0)
             {
                 throw new InvalidOperationException("Batch is not available");
@@ -78,8 +54,8 @@ namespace Persistence.Repositories
             }
 
 
-            (await batch.ChooseCodes(numberOfDiscounts, VoucherContext))
-                .AssignToCompany(companyPortfolio, quantity, price, VoucherContext);
+            await (await batch.ChooseMonoUserCodesFromBatch(VoucherContext))
+                .AssignToDiscount(discount, quantity, VoucherContext);
         }
 
         public async Task<IQueryable<Discount>> GetAllDiscountsForPlayer(int playerId)
@@ -122,7 +98,7 @@ namespace Persistence.Repositories
 
             batch.CheckForNull(nameof(batch));
 
-            return await batch.GetBatchLimit(VoucherContext);
+            return await batch.GetBatchFreeCodesLimit(VoucherContext);
 
         }
 
@@ -211,13 +187,17 @@ namespace Persistence.Repositories
 
         public async Task ReserveCodes(int? discountId, int? companyId, int userId, int numberOfCodes)
         {
-            var portfolio = await VoucherContext.CompanyPortfolios.Where(cp => cp.DiscountId == discountId && cp.CompanyId == companyId).FirstOrDefaultAsync();
-            portfolio.CheckForNull(nameof(portfolio));
+            var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            discount.CheckForNull(nameof(discount));
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountId);
+            discountType.CheckForNull(nameof(discountType));
 
-            var codes = await portfolio.ChooseAssignedDiscountCodes(numberOfCodes, VoucherContext);
+            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            {
+                throw new InvalidOperationException("Promotion codes currently are not implemented into the reservation system");
+            }
+            var codes = await discount.ChooseAssignedMonoUserCodes(numberOfCodes, VoucherContext);
             await codes.AssignCodesToUserTemporary(userId, VoucherContext);
-
-
         }
 
     }

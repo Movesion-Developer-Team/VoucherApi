@@ -92,9 +92,10 @@ namespace Persistence.EntityConfigurations
                         key.DiscountTypeId
                     });
                 });
+            builder.HasMany(p => p.Batches)
+                .WithOne(b => b.Player);
 
-            builder.HasMany(p => p.DiscountCodes)
-                .WithOne(dc => dc.Player);
+
 
         }
     }
