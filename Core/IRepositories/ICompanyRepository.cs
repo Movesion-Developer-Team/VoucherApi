@@ -14,5 +14,6 @@ namespace Core.IRepositories
         Task<IQueryable<Player>> GetAllPlayersForOneCompany(int companyId);
         Task<bool> AcceptRequest(int requestId, int userId);
         Task DeclineRequest(int requestId);
+        Task<IQueryable<Player?>?> SearchForPlayerOfCompany(string? playerName, int companyId);
     }
 }

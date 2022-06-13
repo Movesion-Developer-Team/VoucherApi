@@ -22,7 +22,7 @@ namespace Persistence
         public DbSet<User> Users { get; set; }
         public DbSet<InvitationCode> InvitationCodes { get; set; }
         public DbSet<JoinRequest> JoinRequests { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<BaseImage> Images { get; set; }
         public DbSet<DiscountType> DiscountTypes { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<DiscountCode> DiscountCodes { get; set; }
@@ -42,7 +42,7 @@ namespace Persistence
             new UserConfiguration().Configure(modelBuilder.Entity<User>());
             new InvitationCodeConfiguration().Configure(modelBuilder.Entity<InvitationCode>());
             new JoinRequestConfiguration().Configure(modelBuilder.Entity<JoinRequest>());
-            new ImageConfiguration().Configure(modelBuilder.Entity<Image>());
+            new ImageConfiguration().Configure(modelBuilder.Entity<BaseImage>());
             new DiscountTypeConfiguration().Configure(modelBuilder.Entity<DiscountType>());
             new PurchaseConfiguration().Configure(modelBuilder.Entity<Purchase>());
             new DiscountCodeConfiguration().Configure(modelBuilder.Entity<DiscountCode>());

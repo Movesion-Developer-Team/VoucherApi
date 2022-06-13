@@ -135,6 +135,17 @@ namespace Persistence.Repositories
             await VoucherContext.SaveChangesAsync();
         }
 
-        
+        public async Task<IQueryable<Player?>?> SearchForPlayerOfCompany(string? playerName, int companyId)
+        {
+            if (playerName != null)
+            {
+                var players = await GetAllPlayersForOneCompany(companyId);
+                return players.Where(p => p.ShortName.Contains(playerName, StringComparison.InvariantCultureIgnoreCase));
+            }
+            else
+            {
+                return await GetAllPlayersForOneCompany(companyId);
+            }
+        }
     }
 }

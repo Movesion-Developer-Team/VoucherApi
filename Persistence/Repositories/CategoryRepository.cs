@@ -61,7 +61,7 @@ namespace Persistence.Repositories
             return await company.GetPlayersOfCategory(VoucherContext, category);
         }
 
-        public async Task AddImageToCategory(Image image, int? categoryId)
+        public async Task AddImageToCategory(BaseImage baseImage, int? categoryId)
         {
             var category = await VoucherContext.Categories.FindAsync(categoryId);
             category.CheckForNull(nameof(category));
@@ -69,8 +69,8 @@ namespace Persistence.Repositories
             {
                 await category.DeleteImage(VoucherContext);
             }
-            image.CategoryId = categoryId;
-            await VoucherContext.Images.AddAsync(image);
+            baseImage.CategoryId = categoryId;
+            await VoucherContext.Images.AddAsync(baseImage);
             await VoucherContext.SaveChangesAsync();
         }
     }

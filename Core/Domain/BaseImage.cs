@@ -1,6 +1,6 @@
 ﻿namespace Core.Domain
 {
-    public class Image : EntityBase
+    public class BaseImage : EntityBase
     {
         public byte[]? Content { get; set; }
         public int? CategoryId { get; set; }

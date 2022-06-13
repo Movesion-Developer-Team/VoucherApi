@@ -1,8 +1,13 @@
-﻿using Core.Domain;
+﻿using System.Globalization;
+using System.Text;
+using Core.Domain;
 using Core.IRepositories;
+using CsvHelper;
+using CsvHelper.Configuration;
 using Enum;
 using Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders.Composite;
 
 namespace Persistence.Repositories
 {
@@ -199,6 +204,8 @@ namespace Persistence.Repositories
             var codes = await discount.ChooseAssignedMonoUserCodes(numberOfCodes, VoucherContext);
             await codes.AssignCodesToUserTemporary(userId, VoucherContext);
         }
+
+        
 
     }
 }

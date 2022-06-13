@@ -14,6 +14,7 @@ namespace Core.IRepositories
         Task<int?> AddAsync(TEntity entity);
         Task<bool> AddRangeAsync(IEnumerable<TEntity> entities);
         Task<bool> RemoveAsync(int id);
+        Task<bool> AnyAsync();
         Task<bool> ExistsAsync(int id);
     }
 }

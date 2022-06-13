@@ -8,6 +8,8 @@ namespace Persistence.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Discount> builder)
         {
+
+            
             builder.OwnsOne(d => d.ValidityPeriod,
                 vp =>
                 {
@@ -15,7 +17,6 @@ namespace Persistence.EntityConfigurations
                     vp.Property(vp => vp.EndDate).IsRequired();
                 });
             
-
             
             builder.HasOne(d => d.Player)
                 .WithMany(p => p.Discounts)

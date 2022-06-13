@@ -362,7 +362,7 @@ namespace MobilityManagerApi.Controllers
                     return BadRequest(response);
                 }
 
-                var image = new Image
+                var image = new BaseImage
                 {
                     Content = memoryStream.ToArray()
                 };

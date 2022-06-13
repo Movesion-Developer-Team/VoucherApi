@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using AutoMapper;
 using Core.Domain;
 using CsvHelper;
+using CsvHelper.Configuration;
 using DTOs.BodyDtos;
 using DTOs.MethodDto;
 using Enum;
@@ -251,6 +254,19 @@ namespace Extensions
             });
             await context.SaveChangesAsync();
         }
+
+        public static async Task<List<DiscountCode>> UploadCsvFromPathToCodes(this string path, IMapper mapper)
+        {
+            using var streamReader = new StreamReader(path, Encoding.UTF8);
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = false
+            };
+
+            var csvReader = new CsvReader(streamReader, config);
+            return await csvReader.WriteToDiscountCodes(mapper);
+        }
+
 
     }
 }

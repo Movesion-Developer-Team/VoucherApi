@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using UserStoreLogic;
+using System.Drawing;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -145,13 +146,13 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllPlayersResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllPlayersResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] bool withImage = true)
         {
             var response = new GetAllPlayersResponseDto();
 
             try
             {
-                var players = await _unitOfWork.Player.GetAll();
+                var players = await _unitOfWork.Player.GetAll(withImage);
                 response.Players = players.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(_mapper.ConfigurationProvider);
                 return Ok(response);
             }
@@ -172,8 +173,9 @@ namespace MobilityManagerApi.Controllers
 
             try
             {
-                var player = _unitOfWork.Player.Find(c => c.Id == id);
-                response.Player = await player.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(_mapper.ConfigurationProvider).FirstAsync();
+                var player = await _unitOfWork.Player.Find(c => c.Id == id).Include(p=>p.Image).FirstAsync();
+                response.Player = _mapper.Map<PlayerWithCategoriesAndDiscountTypesBodyDto>(player);
+
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -192,8 +194,8 @@ namespace MobilityManagerApi.Controllers
             var response = new PlayerFindByNameResponseDto();
             try
             {
-                var players = _unitOfWork.Player.Find(c => c.ShortName == shortName);
-                response.Players = await Task.Run(() => players.ProjectTo<PlayerWithCategoriesAndDiscountTypesBodyDto>(_mapper.ConfigurationProvider));
+                var players = _unitOfWork.Player.Find(c => c.ShortName == shortName).Include(p=>p.Image);
+                response.Players = await Task.Run(() => players.ProjectTo<PlayerOnlyBodyDto>(_mapper.ConfigurationProvider));
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -399,6 +401,62 @@ namespace MobilityManagerApi.Controllers
             catch (Exception ex)
             {
                 response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddImageToPlayer([FromQuery] int idPlayer)
+        {
+
+            var response = new BaseResponse();
+            var permittedExtensions = new string[]
+            {
+                ".jpeg",
+                ".png",
+                ".jpg"
+            };
+            try
+            {
+                await using var memoryStream = new MemoryStream();
+                Request.EnableBuffering();
+                var formCollection = await Request.ReadFormAsync();
+                var fileName = formCollection.Files.First().FileName;
+                var ext = Path.GetExtension(fileName).ToLowerInvariant();
+                if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
+                {
+                    response.Message = "Current file extension is not valid. Please upload only jpg, jpeg or png files.";
+                    return BadRequest(response);
+                }
+                await formCollection.Files.First().CopyToAsync(memoryStream);
+
+                if (memoryStream.Length > 3000000)
+                {
+                    response.Message = "File Size should not exceed 3 mb";
+                    return BadRequest(response);
+                }
+
+                if (memoryStream.Length == 0)
+                {
+                    response.Message = "Image is empty";
+                    return BadRequest(response);
+                }
+
+                var image = new BaseImage
+                {
+                    Content = memoryStream.ToArray()
+                };
+                await _unitOfWork.Player.AddImageToPlayer(image, idPlayer);
+                await _unitOfWork.Complete();
+                response.Message = "Done";
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
                 return BadRequest(response);
             }
         }

@@ -189,7 +189,7 @@ namespace MobilityManagerApi.Controllers
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UploadCsv([FromQuery] int playerId, [FromQuery] double? purchasePrice, 
-            [FromQuery] string? unityOfMeasurement, [FromQuery] double? value)
+            [FromQuery] UnitiesOfMeasurement? unityOfMeasurement, [FromQuery] double? value)
         {
             var response = new BaseResponse();
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)

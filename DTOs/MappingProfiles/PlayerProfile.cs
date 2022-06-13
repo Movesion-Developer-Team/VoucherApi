@@ -2,6 +2,7 @@
 using AutoMapper;
 using Core.Domain;
 using DTOs.BodyDtos;
+using DTOs.Resolvers;
 
 namespace DTOs.MappingProfiles
 {
@@ -45,6 +46,7 @@ namespace DTOs.MappingProfiles
                 .ForMember(pc => pc.Categories, opt => opt.MapFrom(p => p.Categories));
 
         }
+
 
 
        

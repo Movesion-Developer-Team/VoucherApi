@@ -14,6 +14,18 @@ namespace Persistence.Repositories
         {
         }
 
+        public async Task<IQueryable<Player>> GetAll(bool withImage)
+        {
+            if (withImage)
+            {
+                return await Task.Run(() => VoucherContext.Players.Select(p => p).Include(p => p.Image).AsQueryable());
+            }
+            else
+            {
+                return await GetAll();
+            }
+        }
+
         public async Task AssignCategoryToPlayer(int playerId, int categoryId)
         {
             var player = await VoucherContext.Players
@@ -141,6 +153,22 @@ namespace Persistence.Repositories
             return player.DiscountsTypes.AsQueryable();
 
         }
+
+        public async Task AddImageToPlayer(BaseImage baseImage, int? playerId)
+        {
+            var player = await VoucherContext.Players.FindAsync(playerId);
+            player.CheckForNull(nameof(player));
+            if (await player.HasImage(VoucherContext))
+            {
+                await player.DeleteImage(VoucherContext);
+            }
+            baseImage.PlayerId = playerId;
+            await VoucherContext.Images.AddAsync(baseImage);
+            await VoucherContext.SaveChangesAsync();
+            
+        }
+
+
 
     }
 }
