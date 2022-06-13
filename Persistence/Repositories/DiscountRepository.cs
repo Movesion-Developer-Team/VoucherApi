@@ -7,6 +7,7 @@ using CsvHelper.Configuration;
 using Enum;
 using Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.FileProviders.Composite;
 
 namespace Persistence.Repositories
@@ -97,6 +98,13 @@ namespace Persistence.Repositories
             return Task.Run(() => codes.CheckIfCodesAlreadyInDatabase(codesInDb));
         }
 
+        public async Task<int?> GetDiscountLimit(int discountId)
+        {
+            var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            discount.CheckForNull(nameof(discount));
+            return await discount.GetDiscountLimit(VoucherContext);
+        }
+
         public async Task<int?> GetBatchLimit(int batchId)
         {
             var batch = await VoucherContext.Batches.FindAsync(batchId);
@@ -162,17 +170,15 @@ namespace Persistence.Repositories
             return await Task.Run(() => VoucherContext.Batches.Select(b=>b));
         }
 
-        public async Task<long> OrderAmount(int? discountId, int? companyId, int numberOfCodes)
+        public async Task<long> OrderAmount(int discountId, int numberOfCodes)
         {
             
-
-            var portfolio = await VoucherContext.CompanyPortfolios.Where(cp=>cp.DiscountId == discountId && cp.CompanyId == companyId).FirstOrDefaultAsync();
+            
             var discount = await VoucherContext.Discounts.FindAsync(discountId);
             var discountType = await VoucherContext.DiscountTypes.FindAsync(discount.DiscountTypeId);
-            portfolio.CheckForNull(nameof(portfolio));
             discount.CheckForNull(nameof(discount));
 
-            if (numberOfCodes == null || numberOfCodes == 0)
+            if (numberOfCodes == 0)
             {
                 return 0;
             }
@@ -190,7 +196,7 @@ namespace Persistence.Repositories
             return amount;
         }
 
-        public async Task ReserveCodes(int? discountId, int? companyId, int userId, int numberOfCodes)
+        public async Task ReserveCodes(int? discountId, int userId, int numberOfCodes)
         {
             var discount = await VoucherContext.Discounts.FindAsync(discountId);
             discount.CheckForNull(nameof(discount));

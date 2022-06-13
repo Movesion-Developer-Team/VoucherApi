@@ -30,12 +30,12 @@ namespace MobilityManagerApi.Controllers
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
 
-        public async Task<IActionResult> ReserveCodes([FromQuery] int companyId, [FromQuery] int discountId, [FromQuery] int userId,
+        public async Task<IActionResult> ReserveCodes([FromQuery] int discountId, [FromQuery] int userId,
             [FromQuery] int numberOfDiscounts)
         {
             var response = new BaseResponse();
 
-            await _unitOfWork.Discount.ReserveCodes(discountId, companyId, userId, numberOfDiscounts);
+            await _unitOfWork.Discount.ReserveCodes(discountId, userId, numberOfDiscounts);
             await _unitOfWork.Complete();
 
             response.Message = "Reserved";

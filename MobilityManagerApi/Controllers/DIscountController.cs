@@ -13,6 +13,7 @@ using Persistence;
 using UserStoreLogic;
 using Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Stripe.Checkout;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -325,12 +326,14 @@ namespace MobilityManagerApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(typeof(GetDiscountLimitResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GetDiscountLimitResponseDto), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetBatchLimit([FromQuery] int batchId)
         {
-            var response = new GetDiscountLimitResponseDto();
-            response.Limit = new LimitBodyDto();
+            var response = new GetLimitResponseDto
+            {
+                Limit = new LimitBodyDto()
+            };
             try
             {
                 response.Limit.LimitValue = await _unitOfWork.Discount.GetBatchLimit(batchId);
@@ -414,6 +417,40 @@ namespace MobilityManagerApi.Controllers
                 return BadRequest(response);
             }
         }
+
+        [AuthorizeRoles(Role.SuperAdmin)]
+        [HttpPost]
+        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetDiscountLimit([FromQuery] int discountId)
+        {
+            var response = new GetLimitResponseDto
+            {
+                
+                Limit = new LimitBodyDto()
+            };
+            try
+            {
+                response.Limit.LimitValue = await _unitOfWork.Discount.GetDiscountLimit(discountId);
+                response.Message = "Done";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        
 
 
     }

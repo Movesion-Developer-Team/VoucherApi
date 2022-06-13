@@ -14,8 +14,10 @@ namespace Core.IRepositories
         Task<IEnumerable<Discount>?> GetAllGetAllDiscountsForPlayerOfCompany(int companyId, int playerId);
         Task AssignDiscountToCompany(int? discountId, int? companyId);
         Task<IQueryable<Batch>?> GetAllBatches();
-        Task<long> OrderAmount(int? discountId, int? companyId, int numberOfCodes);
-        Task ReserveCodes(int? discountId, int? companyId, int userId, int numberOfCodes);
+        Task<long> OrderAmount(int discountId, int numberOfCodes);
+        Task ReserveCodes(int? discountId, int userId, int numberOfCodes);
+
+        Task<int?> GetDiscountLimit(int discountId);
 
     }
 

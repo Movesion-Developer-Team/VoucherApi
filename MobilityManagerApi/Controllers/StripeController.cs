@@ -27,12 +27,12 @@ namespace MobilityManagerApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreatePaymentIntent([FromQuery] int discountId, [FromQuery] int companyId, [FromQuery] int numberOfCodes)
+        public async Task<IActionResult> CreatePaymentIntent([FromQuery] int discountId, [FromQuery] int numberOfCodes)
         {
             var response = new PaymentIntentResponseDto();
             var paymentIntentService = new PaymentIntentService();
 
-            var amount = await _unitOfWork.Discount.OrderAmount(discountId, companyId, numberOfCodes);
+            var amount = await _unitOfWork.Discount.OrderAmount(discountId, numberOfCodes);
 
             var paymentIntent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions()
                 {
@@ -45,19 +45,26 @@ namespace MobilityManagerApi.Controllers
                 }
             );
             response.Message = "Selected";
-            response.Message = paymentIntent.ClientSecret;
-
+            response.ClientSecret = paymentIntent.ClientSecret;
             return Ok(response);
         }
 
+        //[Authorize]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId, )
+        //{
 
+        //}
+             
         //[Authorize]
         //[HttpPost]
         //[ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]
         //[ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
         //public async Task<IActionResult>AcceptOrDeclinePayment([FromQuery] )
         //{
-            
+
         //}
 
     }

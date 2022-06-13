@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using BenefitsApi.Controllers;
 using Core.Domain;
 using DTOs.BodyDtos;
 using DTOs.MethodDto;
@@ -21,21 +22,13 @@ namespace MobilityManagerApi.Controllers
     [ApiController]
     [Route("[controller]/[action]/")]
     [EnableCors]
-    public class CompanyController : ControllerBase, IControllerBaseActions
+    public class CompanyController : PadreController, IControllerBaseActions
     {
 
-        private readonly IMapper _mapper;
-        private readonly UnitOfWork _unitOfWork;
+        
 
-
-
-
-        public CompanyController(IMapper mapper, VoucherContext vContext)
+        public CompanyController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
         {
-
-                _mapper = mapper;
-                _unitOfWork = new UnitOfWork(vContext);
-
         }
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
@@ -460,13 +453,19 @@ namespace MobilityManagerApi.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SearchForPlayerOfCompany([FromQuery] string? playerName, [FromQuery] int companyId)
+        public async Task<IActionResult> SearchForPlayerOfCompany([FromQuery] string? playerName)
         {
             var response = new GetAllPlayersForCurrentCompanyResponseDto();
-
+            var userInfo = await GetCurrentUserInfo();
+            var companyId = userInfo.CompanyId;
+            if (companyId == null)
+            {
+                response.Message = "Go and check yourself buddy, you are not belonging to any company";
+                return BadRequest(response);
+            }
             try
             {
-                var players = await _unitOfWork.Company.SearchForPlayerOfCompany(playerName, companyId);
+                var players = await _unitOfWork.Company.SearchForPlayerOfCompany(playerName, (int)companyId);
                 response.Players = _mapper.ProjectTo<PlayerOnlyBodyDto>(players);
                 response.Message = "Done";
                 response.StatusCode = StatusCodes.Status200OK;

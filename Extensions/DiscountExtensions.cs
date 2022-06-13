@@ -225,7 +225,8 @@ namespace Extensions
                              && dc.TemporaryReserved == false
                              && dc.IsAssignedToUser == false
                              && dc.UsageLimit > 0)
-                .Select(dc=>dc);
+                .Select(dc=>dc)
+                .Take(quantity);
 
             return assignedCodes;
 

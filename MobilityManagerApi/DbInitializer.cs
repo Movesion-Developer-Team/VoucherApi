@@ -73,7 +73,7 @@ namespace MobilityManagerApi
                 }
             }
 
-            if (await _unitOfWork.Company.AnyAsync())
+            if (!await _unitOfWork.Company.AnyAsync())
             {
                 elefanteId = await _unitOfWork.Company.AddAsync(new Company
                 {
