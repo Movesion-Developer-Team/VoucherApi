@@ -12,7 +12,7 @@ namespace DTOs.BodyDtos
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
         public string? Color { get; set; }
-        public BaseImage? Image { get; set; }
+        public BaseImageBodyDto? Image { get; set; }
         
     }
 }
