@@ -49,15 +49,8 @@ namespace MobilityManagerApi.Controllers
             return Ok(response);
         }
 
-        //[Authorize]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId, )
-        //{
+        
 
-        //}
-             
         //[Authorize]
         //[HttpPost]
         //[ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]

@@ -41,5 +41,43 @@ namespace MobilityManagerApi.Controllers
             response.Message = "Reserved";
             return Ok(response);
         }
+
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId)
+        {
+            var response = new GetLimitResponseDto
+            {
+                Limit = new()
+            };
+            try
+            {
+                response.Limit.LimitValue = await _unitOfWork.Discount.GetDiscountLimit(discountId);
+                response.Message = "Current limit is provided";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+        }
+
     }
 }

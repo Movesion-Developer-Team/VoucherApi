@@ -16,7 +16,6 @@ namespace Core.IRepositories
         Task<IQueryable<Batch>?> GetAllBatches();
         Task<long> OrderAmount(int discountId, int numberOfCodes);
         Task ReserveCodes(int? discountId, int userId, int numberOfCodes);
-
         Task<int?> GetDiscountLimit(int discountId);
 
     }

@@ -47,6 +47,7 @@ namespace Extensions
             var companyWIthPlayers = await context.Set<Company>()
                 .Where(c => c.Id == company.Id)
                 .Include(c => c.Players)
+                .ThenInclude(p=>p.Image)
                 .SingleOrDefaultAsync();
             if (companyWIthPlayers == null)
             {
