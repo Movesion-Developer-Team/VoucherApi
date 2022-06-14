@@ -52,6 +52,7 @@ namespace BenefitsApi.Controllers
 
                 result.CompanyId = currentUser.CompanyId;
                 result.StatusCode = StatusCodes.Status200OK;
+                result.Id = currentUser.Id;
                 return result;
             }
 

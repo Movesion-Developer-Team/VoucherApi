@@ -13,6 +13,8 @@ using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using UserStoreLogic;
 using System.Drawing;
+using System.Net;
+using System.Security.Policy;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -175,7 +177,7 @@ namespace MobilityManagerApi.Controllers
             {
                 var player = await _unitOfWork.Player.Find(c => c.Id == id).Include(p=>p.Image).FirstAsync();
                 response.Player = _mapper.Map<PlayerWithCategoriesAndDiscountTypesBodyDto>(player);
-
+                
                 return Ok(response);
             }
             catch (NullReferenceException ex)
@@ -452,13 +454,50 @@ namespace MobilityManagerApi.Controllers
                 await _unitOfWork.Player.AddImageToPlayer(image, idPlayer);
                 await _unitOfWork.Complete();
                 response.Message = "Done";
-                return BadRequest(response);
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 response.Message = $"Internal server error: {ex.Message}";
                 return BadRequest(response);
             }
+        }
+
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetImageOfPlayer([FromQuery] int playerId)
+        {
+            var response = new BaseResponse();
+
+            try
+            {
+                var imageInBytes = await _unitOfWork.Player.GetImageOfPlayer(playerId);
+
+                return File(imageInBytes.Content, "image/jpeg");
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            
         }
 
     }

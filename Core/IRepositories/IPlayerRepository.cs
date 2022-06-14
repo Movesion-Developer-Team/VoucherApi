@@ -12,6 +12,8 @@ namespace Core.IRepositories
         Task AssignPlayerToCompany(int? companyId, int? playerId);
         Task AddImageToPlayer(BaseImage baseImage, int? playerId);
         Task<IQueryable<Player>> GetAll(bool withImage);
+        Task<BaseImage> GetImageOfPlayer(int playerId);
+
     }
 
 

@@ -11,7 +11,6 @@ namespace DTOs.BodyDtos
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
         public string? Color { get; set; }
-        public BaseImageBodyDto? Image { get; set; }
         public List<DiscountTypeBodyDto>? DiscountTypes { get; set; }
         public List<CategoryBodyDto>? Categories { get; set; }
     }

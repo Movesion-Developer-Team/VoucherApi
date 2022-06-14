@@ -2,6 +2,7 @@
 using AutoMapper;
 using Core.Domain;
 using DTOs.BodyDtos;
+using DTOs.Resolvers;
 
 namespace DTOs.MappingProfiles
 {

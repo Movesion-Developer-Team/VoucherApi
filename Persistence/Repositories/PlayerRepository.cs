@@ -168,7 +168,17 @@ namespace Persistence.Repositories
             
         }
 
+        public async Task<BaseImage> GetImageOfPlayer(int playerId)
+        {
+            var player = await VoucherContext.Players.Where(p=>p.Id == playerId).Include(p=>p.Image).FirstOrDefaultAsync();
+            player.CheckForNull(nameof(player));
+            if (player.Image == null)
+            {
+                throw new InvalidOperationException("Player does not have image");
+            }
 
+            return player.Image;
+        }
 
     }
 }

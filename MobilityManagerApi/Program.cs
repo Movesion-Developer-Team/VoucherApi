@@ -23,7 +23,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 // Add services to the container.
-
+StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("StripeKey");
 builder.Services.AddControllers().AddApplicationPart(typeof(AuthController).Assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

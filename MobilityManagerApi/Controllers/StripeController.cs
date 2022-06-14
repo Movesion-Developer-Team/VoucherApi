@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BenefitsApi.Controllers;
 using DTOs.ResponseDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -11,16 +12,14 @@ namespace MobilityManagerApi.Controllers
     [ApiController]
     [Route("[controller]/[action]/")]
     [EnableCors]
-    public class StripeController : ControllerBase
+    public class StripeController : PadreController
     {
 
-        private readonly IMapper _mapper;
-        private readonly UnitOfWork _unitOfWork;
+        
 
-        public StripeController(IMapper mapper, VoucherContext vContext)
+        public StripeController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
         {
-            _mapper = mapper;
-            _unitOfWork = new UnitOfWork(vContext);
+            
         }
 
         [Authorize]
@@ -29,12 +28,15 @@ namespace MobilityManagerApi.Controllers
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePaymentIntent([FromQuery] int discountId, [FromQuery] int numberOfCodes)
         {
+            var user = await GetCurrentUserInfo();
             var response = new PaymentIntentResponseDto();
             var paymentIntentService = new PaymentIntentService();
+            await _unitOfWork.Discount.ReserveCodes(discountId, (int) user.Id, numberOfCodes);
+            await _unitOfWork.Complete();
 
             var amount = await _unitOfWork.Discount.OrderAmount(discountId, numberOfCodes);
 
-            var paymentIntent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions()
+            var paymentIntent = await paymentIntentService.CreateAsync(new()
                 {
                     Amount = amount,
                     Currency = "eur",
@@ -42,6 +44,7 @@ namespace MobilityManagerApi.Controllers
                     {
                         Enabled = true
                     }
+                    
                 }
             );
             response.Message = "Selected";

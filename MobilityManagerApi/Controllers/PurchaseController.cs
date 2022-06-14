@@ -44,18 +44,15 @@ namespace MobilityManagerApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(GetLimitResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId)
+        [ProducesResponseType(typeof(GetTotalAmountResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetTotalAmountResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId, [FromQuery] int quantity)
         {
-            var response = new GetLimitResponseDto
-            {
-                Limit = new()
-            };
+            var response = new GetTotalAmountResponseDto();
             try
             {
-                response.Limit.LimitValue = await _unitOfWork.Discount.GetDiscountLimit(discountId);
-                response.Message = "Current limit is provided";
+                response.TotalAmount = await _unitOfWork.Discount.OrderAmount(discountId, quantity);
+                response.Message = "Total amount is provided";
                 response.StatusCode = StatusCodes.Status200OK;
                 return Ok(response);
             }

@@ -1,15 +1,16 @@
-﻿using AutoMapper;
+﻿using System.Drawing;
+using AutoMapper;
 using Core.Domain;
 using DTOs.BodyDtos;
 
 namespace DTOs.Resolvers
 {
-    public class ImageResolver : IMemberValueResolver<Player, PlayerOnlyBodyDto, object, object?>
+    public class ImageResolver : IMemberValueResolver<BaseImage, BaseImageBodyDto, byte[], Image?>
     {
-        public object Resolve(Player source, PlayerOnlyBodyDto destination, object sourceMember, object destMember, ResolutionContext context)
+        public Image Resolve(BaseImage source, BaseImageBodyDto destination, byte[] sourceMember, Image? destMember, ResolutionContext context)
         {
-            var srcMember = sourceMember as BaseImage;
-            destMember = System.Drawing.Image.FromStream(new MemoryStream(srcMember.Content));
+            
+            destMember = Image.FromStream(new MemoryStream(sourceMember));
 
             return destMember;
         }
