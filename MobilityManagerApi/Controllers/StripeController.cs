@@ -43,10 +43,14 @@ namespace MobilityManagerApi.Controllers
                     AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions()
                     {
                         Enabled = true
+                    },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        {"CodiceFiscale",""}
                     }
-                    
                 }
             );
+            
             response.Message = "Selected";
             response.ClientSecret = paymentIntent.ClientSecret;
             return Ok(response);

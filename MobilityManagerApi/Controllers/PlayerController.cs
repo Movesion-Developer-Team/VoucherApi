@@ -167,17 +167,20 @@ namespace MobilityManagerApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(typeof(PlayerMainResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(PlayerMainResponseDto), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(FindPlayerByIdResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(FindPlayerByIdResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> FindById(int id)
         {
-            var response = new PlayerMainResponseDto();
-
+            var response = new FindPlayerByIdResponseDto();
+            
             try
             {
                 var player = await _unitOfWork.Player.Find(c => c.Id == id).Include(p=>p.Image).FirstAsync();
-                response.Player = _mapper.Map<PlayerWithCategoriesAndDiscountTypesBodyDto>(player);
-                
+                response.Players = new List<PlayerWithCategoriesAndDiscountTypesBodyDto>()
+                {
+                    _mapper.Map<PlayerWithCategoriesAndDiscountTypesBodyDto>(player)
+                };
+                    
                 return Ok(response);
             }
             catch (NullReferenceException ex)
