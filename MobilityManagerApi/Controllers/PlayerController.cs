@@ -468,7 +468,7 @@ namespace MobilityManagerApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetImageOfPlayer([FromQuery] int playerId)
         {
@@ -477,8 +477,8 @@ namespace MobilityManagerApi.Controllers
             try
             {
                 var imageInBytes = await _unitOfWork.Player.GetImageOfPlayer(playerId);
-
-                return File(imageInBytes.Content, "image/jpeg");
+                var player = await _unitOfWork.Player.Find(p => p.Id == playerId).FirstOrDefaultAsync();
+                return File(imageInBytes.Content, "image/jpeg", fileDownloadName:$"/{player.ShortName}.jpg");
             }
             catch (ArgumentNullException ex)
             {

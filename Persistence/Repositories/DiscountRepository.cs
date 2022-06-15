@@ -175,6 +175,7 @@ namespace Persistence.Repositories
             
             
             var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            discount.CheckForNull(nameof(discount));
             var discountType = await VoucherContext.DiscountTypes.FindAsync(discount.DiscountTypeId);
             discount.CheckForNull(nameof(discount));
 
