@@ -23,7 +23,7 @@ namespace MobilityManagerApi.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePaymentIntent([FromQuery] int discountId, [FromQuery] int numberOfCodes)
@@ -38,7 +38,7 @@ namespace MobilityManagerApi.Controllers
 
             var paymentIntent = await paymentIntentService.CreateAsync(new()
                 {
-                    Amount = amount,
+                    Amount = amount*100,
                     Currency = "eur",
                     AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions()
                     {

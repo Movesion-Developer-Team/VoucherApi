@@ -1,5 +1,6 @@
 ﻿
 
+using System.Data.Common;
 using System.Security.Principal;
 using Core.Domain;
 using Core.IRepositories;
@@ -11,7 +12,6 @@ namespace Persistence
 {
     public class VoucherContext : DbContext
     {
-        
         public DbSet<Company> Companies { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Discount> Discounts { get; set; }
@@ -28,7 +28,12 @@ namespace Persistence
         public DbSet<DiscountCode> DiscountCodes { get; set; }
         public DbSet<Batch> Batches { get; set; }
         public DbSet<CompanyPortfolio> CompanyPortfolios { get; set; }
-        public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
+        public DbSet<SystemUpdate> SystemUpdates { get; set; }
+
+        public VoucherContext(DbContextOptions<VoucherContext> options) : base(options)
+        {
+            
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +53,7 @@ namespace Persistence
             new DiscountCodeConfiguration().Configure(modelBuilder.Entity<DiscountCode>());
             new BatchConfiguration().Configure(modelBuilder.Entity<Batch>());
             new CompanyPortfolioConfiguration().Configure(modelBuilder.Entity<CompanyPortfolio>());
+            new SystemUpdateConfiguration().Configure(modelBuilder.Entity<SystemUpdate>());
         }
 
     }

@@ -1,5 +1,8 @@
-﻿using Core;
+﻿using System.Runtime.CompilerServices;
+using Core;
+using Core.Domain;
 using Core.IRepositories;
+using Microsoft.EntityFrameworkCore;
 using Persistence.Repositories;
 
 namespace Persistence
@@ -19,6 +22,7 @@ namespace Persistence
         public IInvitationCodeRepository InvitationCode { get; }
         public IPurchaseRepository Purchase { get; }
         public IDiscountTypeRepository DiscountType { get; }
+        public ISystemUpdateRepository SystemUpdate { get; }
 
         private readonly VoucherContext _voucherContext;
 
@@ -37,6 +41,36 @@ namespace Persistence
             InvitationCode  = new InvitationCodeRepository(voucherContext);
             Purchase = new PurchaseRepository(voucherContext);
             DiscountType = new DiscountTypeRepository(voucherContext);
+            SystemUpdate = new SystemUpdateRepository(voucherContext);
+
+            var lastUpdate = SystemUpdate.GetLastUpdate();
+            var updateLimit = new TimeSpan(0, 30, 0);
+            var awaiter1 = Discount.GetNumberOfActiveReservations().GetAwaiter();
+            var activeReservationsCount = awaiter1.GetResult();
+
+            if (lastUpdate == null)
+            {
+
+                var awaiter2 = Discount.Refresh().GetAwaiter();
+                var result = awaiter2.GetResult() ?? 0;
+                voucherContext.SystemUpdates.Add(new SystemUpdate
+                {
+                    RefreshedCodesQuantity = result,
+                    ActiveReservations = activeReservationsCount
+                });
+            }
+
+            if (lastUpdate!= null && (lastUpdate.Value.UtcDateTime - DateTimeOffset.UtcNow.DateTime).TotalSeconds > updateLimit.TotalSeconds)
+            {
+                var awaiter = Discount.Refresh().GetAwaiter();
+                var result = awaiter.GetResult() ?? 0;
+                voucherContext.SystemUpdates.Add(new SystemUpdate
+                {
+                    RefreshedCodesQuantity = result,
+                    ActiveReservations = activeReservationsCount
+                });
+            }
+
         }
 
 

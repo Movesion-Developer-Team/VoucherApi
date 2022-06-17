@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Transactions;
 using Core.Domain;
 using Core.IRepositories;
 using CsvHelper;
@@ -15,6 +16,9 @@ namespace Persistence.Repositories
     public class DiscountRepository : GenericRepository<Discount>, IDiscountRepository
     {
         public VoucherContext VoucherContext => Context as VoucherContext;
+
+        private readonly int _reservationLimitInMinutes = 10;
+
         public DiscountRepository(DbContext context) : base(context)
         {
 
@@ -177,7 +181,7 @@ namespace Persistence.Repositories
             var discount = await VoucherContext.Discounts.FindAsync(discountId);
             discount.CheckForNull(nameof(discount));
             var discountType = await VoucherContext.DiscountTypes.FindAsync(discount.DiscountTypeId);
-            discount.CheckForNull(nameof(discount));
+            discountType.CheckForNull(nameof(discountType));
 
             if (numberOfCodes == 0)
             {
@@ -199,9 +203,10 @@ namespace Persistence.Repositories
 
         public async Task ReserveCodes(int? discountId, int userId, int numberOfCodes)
         {
-            var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            
+            var discount = await VoucherContext.Discounts.Where(d=>d.Id == discountId).Include(d=>d.DiscountType).FirstOrDefaultAsync();
             discount.CheckForNull(nameof(discount));
-            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountId);
+            var discountType = discount.DiscountType;
             discountType.CheckForNull(nameof(discountType));
 
             if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
@@ -212,7 +217,100 @@ namespace Persistence.Repositories
             await codes.AssignCodesToUserTemporary(userId, VoucherContext);
         }
 
-        
+        public async Task<IQueryable<DiscountCode>> GetFreshReservations(int? discountId, int userId)
+        {
+            var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            discount.CheckForNull(nameof(discount));
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountId);
+            discountType.CheckForNull(nameof(discountType));
 
+            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            {
+                throw new InvalidOperationException("Promotion codes currently are not implemented into the reservation system");
+            }
+
+            TimeSpan timeLimit = new TimeSpan(0, _reservationLimitInMinutes, 0);
+
+            var reservations = await Task.Run(()=> VoucherContext.DiscountCodes.Where(dc => dc.DiscountId == discount.Id
+                                                                        && dc.UserId == userId
+                                                                        && dc.TemporaryReserved == true
+                                                                        && dc.ReservationTime -
+                                                                        DateTimeOffset.UtcNow.DateTime < timeLimit)
+                .Select(dc => dc));
+
+            return reservations;
+        }
+
+        private async Task<IQueryable<DiscountCode>> GetAllExpiredReservations()
+        {
+            TimeSpan timeLimit = new TimeSpan(0, _reservationLimitInMinutes, 0);
+
+            var reservations = await Task.Run(()=> VoucherContext.DiscountCodes.Where(dc => 
+                                                                        dc.TemporaryReserved == true
+                                                                        && dc.ReservationTime.Value.UtcDateTime -
+                                                                        DateTimeOffset.UtcNow > timeLimit)
+                .Select(dc => dc));
+
+            return reservations;
+        }
+
+        public async Task CompleteReservation(int? discountId, int userId, int numberOfCodes)
+        {
+            var discount = await VoucherContext.Discounts.FindAsync(discountId);
+            discount.CheckForNull(nameof(discount));
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountId);
+            discountType.CheckForNull(nameof(discountType));
+            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            {
+                throw new InvalidOperationException("Promotion codes currently are not implemented into the reservation system");
+            }
+
+            var reservations = await GetFreshReservations(discountId, userId);
+            VoucherContext.UpdateRange(reservations);
+            await reservations.Take(numberOfCodes).ForEachAsync(c =>
+            {
+                c.TemporaryReserved = false;
+                c.UserId = userId;
+                c.IsAssignedToUser = true;
+            });
+
+            await VoucherContext.SaveChangesAsync();
+        }
+
+        public async Task DeclineReservation(int? discountId, int userId)
+        {
+            var freshReservation = await GetFreshReservations(discountId, userId);
+            VoucherContext.UpdateRange(freshReservation);
+            await freshReservation.ForEachAsync(c => c.TemporaryReserved = false);
+            await VoucherContext.SaveChangesAsync();
+        }
+
+        public async Task<int?> Refresh()
+        {
+            var oldReservations = await GetAllExpiredReservations();
+            VoucherContext.UpdateRange(oldReservations);
+            await oldReservations.ForEachAsync(dc => dc.TemporaryReserved = false);
+            await VoucherContext.SaveChangesAsync();
+            return await oldReservations.CountAsync();
+        }
+
+        public async Task<int> GetNumberOfActiveReservations()
+        {
+            TimeSpan timeLimit = new TimeSpan(0, _reservationLimitInMinutes, 0);
+
+            
+
+            var anyActive =  await VoucherContext.DiscountCodes.Where(dc => dc.TemporaryReserved == true
+                                                     && (dc.ReservationTime.Value.DateTime -
+                                                     DateTime.Now).TotalSeconds < timeLimit.TotalSeconds).AnyAsync();
+            if (!anyActive)
+            {
+                return 0;
+            }
+
+            return await VoucherContext.DiscountCodes.Where(dc => dc.TemporaryReserved == true
+                                                           && dc.ReservationTime.Value -
+                                                           DateTime.Now < timeLimit).CountAsync();
+        }
     }
 }

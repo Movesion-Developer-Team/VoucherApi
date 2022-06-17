@@ -1,15 +1,11 @@
-﻿using System.Security.Policy;
-using AutoMapper;
-using DTOs.BodyDtos;
+﻿using AutoMapper;
 using DTOs.ResponseDtos;
-using Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
-using UserStoreLogic;
 
-namespace MobilityManagerApi.Controllers
+namespace BenefitsApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]/")]
@@ -43,7 +39,7 @@ namespace MobilityManagerApi.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(GetTotalAmountResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(GetTotalAmountResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId, [FromQuery] int quantity)
@@ -76,5 +72,6 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
+        
     }
 }
