@@ -292,6 +292,7 @@ namespace Persistence.Repositories
                 c.TemporaryReserved = false;
                 c.UserId = userId;
                 c.IsAssignedToUser = true;
+                c.OrderTime = DateTimeOffset.UtcNow;
             });
 
             await VoucherContext.SaveChangesAsync();
@@ -336,8 +337,13 @@ namespace Persistence.Repositories
         public async Task<IQueryable<DiscountCode>> GetAllCompletedOrders(int userId)
         {
             return await Task.Run(()=> VoucherContext.DiscountCodes.Where(dc => dc.IsAssignedToUser == true &&
-                                                                 dc.UserId == userId).Select(dc => dc));
-
+                                                                 dc.UserId == userId)
+                .Include(dc=>dc.Discount)
+                .ThenInclude(d=>d.Player)
+                .Include(dc=>dc.Discount)
+                .ThenInclude(d=>d.DiscountType)
+                .Select(dc => dc));
+            
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -107,14 +108,27 @@ namespace BenefitsApi.Controllers
             }
         }
 
-        //[Authorize]
-        //[HttpGet]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> GetAllOrdersOfCurrentUser()
-        //{
-
-        //}
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllOrdersOfCurrentUser()
+        {
+            var response = new GetAllOrdersOfCurrentUserResponseDto();
+            try
+            {
+                var user = await GetCurrentUserInfo();
+                var codes = await _unitOfWork.Discount.GetAllCompletedOrders((int)user.Id);
+                response.Codes = _mapper.ProjectTo<UserDiscountCodeBodyDto>(codes);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+            
+        }
 
     }
 }

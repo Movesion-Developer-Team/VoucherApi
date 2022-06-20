@@ -22,6 +22,7 @@ namespace Core.IRepositories
         Task DeclineReservation(int? discountId, int userId);
         Task<int?> Refresh();
         Task<int> GetNumberOfActiveReservations();
+        Task<IQueryable<DiscountCode>> GetAllCompletedOrders(int userId);
 
     }
 

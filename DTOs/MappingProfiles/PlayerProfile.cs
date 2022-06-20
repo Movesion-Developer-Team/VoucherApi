@@ -44,7 +44,7 @@ namespace DTOs.MappingProfiles
             CreateMap<Player, PlayerWithCategoriesBodyDto>()
                 .ForMember(pc => pc.Player, opt => opt.MapFrom(p => p))
                 .ForMember(pc => pc.Categories, opt => opt.MapFrom(p => p.Categories));
-
+            CreateMap<Player, PlayerNameBodyDto>();
         }
 
 

@@ -9,6 +9,7 @@
         public int? DiscountId { get; set; }
         public int? UserId { get; set; }
         public bool? TemporaryReserved { get; set; }
+        public DateTimeOffset? OrderTime { get; set; }
         public DateTimeOffset? ReservationTime { get; set; }
         public Batch? Batch { get; set; }
         public User? User { get; set; }
