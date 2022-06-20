@@ -203,18 +203,38 @@ namespace Persistence.Repositories
 
         public async Task ReserveCodes(int? discountId, int userId, int numberOfCodes)
         {
-            
-            var discount = await VoucherContext.Discounts.Where(d=>d.Id == discountId).Include(d=>d.DiscountType).FirstOrDefaultAsync();
+            await using var trans = await VoucherContext.Database.BeginTransactionAsync();
+
+            var discount = await VoucherContext.Discounts.Where(d => d.Id == discountId)
+                .Include(d => d.DiscountType).FirstOrDefaultAsync();
             discount.CheckForNull(nameof(discount));
             var discountType = discount.DiscountType;
             discountType.CheckForNull(nameof(discountType));
 
-            if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+            var nothingElseMatters = true;
+            while (nothingElseMatters)
             {
-                throw new InvalidOperationException("Promotion codes currently are not implemented into the reservation system");
+                try
+                {
+                    
+                    if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
+                    {
+                        throw new InvalidOperationException(
+                            "Promotion codes currently are not implemented into the reservation system");
+                    }
+
+                    var codes = await discount.ChooseAssignedToCompanyMonoUserCodes(numberOfCodes, VoucherContext);
+                    await codes.AssignCodesToUserTemporary(userId, VoucherContext);
+                    await VoucherContext.SaveChangesAsync();
+                    await trans.CommitAsync();
+                    nothingElseMatters = false;
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    nothingElseMatters = true;
+                }
             }
-            var codes = await discount.ChooseAssignedMonoUserCodes(numberOfCodes, VoucherContext);
-            await codes.AssignCodesToUserTemporary(userId, VoucherContext);
+            
         }
 
         public async Task<IQueryable<DiscountCode>> GetFreshReservations(int? discountId, int userId)
@@ -311,6 +331,13 @@ namespace Persistence.Repositories
             return await VoucherContext.DiscountCodes.Where(dc => dc.TemporaryReserved == true
                                                            && dc.ReservationTime.Value -
                                                            DateTime.Now < timeLimit).CountAsync();
+        }
+
+        public async Task<IQueryable<DiscountCode>> GetAllCompletedOrders(int userId)
+        {
+            return await Task.Run(()=> VoucherContext.DiscountCodes.Where(dc => dc.IsAssignedToUser == true &&
+                                                                 dc.UserId == userId).Select(dc => dc));
+
         }
     }
 }

@@ -14,7 +14,9 @@ using Persistence;
 using UserStoreLogic;
 using System.Drawing;
 using System.Net;
+using System.Net.Mime;
 using System.Security.Policy;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace MobilityManagerApi.Controllers
 {
@@ -466,7 +468,7 @@ namespace MobilityManagerApi.Controllers
             }
         }
 
-        [Authorize]
+        
         [HttpGet]
         [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
@@ -478,7 +480,7 @@ namespace MobilityManagerApi.Controllers
             {
                 var imageInBytes = await _unitOfWork.Player.GetImageOfPlayer(playerId);
                 var player = await _unitOfWork.Player.Find(p => p.Id == playerId).FirstOrDefaultAsync();
-                return File(imageInBytes.Content, "image/jpeg", fileDownloadName:$"/{player.ShortName}.jpg");
+                return File(imageInBytes.Content, "image/jpeg", fileDownloadName: $"{player.ShortName}.jpg");
             }
             catch (ArgumentNullException ex)
             {

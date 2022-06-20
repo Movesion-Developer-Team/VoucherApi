@@ -6,6 +6,10 @@ namespace Core.Domain
     {
         public string? Name { get; set; }
         public string? LinkTermsAndConditions { get; set; }
+        public string? InfoCondizioni { get; set; }
+        public string? InfoOttieni { get; set; }
+        public string? InfoTermini { get; set; }
+        public string? InfoAPaginaAcquisizione { get; set; }
         public UnitiesOfMeasurement? UnityOfMeasurement { get; set; }
         public float? DiscountValue { get; set; }
         public long? InitialPrice { get; set; }

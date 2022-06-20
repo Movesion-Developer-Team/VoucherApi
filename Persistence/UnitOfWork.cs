@@ -58,9 +58,10 @@ namespace Persistence
                     RefreshedCodesQuantity = result,
                     ActiveReservations = activeReservationsCount
                 });
+                voucherContext.SaveChanges();
             }
 
-            if (lastUpdate!= null && (lastUpdate.Value.UtcDateTime - DateTimeOffset.UtcNow.DateTime).TotalSeconds > updateLimit.TotalSeconds)
+            if (lastUpdate!= null && (DateTimeOffset.UtcNow.DateTime - lastUpdate.Value.UtcDateTime).TotalSeconds > updateLimit.TotalSeconds)
             {
                 var awaiter = Discount.Refresh().GetAwaiter();
                 var result = awaiter.GetResult() ?? 0;
@@ -69,6 +70,7 @@ namespace Persistence
                     RefreshedCodesQuantity = result,
                     ActiveReservations = activeReservationsCount
                 });
+                voucherContext.SaveChanges();
             }
 
         }

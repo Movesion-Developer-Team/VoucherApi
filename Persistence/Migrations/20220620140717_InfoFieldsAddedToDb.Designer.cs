@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,10 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(VoucherContext))]
-    partial class VoucherContextModelSnapshot : ModelSnapshot
+    [Migration("20220620140717_InfoFieldsAddedToDb")]
+    partial class InfoFieldsAddedToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -189,9 +191,6 @@ namespace Persistence.Migrations
 
                     b.Property<long?>("FinalPrice")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("InfoAPaginaAcquisizione")
-                        .HasColumnType("text");
 
                     b.Property<string>("InfoCondizioni")
                         .HasColumnType("text");

@@ -202,7 +202,7 @@ namespace Extensions
                 .AnyAsync();
         }
 
-        public static async Task<IQueryable<DiscountCode>>? ChooseAssignedMonoUserCodes(this Discount? discount, int quantity, DbContext context) 
+        public static async Task<IQueryable<DiscountCode>>? ChooseAssignedToCompanyMonoUserCodes(this Discount? discount, int quantity, DbContext context) 
         {
             
             

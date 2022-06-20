@@ -10,15 +10,11 @@ namespace BenefitsApi.Controllers
     [ApiController]
     [Route("[controller]/[action]/")]
     [EnableCors]
-    public class PurchaseController : ControllerBase
+    public class PurchaseController : PadreController
     {
-        private readonly IMapper _mapper;
-        private readonly UnitOfWork _unitOfWork;
 
-        public PurchaseController(IMapper mapper, VoucherContext vContext)
+        public PurchaseController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
         {
-            _mapper = mapper;
-            _unitOfWork = new UnitOfWork(vContext);
         }
 
         [Authorize]
@@ -30,12 +26,20 @@ namespace BenefitsApi.Controllers
             [FromQuery] int numberOfDiscounts)
         {
             var response = new BaseResponse();
+            try
+            {
+                await _unitOfWork.Discount.ReserveCodes(discountId, userId, numberOfDiscounts);
+                await _unitOfWork.Complete();
 
-            await _unitOfWork.Discount.ReserveCodes(discountId, userId, numberOfDiscounts);
-            await _unitOfWork.Complete();
-
-            response.Message = "Reserved";
-            return Ok(response);
+                response.Message = "Reserved";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest(response);
+            }
+           
         }
 
         [Authorize]
@@ -72,6 +76,45 @@ namespace BenefitsApi.Controllers
             }
         }
 
-        
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CompleteOrder([FromQuery] string? status, [FromQuery] int? discountId, [FromQuery] int? numberOfCodes)
+        {
+            var response = new BaseResponse();
+            var user = await GetCurrentUserInfo();
+            if (status == "succeed")
+            {
+                try
+                {
+                    await _unitOfWork.Discount.CompleteReservation(discountId, (int)user.Id, (int)numberOfCodes);
+                    await _unitOfWork.Complete();
+                    response.Message = "Order completed";
+                    return Ok(response);
+
+                }
+                catch (Exception ex)
+                {
+                    response.Message = $"Internal server error: {ex.Message}";
+                    return BadRequest(response);
+                }
+            }
+            else
+            {
+                response.Message = "Order cannot be completed";
+                return BadRequest(response);
+            }
+        }
+
+        //[Authorize]
+        //[HttpGet]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetAllOrdersOfCurrentUser()
+        //{
+
+        //}
+
     }
 }

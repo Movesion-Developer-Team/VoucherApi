@@ -14,16 +14,16 @@ namespace MobilityManagerApi.Controllers
     [EnableCors]
     public class StripeController : PadreController
     {
-
+        private readonly IConfiguration _configuration;
         
 
-        public StripeController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
+        public StripeController(IMapper mapper, VoucherContext vContext, IConfiguration configuration) : base(mapper, vContext)
         {
-            
+            _configuration = configuration;
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpPost]
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePaymentIntent([FromQuery] int discountId, [FromQuery] int numberOfCodes)
@@ -56,7 +56,30 @@ namespace MobilityManagerApi.Controllers
             return Ok(response);
         }
 
-        
+
+        //[HttpPost]
+        //public async Task<IActionResult> -WebHook()
+        //{
+            
+        //    var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+        //    string endpointSecret = _configuration.GetValue<string>("StripeEndPointSecret");
+        //    try
+        //    {
+        //        var stripeEvent = EventUtility.ParseEvent(json);
+        //        var signatureHeader = Request.Headers["Stripe-Signature"];
+
+        //        stripeEvent = EventUtility.ConstructEvent(json,
+        //            signatureHeader, endpointSecret);
+
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e);
+        //        throw;
+        //    }
+
+        //}
+
 
         //[Authorize]
         //[HttpPost]

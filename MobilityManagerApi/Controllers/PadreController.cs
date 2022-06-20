@@ -38,7 +38,7 @@ namespace BenefitsApi.Controllers
 
                 if (currentUser == null)
                 {
-                    result.Message = "User found";
+                    result.Message = "User not found";
                     result.StatusCode = StatusCodes.Status400BadRequest;
                     return result;
                 }
