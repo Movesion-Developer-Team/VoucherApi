@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Persistence\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DTOs", "DTOs\DTOs.csproj", "{5E9C22FD-5B93-471E-8957-D974F5C8373A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobilityManagerApi", "MobilityManagerApi\MobilityManagerApi.csproj", "{2FD4BAB3-947E-4EE8-A189-B41D8B011044}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenefitsApi", "MobilityManagerApi\BenefitsApi.csproj", "{2FD4BAB3-947E-4EE8-A189-B41D8B011044}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserStoreLogic", "UserStoreLogic\UserStoreLogic.csproj", "{B0E76D7C-0D04-41C7-B1E2-B8C796647E04}"
 EndProject
@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobilityManagerApi.Tests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserStoreLogic.Tests", "UserStoreLogic.Tests\UserStoreLogic.Tests.csproj", "{7BBE8696-F3D2-484F-8E31-174CAF43208D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stripe", "Stripe\Stripe.csproj", "{B88971D7-6EBC-4715-AA1B-49CB4259D227}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stripe", "Stripe\Stripe.csproj", "{B88971D7-6EBC-4715-AA1B-49CB4259D227}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using Core.Domain;
 
 namespace DTOs.BodyDtos
 {

@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Persistence.EntityConfigurations
 {
-    public class ImageConfiguration : IEntityTypeConfiguration<Image>
+    public class ImageConfiguration : IEntityTypeConfiguration<BaseImage>
     {
-        public void Configure(EntityTypeBuilder<Image> builder)
+        public void Configure(EntityTypeBuilder<BaseImage> builder)
         {
             builder.HasOne(i => i.Category)
                 .WithOne(c => c.Image)
-                .HasForeignKey<Image>(c => c.CategoryId);
+                .HasForeignKey<BaseImage>(c => c.CategoryId);
 
             builder.HasOne(i => i.Player)
                 .WithOne(p => p.Image)
-                .HasForeignKey<Image>(i => i.PlayerId);
+                .HasForeignKey<BaseImage>(i => i.PlayerId);
         }
     }
 }

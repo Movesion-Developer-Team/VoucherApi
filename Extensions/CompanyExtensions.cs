@@ -10,14 +10,7 @@ namespace Extensions
 {
     public static class CompanyExtensions
     {
-        public static bool HasCodes(this Company? company, DbContext context)
-        {
-            company.CheckForNull(nameof(company));
-            return context
-                .Set<Offer>()
-                .Where(o => o.CompanyId == company.Id)
-                .Select(o=>o.Availability>0).Any();
-        }
+        
         public static async Task<IQueryable<Category>> GetCategories(this Company? company, DbContext context)
         {
             company.CheckForNull(nameof(company));
@@ -54,6 +47,7 @@ namespace Extensions
             var companyWIthPlayers = await context.Set<Company>()
                 .Where(c => c.Id == company.Id)
                 .Include(c => c.Players)
+                .ThenInclude(p=>p.Image)
                 .SingleOrDefaultAsync();
             if (companyWIthPlayers == null)
             {
@@ -121,6 +115,12 @@ namespace Extensions
                 .ContainsAsync(company);
 
 
+        }
+        public static async Task<bool> DiscountIsAssigned(this Company? company, Discount? discount, DbContext context)
+        {
+
+            return await context.Set<CompanyPortfolio>().Where(o => o.DiscountId == discount.Id && o.CompanyId == company.Id)
+                .AnyAsync();
         }
     }
 }

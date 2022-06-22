@@ -1,6 +1,6 @@
 ﻿namespace Core.Domain
 {
-    public class CompanyDiscount
+    public class CompanyPortfolio : EntityBase
     {
         public int? CompanyId { get; set; }
         public int? DiscountId { get; set; }

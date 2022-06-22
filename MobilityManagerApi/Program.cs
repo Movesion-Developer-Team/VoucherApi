@@ -13,6 +13,8 @@ using DTOs.BodyDtos;
 using Stripe;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using UserStoreLogic;
+using UserStoreLogic.Controllers;
+
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -21,8 +23,8 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 // Add services to the container.
-
-builder.Services.AddControllers();
+StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("StripeKey");
+builder.Services.AddControllers().AddApplicationPart(typeof(AuthController).Assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -87,7 +89,9 @@ builder.Services.AddDbContext<UserDbContext>(opt => opt.UseNpgsql(connectionStri
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 
 
+
 var app = builder.Build();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

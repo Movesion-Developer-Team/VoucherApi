@@ -2,6 +2,7 @@
 using AutoMapper;
 using Core.Domain;
 using DTOs.BodyDtos;
+using DTOs.Resolvers;
 
 namespace DTOs.MappingProfiles
 {
@@ -43,8 +44,9 @@ namespace DTOs.MappingProfiles
             CreateMap<Player, PlayerWithCategoriesBodyDto>()
                 .ForMember(pc => pc.Player, opt => opt.MapFrom(p => p))
                 .ForMember(pc => pc.Categories, opt => opt.MapFrom(p => p.Categories));
-
+            CreateMap<Player, PlayerNameBodyDto>();
         }
+
 
 
        

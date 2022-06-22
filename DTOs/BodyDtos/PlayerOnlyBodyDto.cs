@@ -1,4 +1,8 @@
-﻿namespace DTOs.BodyDtos
+﻿
+using System.Drawing;
+using Core.Domain;
+
+namespace DTOs.BodyDtos
 {
     public class PlayerOnlyBodyDto : BaseBody
     {
@@ -8,5 +12,7 @@
         public string? AppStoreLink { get; set; }
         public string? LinkDescription { get; set; }
         public string? Color { get; set; }
+        public BaseImageBodyDto? Image { get; set; }
+        
     }
 }

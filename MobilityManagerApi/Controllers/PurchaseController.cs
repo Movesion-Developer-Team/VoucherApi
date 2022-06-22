@@ -1,47 +1,134 @@
-﻿using System.Security.Policy;
-using AutoMapper;
+﻿using AutoMapper;
 using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
-using Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
-using UserStoreLogic;
 
-namespace MobilityManagerApi.Controllers
+namespace BenefitsApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]/")]
     [EnableCors]
-    public class PurchaseController : ControllerBase
+    public class PurchaseController : PadreController
     {
-        private readonly IMapper _mapper;
-        private readonly UnitOfWork _unitOfWork;
 
-        public PurchaseController(IMapper mapper, VoucherContext vContext)
+        public PurchaseController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
         {
-            _mapper = mapper;
-            _unitOfWork = new UnitOfWork(vContext);
         }
 
-        //[Authorize]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
 
-        //public async Task<IActionResult> CountPurchaseAmount([FromBody] DiscountBodyDto body)
-        //{
-        //    var response = new BaseResponse();
-        //    var discountType = await _unitOfWork.Discount.FindDiscountType(body.DiscountTypeId);
-        //    if (discountType.Name != DiscountTypes.SingleUse.ToString())
-        //    {
-        //        response.Message = "Currently only Single Use Discount purchases are implemented inside the system";
-        //        return BadRequest(response);
-        //    }
+        public async Task<IActionResult> ReserveCodes([FromQuery] int discountId, [FromQuery] int userId,
+            [FromQuery] int numberOfDiscounts)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                await _unitOfWork.Discount.ReserveCodes(discountId, userId, numberOfDiscounts);
+                await _unitOfWork.Complete();
 
+                response.Message = "Reserved";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                return BadRequest(response);
+            }
+           
+        }
+
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetTotalAmountResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetTotalAmountResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTotalAmount([FromQuery] int discountId, [FromQuery] int quantity)
+        {
+            var response = new GetTotalAmountResponseDto();
+            try
+            {
+                response.TotalAmount = await _unitOfWork.Discount.OrderAmount(discountId, quantity);
+                response.Message = "Total amount is provided";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (ArgumentNullException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Message = ex.Message;
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected server error: {ex.Message}";
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CompleteOrder([FromQuery] string? status, [FromQuery] int? discountId, [FromQuery] int? numberOfCodes)
+        {
+            var response = new BaseResponse();
+            var user = await GetCurrentUserInfo();
+            if (status == "succeed")
+            {
+                try
+                {
+                    await _unitOfWork.Discount.CompleteReservation(discountId, (int)user.Id, (int)numberOfCodes);
+                    await _unitOfWork.Complete();
+                    response.Message = "Order completed";
+                    return Ok(response);
+
+                }
+                catch (Exception ex)
+                {
+                    response.Message = $"Internal server error: {ex.Message}";
+                    return BadRequest(response);
+                }
+            }
+            else
+            {
+                response.Message = "Order cannot be completed";
+                return BadRequest(response);
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllOrdersOfCurrentUser()
+        {
+            var response = new GetAllOrdersOfCurrentUserResponseDto();
+            try
+            {
+                var user = await GetCurrentUserInfo();
+                var codes = await _unitOfWork.Discount.GetAllCompletedOrders((int)user.Id);
+                response.Codes = _mapper.ProjectTo<UserDiscountCodeBodyDto>(codes);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
             
-        //}
+        }
 
     }
 }

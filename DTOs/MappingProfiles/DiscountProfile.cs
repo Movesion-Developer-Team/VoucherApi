@@ -16,6 +16,20 @@ namespace DTOs.MappingProfiles
             CreateMap<CsvCodeDto, DiscountCode>();
             CreateMap<DiscountType, DiscountTypeBodyDto>()
                 .ReverseMap();
+            CreateMap<DiscountType, DiscountTypeNameBodyDto>();
+
+            CreateMap<DiscountCode, UserDiscountCodeBodyDto>()
+                .ForMember(ud => ud.DiscountTypeName,
+                    opt => opt.MapFrom(dc => dc.Discount.DiscountType.Name))
+                .ForMember(ud => ud.OrderDateTime, 
+                    opt => opt.MapFrom(dc => dc.OrderTime.Value.DateTime))
+                .ForMember(ud => ud.PriceInPoints, 
+                    opt => opt.MapFrom(dc => dc.Discount.PriceInPoints))
+                .ForMember(ud => ud.FinalPrice, 
+                    opt => opt.MapFrom(dc => dc.Discount.FinalPrice))
+                .ForMember(ud => ud.PlayerName, 
+                    opt => opt.MapFrom(dc => dc.Discount.Player.ShortName));
+
         }
 
 

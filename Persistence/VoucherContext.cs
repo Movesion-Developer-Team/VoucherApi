@@ -1,5 +1,6 @@
 ﻿
 
+using System.Data.Common;
 using System.Security.Principal;
 using Core.Domain;
 using Core.IRepositories;
@@ -11,7 +12,6 @@ namespace Persistence
 {
     public class VoucherContext : DbContext
     {
-        
         public DbSet<Company> Companies { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Discount> Discounts { get; set; }
@@ -22,15 +22,18 @@ namespace Persistence
         public DbSet<User> Users { get; set; }
         public DbSet<InvitationCode> InvitationCodes { get; set; }
         public DbSet<JoinRequest> JoinRequests { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<BaseImage> Images { get; set; }
         public DbSet<DiscountType> DiscountTypes { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<DiscountCode> DiscountCodes { get; set; }
         public DbSet<Batch> Batches { get; set; }
-        public DbSet<Offer> Offers { get; set; }
+        public DbSet<CompanyPortfolio> CompanyPortfolios { get; set; }
+        public DbSet<SystemUpdate> SystemUpdates { get; set; }
 
-
-        public VoucherContext(DbContextOptions<VoucherContext> options) : base(options) { }
+        public VoucherContext(DbContextOptions<VoucherContext> options) : base(options)
+        {
+            
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,12 +47,13 @@ namespace Persistence
             new UserConfiguration().Configure(modelBuilder.Entity<User>());
             new InvitationCodeConfiguration().Configure(modelBuilder.Entity<InvitationCode>());
             new JoinRequestConfiguration().Configure(modelBuilder.Entity<JoinRequest>());
-            new ImageConfiguration().Configure(modelBuilder.Entity<Image>());
+            new ImageConfiguration().Configure(modelBuilder.Entity<BaseImage>());
             new DiscountTypeConfiguration().Configure(modelBuilder.Entity<DiscountType>());
             new PurchaseConfiguration().Configure(modelBuilder.Entity<Purchase>());
             new DiscountCodeConfiguration().Configure(modelBuilder.Entity<DiscountCode>());
             new BatchConfiguration().Configure(modelBuilder.Entity<Batch>());
-            new OfferConfiguration().Configure(modelBuilder.Entity<Offer>());
+            new CompanyPortfolioConfiguration().Configure(modelBuilder.Entity<CompanyPortfolio>());
+            new SystemUpdateConfiguration().Configure(modelBuilder.Entity<SystemUpdate>());
         }
 
     }

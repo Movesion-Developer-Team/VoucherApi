@@ -106,6 +106,11 @@ namespace Persistence.Repositories
             }
         }
 
+        public async Task<bool> AnyAsync()
+        {
+            return await Context.Set<TEntity>().AnyAsync();
+        }
+
         public async Task Complete()
         {
             await Context.SaveChangesAsync();

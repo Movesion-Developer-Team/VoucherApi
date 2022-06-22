@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using BenefitsApi.Controllers;
 using Core.Domain;
 using DTOs.BodyDtos;
 using DTOs.ResponseDtos;
@@ -18,16 +19,11 @@ namespace MobilityManagerApi.Controllers
     [ApiController]
     [Route("[controller]/[action]/")]
     [EnableCors]
-    public class CategoryController : ControllerBase, IControllerBaseActions
+    public class CategoryController : PadreController, IControllerBaseActions
     {
-        private readonly IMapper _mapper;
-        private readonly UnitOfWork _unitOfWork;
-
-
-        public CategoryController(IMapper mapper, VoucherContext vContext)
+        
+        public CategoryController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
         {
-            _mapper = mapper;
-            _unitOfWork = new UnitOfWork(vContext);
         }
 
         [AuthorizeRoles(Role.SuperAdmin)]
@@ -219,48 +215,6 @@ namespace MobilityManagerApi.Controllers
 
         }
 
-
-        private async Task<PrivateGetCurrentUserInfoResponseDto> GetCurrentUserInfo()
-        {
-            var result = new PrivateGetCurrentUserInfoResponseDto();
-            if (HttpContext.User.Identity is ClaimsIdentity identity)
-            {
-                var id = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var role = identity.FindFirst(ClaimTypes.Role).Value;
-                if (role.Contains(Role.SuperAdmin.ToString()))
-                {
-                    result.Message = "SuperAdmin can be assigned only to one company - Movesion";
-                    result.StatusCode = StatusCodes.Status400BadRequest;
-                    return result;
-                }
-                var currentUser = await _unitOfWork.User
-                    .Find(u => u.IdentityUserId == id)
-                    .FirstOrDefaultAsync();
-
-                if (currentUser == null)
-                {
-                    result.Message = "User found";
-                    result.StatusCode = StatusCodes.Status400BadRequest;
-                    return result;
-                }
-
-                if (currentUser.CompanyId == null)
-                {
-                    result.Message = "User not assigned to the company";
-                    result.StatusCode = StatusCodes.Status400BadRequest;
-                    return result;
-                }
-
-                result.CompanyId = currentUser.CompanyId;
-                result.StatusCode = StatusCodes.Status200OK;
-                return result;
-            }
-
-            result.Message = "Claim not found";
-            result.StatusCode = StatusCodes.Status400BadRequest;
-            return result;
-        }
-
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin, Role.User)]
         [HttpGet]
         [ProducesResponseType(typeof(GetAllCategoriesForCompanyResponseDto), StatusCodes.Status200OK)]
@@ -362,7 +316,7 @@ namespace MobilityManagerApi.Controllers
                     return BadRequest(response);
                 }
 
-                var image = new Image
+                var image = new BaseImage
                 {
                     Content = memoryStream.ToArray()
                 };

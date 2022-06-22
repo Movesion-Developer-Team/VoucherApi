@@ -1,12 +1,14 @@
 ﻿using System.Reflection;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using BenefitsApi.Controllers;
 using Core.Domain;
 using DTOs.BodyDtos;
 using DTOs.MethodDto;
 using DTOs.ResponseDtos;
 using Enum;
 using Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,21 +22,13 @@ namespace MobilityManagerApi.Controllers
     [ApiController]
     [Route("[controller]/[action]/")]
     [EnableCors]
-    public class CompanyController : ControllerBase, IControllerBaseActions
+    public class CompanyController : PadreController, IControllerBaseActions
     {
 
-        private readonly IMapper _mapper;
-        private readonly UnitOfWork _unitOfWork;
+        
 
-
-
-
-        public CompanyController(IMapper mapper, VoucherContext vContext)
+        public CompanyController(IMapper mapper, VoucherContext vContext) : base(mapper, vContext)
         {
-
-                _mapper = mapper;
-                _unitOfWork = new UnitOfWork(vContext);
-
         }
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
@@ -296,26 +290,7 @@ namespace MobilityManagerApi.Controllers
             
         }
 
-        //[AuthorizeRoles(Role.SuperAdmin)]
-        //[HttpGet]
-        //[ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(GetAllUsersForCompanyResponseDto), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> GetAllUsersOfCurrentCompany()
-        //{
-        //    var response = new GetAllUsersForCompanyResponseDto();
-        //    var companyId = HttpContext.
-        //    try
-        //    {
-        //        response.Users = await _unitOfWork.Company.GetAllUsersOfCompany(companyId).ToListAsync();
-        //        return Ok(response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        response.Message = $"Internal server error: {ex.Message}";
-        //        return BadRequest(response);
-        //    }
-
-        //}
+        
 
         [AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
         [HttpPost]
@@ -474,36 +449,34 @@ namespace MobilityManagerApi.Controllers
             
         }
 
-
-
-        //[AuthorizeRoles(Role.SuperAdmin, Role.Admin)]
-        //[HttpPost]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
-
-        //public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompanyBody body)
-        //{
-        //    var response = new BaseResponse();
-        //    foreach (var field in typeof(AddUserToCompanyBody).GetFields())
-        //    {
-        //        if (field.GetValue(body) == null)
-        //        {
-        //            response.Message = $"Please, provide value for {field.Name}";
-        //            return BadRequest(response);
-        //        }
-
-        //    }
-
-        //    try
-        //    {
-        //        _unitOfWork.Company.AddUserToCompany();
-        //    }
-        //    catch ()
-        //    {
-
-        //    }
-
-        //}
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GetAllPlayersForCurrentCompanyResponseDto), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SearchForPlayerOfCompany([FromQuery] string? playerName)
+        {
+            var response = new GetAllPlayersForCurrentCompanyResponseDto();
+            var userInfo = await GetCurrentUserInfo();
+            var companyId = userInfo.CompanyId;
+            if (companyId == null)
+            {
+                response.Message = "Go and check yourself buddy, you are not belonging to any company";
+                return BadRequest(response);
+            }
+            try
+            {
+                var players = await _unitOfWork.Company.SearchForPlayerOfCompany(playerName, (int)companyId);
+                response.Players = _mapper.ProjectTo<PlayerOnlyBodyDto>(players);
+                response.Message = "Done";
+                response.StatusCode = StatusCodes.Status200OK;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected internal server error: {ex.Message}";
+                return BadRequest(response);
+            }
+        }
 
     } 
 }

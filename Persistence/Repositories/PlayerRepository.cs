@@ -14,6 +14,18 @@ namespace Persistence.Repositories
         {
         }
 
+        public async Task<IQueryable<Player>> GetAll(bool withImage)
+        {
+            if (withImage)
+            {
+                return await Task.Run(() => VoucherContext.Players.Select(p => p).Include(p => p.Image).AsQueryable());
+            }
+            else
+            {
+                return await GetAll();
+            }
+        }
+
         public async Task AssignCategoryToPlayer(int playerId, int categoryId)
         {
             var player = await VoucherContext.Players
@@ -140,6 +152,32 @@ namespace Persistence.Repositories
             player.DiscountsTypes.CheckEnumerableForNull();
             return player.DiscountsTypes.AsQueryable();
 
+        }
+
+        public async Task AddImageToPlayer(BaseImage baseImage, int? playerId)
+        {
+            var player = await VoucherContext.Players.FindAsync(playerId);
+            player.CheckForNull(nameof(player));
+            if (await player.HasImage(VoucherContext))
+            {
+                await player.DeleteImage(VoucherContext);
+            }
+            baseImage.PlayerId = playerId;
+            await VoucherContext.Images.AddAsync(baseImage);
+            await VoucherContext.SaveChangesAsync();
+            
+        }
+
+        public async Task<BaseImage> GetImageOfPlayer(int playerId)
+        {
+            var player = await VoucherContext.Players.Where(p=>p.Id == playerId).Include(p=>p.Image).FirstOrDefaultAsync();
+            player.CheckForNull(nameof(player));
+            if (player.Image == null)
+            {
+                throw new InvalidOperationException("Player does not have image");
+            }
+
+            return player.Image;
         }
 
     }

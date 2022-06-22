@@ -17,10 +17,38 @@ namespace Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "6.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Domain.BaseImage", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("Content")
+                        .HasColumnType("bytea");
+
+                    b.Property<int?>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("Images");
+                });
 
             modelBuilder.Entity("Core.Domain.Batch", b =>
                 {
@@ -30,10 +58,29 @@ namespace Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
+                    b.Property<int?>("DiscountTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<double?>("PurchasePrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("UnityOfMeasurement")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset?>("UploadTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<double?>("Value")
+                        .HasColumnType("double precision");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("DiscountTypeId");
+
+                    b.HasIndex("PlayerId");
 
                     b.ToTable("Batches");
                 });
@@ -83,21 +130,6 @@ namespace Persistence.Migrations
                     b.ToTable("Companies");
                 });
 
-            modelBuilder.Entity("Core.Domain.CompanyDiscount", b =>
-                {
-                    b.Property<int?>("CompanyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("DiscountId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CompanyId", "DiscountId");
-
-                    b.HasIndex("DiscountId");
-
-                    b.ToTable("CompanyDiscount");
-                });
-
             modelBuilder.Entity("Core.Domain.CompanyPlayer", b =>
                 {
                     b.Property<int>("CompanyId")
@@ -116,6 +148,31 @@ namespace Persistence.Migrations
                     b.ToTable("CompanyPlayer");
                 });
 
+            modelBuilder.Entity("Core.Domain.CompanyPortfolio", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<int?>("CompanyId")
+                        .IsRequired()
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DiscountId")
+                        .IsRequired()
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("CompanyId", "DiscountId");
+
+                    b.HasIndex("DiscountId");
+
+                    b.ToTable("CompanyPortfolios");
+                });
+
             modelBuilder.Entity("Core.Domain.Discount", b =>
                 {
                     b.Property<int?>("Id")
@@ -130,11 +187,14 @@ namespace Persistence.Migrations
                     b.Property<float?>("DiscountValue")
                         .HasColumnType("real");
 
-                    b.Property<int?>("FinalPrice")
-                        .HasColumnType("integer");
+                    b.Property<long?>("FinalPrice")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("InitialPrice")
-                        .HasColumnType("integer");
+                    b.Property<string>("Info")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("InitialPrice")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("LinkTermsAndConditions")
                         .HasColumnType("text");
@@ -145,8 +205,11 @@ namespace Persistence.Migrations
                     b.Property<int?>("PlayerId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UnityOfMeasurement")
-                        .HasColumnType("text");
+                    b.Property<int?>("PriceInPoints")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UnityOfMeasurement")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -174,13 +237,26 @@ namespace Persistence.Migrations
                     b.Property<int?>("DiscountId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsAssignedToCompany")
-                        .HasColumnType("boolean");
-
                     b.Property<bool?>("IsAssignedToUser")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTimeOffset?>("OrderTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("ReservationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool?>("TemporaryReserved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<int?>("UsageLimit")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -188,6 +264,8 @@ namespace Persistence.Migrations
                     b.HasIndex("BatchId");
 
                     b.HasIndex("DiscountId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("DiscountCodes");
                 });
@@ -209,34 +287,6 @@ namespace Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DiscountTypes");
-                });
-
-            modelBuilder.Entity("Core.Domain.Image", b =>
-                {
-                    b.Property<int?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<byte[]>("Content")
-                        .HasColumnType("bytea");
-
-                    b.Property<int?>("PlayerId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId")
-                        .IsUnique();
-
-                    b.HasIndex("PlayerId")
-                        .IsUnique();
-
-                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Core.Domain.InvitationCode", b =>
@@ -325,35 +375,6 @@ namespace Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Locations");
-                });
-
-            modelBuilder.Entity("Core.Domain.Offer", b =>
-                {
-                    b.Property<int?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
-
-                    b.Property<int?>("Availability")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CompanyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("DiscountCodeId")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("Price")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("DiscountCodeId");
-
-                    b.ToTable("Offers");
                 });
 
             modelBuilder.Entity("Core.Domain.Player", b =>
@@ -515,6 +536,29 @@ namespace Persistence.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("Core.Domain.SystemUpdate", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<int?>("ActiveReservations")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RefreshedCodesQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemUpdates");
+                });
+
             modelBuilder.Entity("Core.Domain.User", b =>
                 {
                     b.Property<int?>("Id")
@@ -523,10 +567,25 @@ namespace Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
                     b.Property<int?>("CompanyId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
                     b.Property<string>("IdentityUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PaymentCardTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaxCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TelephoneNumber")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -539,23 +598,34 @@ namespace Persistence.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Core.Domain.CompanyDiscount", b =>
+            modelBuilder.Entity("Core.Domain.BaseImage", b =>
                 {
-                    b.HasOne("Core.Domain.Company", "Company")
-                        .WithMany("CompanyDiscounts")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Core.Domain.Category", "Category")
+                        .WithOne("Image")
+                        .HasForeignKey("Core.Domain.BaseImage", "CategoryId");
 
-                    b.HasOne("Core.Domain.Discount", "Discount")
-                        .WithMany("CompanyDiscounts")
-                        .HasForeignKey("DiscountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Core.Domain.Player", "Player")
+                        .WithOne("Image")
+                        .HasForeignKey("Core.Domain.BaseImage", "PlayerId");
 
-                    b.Navigation("Company");
+                    b.Navigation("Category");
 
-                    b.Navigation("Discount");
+                    b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("Core.Domain.Batch", b =>
+                {
+                    b.HasOne("Core.Domain.DiscountType", "DiscountType")
+                        .WithMany("Batches")
+                        .HasForeignKey("DiscountTypeId");
+
+                    b.HasOne("Core.Domain.Player", "Player")
+                        .WithMany("Batches")
+                        .HasForeignKey("PlayerId");
+
+                    b.Navigation("DiscountType");
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("Core.Domain.CompanyPlayer", b =>
@@ -575,6 +645,25 @@ namespace Persistence.Migrations
                     b.Navigation("Company");
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("Core.Domain.CompanyPortfolio", b =>
+                {
+                    b.HasOne("Core.Domain.Company", "Company")
+                        .WithMany("CompanyPortfolios")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Discount", "Discount")
+                        .WithMany("CompanyPortfolios")
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Discount");
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
@@ -626,24 +715,15 @@ namespace Persistence.Migrations
                         .WithMany("DiscountCodes")
                         .HasForeignKey("DiscountId");
 
+                    b.HasOne("Core.Domain.User", "User")
+                        .WithMany("DiscountCodes")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Batch");
 
                     b.Navigation("Discount");
-                });
 
-            modelBuilder.Entity("Core.Domain.Image", b =>
-                {
-                    b.HasOne("Core.Domain.Category", "Category")
-                        .WithOne("Image")
-                        .HasForeignKey("Core.Domain.Image", "CategoryId");
-
-                    b.HasOne("Core.Domain.Player", "Player")
-                        .WithOne("Image")
-                        .HasForeignKey("Core.Domain.Image", "PlayerId");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Player");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.Domain.InvitationCode", b =>
@@ -671,22 +751,6 @@ namespace Persistence.Migrations
                     b.Navigation("InvitationCode");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Core.Domain.Offer", b =>
-                {
-                    b.HasOne("Core.Domain.Company", "Company")
-                        .WithMany("Offers")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.ClientCascade);
-
-                    b.HasOne("Core.Domain.DiscountCode", "DiscountCode")
-                        .WithMany("Offers")
-                        .HasForeignKey("DiscountCodeId");
-
-                    b.Navigation("Company");
-
-                    b.Navigation("DiscountCode");
                 });
 
             modelBuilder.Entity("Core.Domain.PlayerCategories", b =>
@@ -796,33 +860,31 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.Company", b =>
                 {
-                    b.Navigation("CompanyDiscounts");
-
                     b.Navigation("CompanyPlayers");
 
-                    b.Navigation("InvitationCodes");
+                    b.Navigation("CompanyPortfolios");
 
-                    b.Navigation("Offers");
+                    b.Navigation("InvitationCodes");
 
                     b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Core.Domain.Discount", b =>
                 {
-                    b.Navigation("CompanyDiscounts");
+                    b.Navigation("CompanyPortfolios");
 
                     b.Navigation("DiscountCodes");
                 });
 
             modelBuilder.Entity("Core.Domain.DiscountCode", b =>
                 {
-                    b.Navigation("Offers");
-
                     b.Navigation("Purchases");
                 });
 
             modelBuilder.Entity("Core.Domain.DiscountType", b =>
                 {
+                    b.Navigation("Batches");
+
                     b.Navigation("Discounts");
 
                     b.Navigation("PlayerDiscountTypes");
@@ -840,6 +902,8 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.Player", b =>
                 {
+                    b.Navigation("Batches");
+
                     b.Navigation("CompanyPlayers");
 
                     b.Navigation("Discounts");
@@ -857,6 +921,8 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Core.Domain.User", b =>
                 {
+                    b.Navigation("DiscountCodes");
+
                     b.Navigation("JoinRequest");
 
                     b.Navigation("Purchases");
