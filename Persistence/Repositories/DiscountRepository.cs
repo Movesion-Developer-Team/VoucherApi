@@ -237,11 +237,11 @@ namespace Persistence.Repositories
             
         }
 
-        public async Task<IQueryable<DiscountCode>> GetFreshReservations(int? discountId, int userId)
+        public async Task<IQueryable<DiscountCode>> GetFreshReservations(int? discountId, int? userId)
         {
             var discount = await VoucherContext.Discounts.FindAsync(discountId);
             discount.CheckForNull(nameof(discount));
-            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountId);
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discount.DiscountTypeId);
             discountType.CheckForNull(nameof(discountType));
 
             if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
@@ -254,8 +254,8 @@ namespace Persistence.Repositories
             var reservations = await Task.Run(()=> VoucherContext.DiscountCodes.Where(dc => dc.DiscountId == discount.Id
                                                                         && dc.UserId == userId
                                                                         && dc.TemporaryReserved == true
-                                                                        && dc.ReservationTime -
-                                                                        DateTimeOffset.UtcNow.DateTime < timeLimit)
+                                                                        && (DateTimeOffset.UtcNow.DateTime - dc.ReservationTime.Value.DateTime).TotalSeconds
+                                                                         < timeLimit.TotalSeconds)
                 .Select(dc => dc));
 
             return reservations;
@@ -267,8 +267,8 @@ namespace Persistence.Repositories
 
             var reservations = await Task.Run(()=> VoucherContext.DiscountCodes.Where(dc => 
                                                                         dc.TemporaryReserved == true
-                                                                        && dc.ReservationTime.Value.UtcDateTime -
-                                                                        DateTimeOffset.UtcNow > timeLimit)
+                                                                        && ((DateTimeOffset.UtcNow.DateTime - dc.ReservationTime.Value.DateTime).TotalSeconds
+                                                                         > timeLimit.TotalSeconds || dc.ReservationTime == null))
                 .Select(dc => dc));
 
             return reservations;
@@ -278,7 +278,7 @@ namespace Persistence.Repositories
         {
             var discount = await VoucherContext.Discounts.FindAsync(discountId);
             discount.CheckForNull(nameof(discount));
-            var discountType = await VoucherContext.DiscountTypes.FindAsync(discountId);
+            var discountType = await VoucherContext.DiscountTypes.FindAsync(discount.DiscountTypeId);
             discountType.CheckForNull(nameof(discountType));
             if (discountType.Name == DiscountTypes.PromotionalCode.ToString())
             {
@@ -290,6 +290,7 @@ namespace Persistence.Repositories
             await reservations.Take(numberOfCodes).ForEachAsync(c =>
             {
                 c.TemporaryReserved = false;
+                c.ReservationTime = null;
                 c.UserId = userId;
                 c.IsAssignedToUser = true;
                 c.OrderTime = DateTimeOffset.UtcNow;
@@ -310,7 +311,7 @@ namespace Persistence.Repositories
         {
             var oldReservations = await GetAllExpiredReservations();
             VoucherContext.UpdateRange(oldReservations);
-            await oldReservations.ForEachAsync(dc => dc.TemporaryReserved = false);
+            await oldReservations.ForEachAsync(dc => dc.TemporaryReserved = false && dc.UserId == null);
             await VoucherContext.SaveChangesAsync();
             return await oldReservations.CountAsync();
         }
@@ -322,16 +323,16 @@ namespace Persistence.Repositories
             
 
             var anyActive =  await VoucherContext.DiscountCodes.Where(dc => dc.TemporaryReserved == true
-                                                     && (dc.ReservationTime.Value.DateTime -
-                                                     DateTime.Now).TotalSeconds < timeLimit.TotalSeconds).AnyAsync();
+                                                     && (DateTime.Now - dc.ReservationTime.Value.DateTime 
+                                                     ).TotalSeconds < timeLimit.TotalSeconds).AnyAsync();
             if (!anyActive)
             {
                 return 0;
             }
 
             return await VoucherContext.DiscountCodes.Where(dc => dc.TemporaryReserved == true
-                                                           && dc.ReservationTime.Value -
-                                                           DateTime.Now < timeLimit).CountAsync();
+                                                           && (DateTime.Now - dc.ReservationTime.Value
+                                                           ).TotalSeconds < timeLimit.TotalSeconds).CountAsync();
         }
 
         public async Task<IQueryable<DiscountCode>> GetAllCompletedOrders(int userId)

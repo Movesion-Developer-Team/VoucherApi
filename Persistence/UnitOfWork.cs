@@ -61,7 +61,7 @@ namespace Persistence
                 voucherContext.SaveChanges();
             }
 
-            if (lastUpdate!= null && (DateTimeOffset.UtcNow.DateTime - lastUpdate.Value.UtcDateTime).TotalSeconds > updateLimit.TotalSeconds)
+            if (lastUpdate!= null && (DateTimeOffset.UtcNow.DateTime - lastUpdate.Value.DateTime).TotalSeconds > updateLimit.TotalSeconds)
             {
                 var awaiter = Discount.Refresh().GetAwaiter();
                 var result = awaiter.GetResult() ?? 0;

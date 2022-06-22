@@ -11,9 +11,9 @@ namespace Persistence.EntityConfigurations
         {
             builder.Property(dc => dc.TemporaryReserved).HasDefaultValue(value: false);
             builder.Property(dc => dc.IsAssignedToUser).HasDefaultValue(value: false);
-            builder.Property(dc => dc.ReservationTime)
-                .ValueGeneratedOnAddOrUpdate()
-                .HasValueGenerator<ReservationTimeUnmanagedGenerator>();
+            //builder.Property(dc => dc.ReservationTime)
+            //    .ValueGeneratedOnAddOrUpdate()
+            //    .HasValueGenerator<ReservationTimeUnmanagedGenerator>();
             
             builder.HasMany(dc => dc.Purchases)
                 .WithOne(p => p.DiscountCode);

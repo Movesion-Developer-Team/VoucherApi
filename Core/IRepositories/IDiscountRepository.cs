@@ -17,7 +17,7 @@ namespace Core.IRepositories
         Task<long> OrderAmount(int discountId, int numberOfCodes);
         Task ReserveCodes(int? discountId, int userId, int numberOfCodes);
         Task<int?> GetDiscountLimit(int discountId);
-        Task<IQueryable<DiscountCode>> GetFreshReservations(int? discountId, int userId);
+        Task<IQueryable<DiscountCode>> GetFreshReservations(int? discountId, int? userId);
         Task CompleteReservation(int? discountId, int userId, int numberOfCodes);
         Task DeclineReservation(int? discountId, int userId);
         Task<int?> Refresh();

@@ -252,6 +252,7 @@ namespace Extensions
             {
                 dc.UserId = userId;
                 dc.TemporaryReserved = true;
+                dc.ReservationTime = DateTimeOffset.UtcNow;
             });
             await context.SaveChangesAsync();
         }
