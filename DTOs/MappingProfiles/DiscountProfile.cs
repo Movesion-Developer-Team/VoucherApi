@@ -30,7 +30,7 @@ namespace DTOs.MappingProfiles
                         $" {dc.OrderTime.Value.LocalDateTime.ToString("yyyy", CultureInfo.InvariantCulture)}" +
                         $" {dc.OrderTime.Value.LocalDateTime.TimeOfDay.Hours}:" +
                         $"{dc.OrderTime.Value.LocalDateTime.TimeOfDay.Minutes}:" +
-                        $"{dc.OrderTime.Value.LocalDateTime.TimeOfDay.Seconds} " +
+                        $"{dc.OrderTime.Value.LocalDateTime.ToString("ss", CultureInfo.InvariantCulture)} " +
                         $"GMT{dc.OrderTime.Value.LocalDateTime.ToString("zz", CultureInfo.InvariantCulture)}00" ))
                 .ForMember(ud => ud.PriceInPoints, 
                     opt => opt.MapFrom(dc => dc.Discount.PriceInPoints))
