@@ -23,15 +23,7 @@ namespace DTOs.MappingProfiles
                 .ForMember(ud => ud.DiscountTypeName,
                     opt => opt.MapFrom(dc => dc.Discount.DiscountType.Name))
                 .ForMember(ud => ud.OrderDateTime, 
-                    opt => opt.MapFrom(dc => 
-                        $"{dc.OrderTime.Value.LocalDateTime.ToString("ddd", CultureInfo.InvariantCulture)}" +
-                        $" {dc.OrderTime.Value.LocalDateTime.ToString("MMM", CultureInfo.InvariantCulture)}" +
-                        $" {dc.OrderTime.Value.LocalDateTime.ToString("dd", CultureInfo.InvariantCulture)}" +
-                        $" {dc.OrderTime.Value.LocalDateTime.ToString("yyyy", CultureInfo.InvariantCulture)}" +
-                        $" {dc.OrderTime.Value.LocalDateTime.TimeOfDay.Hours}:" +
-                        $"{dc.OrderTime.Value.LocalDateTime.TimeOfDay.Minutes}:" +
-                        $"{dc.OrderTime.Value.LocalDateTime.ToString("ss", CultureInfo.InvariantCulture)} " +
-                        $"GMT{dc.OrderTime.Value.LocalDateTime.ToString("zz", CultureInfo.InvariantCulture)}00" ))
+                    opt => opt.MapFrom(dc=>dc.OrderTime.Value.LocalDateTime))
                 .ForMember(ud => ud.PriceInPoints, 
                     opt => opt.MapFrom(dc => dc.Discount.PriceInPoints))
                 .ForMember(ud => ud.FinalPrice, 
