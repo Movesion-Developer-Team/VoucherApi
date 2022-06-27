@@ -2,7 +2,7 @@
 {
     public class UserDiscountCodeBodyDto
     {
-        public DateTime? OrderDateTime { get; set; }
+        public string? OrderDateTime { get; set; }
         public string? PlayerName { get; set; }
         public long? FinalPrice { get; set; }
         public string? DiscountTypeName { get; set; }

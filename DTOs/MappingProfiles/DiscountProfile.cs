@@ -22,7 +22,7 @@ namespace DTOs.MappingProfiles
                 .ForMember(ud => ud.DiscountTypeName,
                     opt => opt.MapFrom(dc => dc.Discount.DiscountType.Name))
                 .ForMember(ud => ud.OrderDateTime, 
-                    opt => opt.MapFrom(dc => dc.OrderTime.Value.DateTime))
+                    opt => opt.MapFrom(dc => dc.OrderTime.Value.DateTime.ToLongDateString()))
                 .ForMember(ud => ud.PriceInPoints, 
                     opt => opt.MapFrom(dc => dc.Discount.PriceInPoints))
                 .ForMember(ud => ud.FinalPrice, 
